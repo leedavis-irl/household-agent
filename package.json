@@ -1,0 +1,17 @@
+{
+  "name": "household-agent",
+  "version": "0.1.0",
+  "description": "Iji — multi-channel household AI agent",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "better-sqlite3": "^12.6.2",
+    "dotenv": "^16.4.7",
+    "googleapis": "^171.4.0",
+    "otpauth": "^9.5.0"
+  }
+}

@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.*
+*.pem
+data/knowledge.json
+data/iji.db
+data/iji.db-wal
+data/iji.db-shm
+data/monarch-session.json
+data/oauth-tokens.json
+config/google-service-account.json
+config/google-oauth-credentials.json
+.last-docs-hash
+logs/
+*.log
+.DS_Store

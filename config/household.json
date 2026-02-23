@@ -1,0 +1,112 @@
+{
+  "members": {
+    "lee": {
+      "display_name": "Lee",
+      "role": "admin",
+      "identifiers": {
+        "signal": "+13392360070",
+        "signal_uuid": "a62c32e9-e279-4f19-bc10-ee91cafaddf0",
+        "slack": "U07C26HRZD1",
+        "cli": "lee"
+      },
+      "calendar_id": "leedavis.irl@gmail.com",
+      "permissions": ["ha_all", "calendar_all", "knowledge_all", "financial", "message_send", "email_all"]
+    },
+    "steve": {
+      "display_name": "Steve",
+      "role": "adult",
+      "identifiers": {
+        "signal": "+13392030291",
+        "signal_uuid": "886f92ec-b5c9-4b60-8249-b4cf25e0b29f",
+        "slack": "UXXXXXXXX",
+        "cli": "steve"
+      },
+      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "email_own"]
+    },
+    "kelly": {
+      "display_name": "Kelly",
+      "role": "adult",
+      "identifiers": {
+        "signal": "+14159999707",
+        "signal_uuid": "61945e13-32cc-445c-ab1a-f955fa7924e9",
+        "cli": "kelly"
+      },
+      "calendar_id": "Robinkellyroche@gmail.com",
+      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "email_own"]
+    },
+    "hallie": {
+      "display_name": "Hallie",
+      "role": "adult",
+      "identifiers": {
+        "signal": "+16303362827",
+        "signal_uuid": "1216d8e5-2cb2-4955-a5ca-40f694874fa0",
+        "cli": "hallie"
+      },
+      "calendar_id": "23b34257d09f1f710a4316826bae1acbf64f956fea364f9eafe4e74307c608a5@group.calendar.google.com",
+      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "email_own"]
+    },
+    "firen": {
+      "display_name": "Firen",
+      "role": "adult",
+      "identifiers": {
+        "signal": "+12146760902",
+        "signal_uuid": "e3eda4dc-5470-42b0-bd38-73eea5be1d27",
+        "cli": "firen"
+      },
+      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "email_own"]
+    },
+    "ryker": {
+      "display_name": "Ryker",
+      "role": "child",
+      "identifiers": {
+        "cli": "ryker"
+      },
+      "calendar_id": "Rykerdavis.irl@gmail.com",
+      "permissions": ["ha_common", "knowledge_read"]
+    },
+    "logan": {
+      "display_name": "Logan",
+      "role": "child",
+      "identifiers": {
+        "cli": "logan"
+      },
+      "calendar_id": "Logandavis.irl@gmail.com",
+      "permissions": ["ha_common", "knowledge_read"]
+    },
+    "hazel": {
+      "display_name": "Hazel",
+      "role": "child",
+      "identifiers": {
+        "cli": "hazel"
+      },
+      "calendar_id": "Hazel.Hinkhouse@gmail.com",
+      "permissions": ["ha_common", "knowledge_read"]
+    },
+    "dj": {
+      "display_name": "DJ",
+      "role": "child",
+      "identifiers": {
+        "cli": "dj"
+      },
+      "calendar_id": "djhinkhouse@gmail.com",
+      "permissions": ["ha_common", "knowledge_read"]
+    }
+  },
+  "locations":{"home":{"lat":37.8716,"lng":-122.2727,"label":"Berkeley, CA"},"tahoe":{"lat":39.1968,"lng":-120.2354,"label":"Olympic Valley, CA"},"sf":{"lat":37.7749,"lng":-122.4194,"label":"San Francisco, CA"}},"google_docs": {
+    "family_doc_id": "1OnLMbfoUb10gYFCZRPoi82Uk7wuJ-CLD7NYQ-45LRsI"
+  },
+  "permission_definitions": {
+    "ha_all": "Control any Home Assistant device",
+    "ha_office": "Control devices in own office only",
+    "ha_common": "Control devices in common areas",
+    "calendar_all": "View any household member's calendar",
+    "calendar_own": "View own calendar only",
+    "calendar_household": "View shared household calendar",
+    "knowledge_all": "Read and write household knowledge",
+    "knowledge_read": "Read household knowledge only",
+    "financial": "Access financial tools and data",
+    "message_send": "Send Signal messages to household members or groups (adults only)",
+    "email_own": "Search and read own Gmail",
+    "email_all": "Search and read any household member's Gmail"
+  }
+}

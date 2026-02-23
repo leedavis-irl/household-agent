@@ -1,0 +1,75 @@
+# Deploy Iji to EC2 on push to main.
+# Requires GitHub Secrets: EC2_SSH_KEY (private key for ubuntu@<DEPLOY_HOST>)
+# On deploy failure after health check, rolls back to previous commit and notifies via Signal.
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+
+env:
+  DEPLOY_HOST: "3.149.229.204"
+  DEPLOY_USER: "ubuntu"
+  DEPLOY_DIR: "/home/ubuntu/household-agent"
+  SIGNAL_NOTIFY_NUMBER: "+13392360070"
+  SIGNAL_ACCOUNT: "+17074748930"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ env.DEPLOY_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Get rollback SHA
+        id: rollback
+        run: |
+          sha=$(ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" \
+            "cd ${{ env.DEPLOY_DIR }} && git rev-parse HEAD 2>/dev/null || echo none")
+          echo "sha=$sha" >> $GITHUB_OUTPUT
+          echo "Rollback SHA: $sha"
+
+      - name: Deploy
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "set -e; cd ${{ env.DEPLOY_DIR }}; git fetch origin main; git reset --hard origin/main; npm ci; sudo systemctl stop iji.service || true; sleep 15; sudo systemctl start iji.service"
+
+      - name: Health check
+        id: health
+        run: |
+          for i in 1 2 3 4 5; do
+            status=$(ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" \
+              "systemctl is-active iji.service 2>/dev/null || echo failed")
+            if [ "$status" = "active" ]; then
+              echo "Service is active"
+              exit 0
+            fi
+            echo "Attempt $i: $status, waiting 10s..."
+            sleep 10
+          done
+          echo "Health check failed"
+          exit 1
+
+      - name: Rollback on failure
+        if: failure() && steps.rollback.outputs.sha != 'none' && steps.rollback.outputs.sha != ''
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "set -e; cd ${{ env.DEPLOY_DIR }}; git reset --hard ${{ steps.rollback.outputs.sha }}; npm ci; sudo systemctl stop iji.service || true; sleep 15; sudo systemctl start iji.service"
+
+      - name: Notify success
+        if: success()
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" \
+            "signal-cli -a ${{ env.SIGNAL_ACCOUNT }} send ${{ env.SIGNAL_NOTIFY_NUMBER }} 'Iji deploy succeeded (main @ ${GITHUB_SHA::7})'"
+
+      - name: Notify failure
+        if: failure()
+        run: |
+          msg="Iji deploy FAILED (main @ ${GITHUB_SHA::7}). Rollback may have run."
+          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" \
+            "signal-cli -a ${{ env.SIGNAL_ACCOUNT }} send ${{ env.SIGNAL_NOTIFY_NUMBER }} '$msg'" || true
