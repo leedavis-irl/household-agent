@@ -6,8 +6,11 @@ Iji runs on EC2 and is deployed automatically on push to `main`. Local-only chan
 
 - **Host:** ubuntu@3.149.229.204 (t3.small)
 - **App dir:** /home/ubuntu/household-agent
-- **Service:** iji.service (systemd), runs Node + signal-cli (JSON-RPC on 127.0.0.1:7583)
+- **Service:** iji.service (systemd), `ExecStart=/usr/bin/node src/index.js`
+- **signal-cli:** /opt/signal-cli-0.13.24/bin/signal-cli (used by deploy workflow for notifications)
 - **SSH key (local):** ~/.ssh/lees-alpha-trading.pem
+
+Verify with: `./scripts/check-server.sh`
 
 ## GitHub repo and secret
 
@@ -26,7 +29,7 @@ Iji runs on EC2 and is deployed automatically on push to `main`. Local-only chan
 4. **On health failure** — Server is reset to the rollback SHA, `npm ci`, restart iji again.
 5. **Notify** — A Signal message is sent to +13392360070 (via signal-cli on the server): “Iji deploy succeeded” or “Iji deploy FAILED…”.
 
-The server must have the repo cloned at `/home/ubuntu/household-agent`, `node`/`npm` installed, and `signal-cli` on PATH for notifications. The 15s sleep helps when the systemd unit gets stuck in “deactivating”.
+The server must have a **git repo** at `/home/ubuntu/household-agent` (so the workflow can `git fetch`/`git reset`), `node`/`npm` installed, and signal-cli at `/opt/signal-cli-0.13.24/bin/signal-cli` (workflow uses this path for deploy notifications). The 15s sleep helps when the systemd unit gets stuck in “deactivating”. If the app dir was set up by copy instead of clone, run on the server once: `cd /home/ubuntu/household-agent && git init && git remote add origin https://github.com/leedavis-irl/household-agent.git && git fetch origin main && git branch -M main && git reset --hard origin/main` (then re-copy any local-only files like `.env`/config if needed).
 
 ## Manual scripts (fallbacks)
 

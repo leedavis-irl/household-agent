@@ -13,6 +13,8 @@ env:
   DEPLOY_DIR: "/home/ubuntu/household-agent"
   SIGNAL_NOTIFY_NUMBER: "+13392360070"
   SIGNAL_ACCOUNT: "+17074748930"
+  # signal-cli on server (not on default PATH in non-interactive SSH)
+  SIGNAL_CLI_PATH: "/opt/signal-cli-0.13.24/bin/signal-cli"
 
 jobs:
   deploy:
@@ -65,11 +67,11 @@ jobs:
         if: success()
         run: |
           ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" \
-            "signal-cli -a ${{ env.SIGNAL_ACCOUNT }} send ${{ env.SIGNAL_NOTIFY_NUMBER }} 'Iji deploy succeeded (main @ ${GITHUB_SHA::7})'"
+            "${{ env.SIGNAL_CLI_PATH }} -a ${{ env.SIGNAL_ACCOUNT }} send ${{ env.SIGNAL_NOTIFY_NUMBER }} 'Iji deploy succeeded (main @ ${GITHUB_SHA::7})'"
 
       - name: Notify failure
         if: failure()
         run: |
           msg="Iji deploy FAILED (main @ ${GITHUB_SHA::7}). Rollback may have run."
           ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" \
-            "signal-cli -a ${{ env.SIGNAL_ACCOUNT }} send ${{ env.SIGNAL_NOTIFY_NUMBER }} '$msg'" || true
+            "${{ env.SIGNAL_CLI_PATH }} -a ${{ env.SIGNAL_ACCOUNT }} send ${{ env.SIGNAL_NOTIFY_NUMBER }} '$msg'" || true
