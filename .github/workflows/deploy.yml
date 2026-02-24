@@ -12,10 +12,6 @@ env:
   DEPLOY_HOST: "3.149.229.204"
   DEPLOY_USER: "ubuntu"
   DEPLOY_DIR: "/home/ubuntu/household-agent"
-  SIGNAL_NOTIFY_NUMBER: "+13392360070"
-  SIGNAL_ACCOUNT: "+17074748930"
-  # signal-cli on server (not on default PATH in non-interactive SSH)
-  SIGNAL_CLI_PATH: "/opt/signal-cli-0.13.24/bin/signal-cli"
 
 jobs:
   deploy:
@@ -64,20 +60,3 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "set -e; cd ${{ env.DEPLOY_DIR }}; git reset --hard ${{ steps.rollback.outputs.sha }}; npm ci; sudo systemctl stop iji.service || true; sleep 15; sudo systemctl start iji.service"
 
-      - name: Notify success
-        if: success()
-        continue-on-error: true
-        timeout-minutes: 1
-        run: |
-          # Note: signal-cli may be locked by running Iji process. Best-effort.
-          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" \
-            "${{ env.SIGNAL_CLI_PATH }} -a ${{ env.SIGNAL_ACCOUNT }} send ${{ env.SIGNAL_NOTIFY_NUMBER }} 'Iji deploy succeeded (main @ ${GITHUB_SHA::7})'" || true
-
-      - name: Notify failure
-        if: failure()
-        continue-on-error: true
-        timeout-minutes: 1
-        run: |
-          msg="Iji deploy FAILED (main @ ${GITHUB_SHA::7}). Rollback may have run."
-          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" \
-            "${{ env.SIGNAL_CLI_PATH }} -a ${{ env.SIGNAL_ACCOUNT }} send ${{ env.SIGNAL_NOTIFY_NUMBER }} '$msg'" || true
