@@ -8,7 +8,7 @@ Now add Signal as the first real messaging channel so household members can text
 
 ## Signal Infrastructure
 
-**signal-cli** is already installed (`/opt/homebrew/bin/signal-cli`, version 0.13.24) and registered with the Google Voice number `+17074748930`. Account data is at `~/.local/share/signal-cli/data/`. No other process is using it (OpenClaw has been killed and disabled).
+**signal-cli** is already installed (version 0.13.24) and registered with the Google Voice number `+17074748930`. Local dev: `/opt/homebrew/bin/signal-cli`; account data at `~/.local/share/signal-cli/data/`. Production (EC2): `/opt/signal-cli-0.13.24/bin/signal-cli`; the app reads `SIGNAL_CLI_PATH` from the environment. No other process may use the same account (OpenClaw has been killed and disabled).
 
 ## What to Build
 

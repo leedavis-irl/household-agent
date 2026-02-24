@@ -50,7 +50,7 @@ node scripts/weekly-cost-report.js
 
 Ensure the cron environment has:
 
-- **SIGNAL_ACCOUNT** (and optionally **SIGNAL_CLI_PATH**) so the script can send the DM via signal-cli.
+- **SIGNAL_ACCOUNT** (and optionally **SIGNAL_CLI_PATH**) so the script can send the DM via signal-cli. On EC2 set `SIGNAL_CLI_PATH=/opt/signal-cli-0.13.24/bin/signal-cli`.
 - Access to `config/household.json` (Lee’s Signal number is read from `members.lee.identifiers.signal`).
 - The app’s data directory so the SQLite DB at `data/iji.db` is available.
 

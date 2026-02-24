@@ -34,7 +34,7 @@ The script replaces the **entire** Google Doc body with an intro paragraph, then
 
 4. **Signal (optional)**
    - For notifications, `SIGNAL_ACCOUNT` must be set (e.g. in `.env` or the cron environment) so the script can run `signal-cli -a <account> send -g <groupId> ...`.
-   - `SIGNAL_CLI_PATH` can override the path to signal-cli (default: `/opt/homebrew/bin/signal-cli`).
+   - `SIGNAL_CLI_PATH` can override the path to signal-cli (default: `/opt/homebrew/bin/signal-cli`). On EC2 use `SIGNAL_CLI_PATH=/opt/signal-cli-0.13.24/bin/signal-cli`.
 
 ## Running the script
 

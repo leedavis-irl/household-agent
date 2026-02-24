@@ -3,8 +3,9 @@
 ## Account Details
 
 - **Iji Signal number:** +17074748930 (Google Voice)
-- **signal-cli binary:** /opt/homebrew/bin/signal-cli
-- **signal-cli data:** ~/.local/share/signal-cli/data/
+- **signal-cli binary (local/Mac):** /opt/homebrew/bin/signal-cli
+- **signal-cli binary (production EC2):** /opt/signal-cli-0.13.24/bin/signal-cli — set `SIGNAL_CLI_PATH=/opt/signal-cli-0.13.24/bin/signal-cli` in the server’s `.env` so Iji can spawn it.
+- **signal-cli data (local):** ~/.local/share/signal-cli/data/
 - **Debug log:** /tmp/iji-signal-debug.log
 
 ## How It Works

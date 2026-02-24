@@ -7,7 +7,7 @@ Iji runs on EC2 and is deployed automatically on push to `main`. Local-only chan
 - **Host:** ubuntu@3.149.229.204 (t3.small)
 - **App dir:** /home/ubuntu/household-agent
 - **Service:** iji.service (systemd), `ExecStart=/usr/bin/node src/index.js`
-- **signal-cli:** /opt/signal-cli-0.13.24/bin/signal-cli (used by deploy workflow for notifications)
+- **signal-cli:** /opt/signal-cli-0.13.24/bin/signal-cli. Set `SIGNAL_CLI_PATH=/opt/signal-cli-0.13.24/bin/signal-cli` in the server’s `.env` so Iji can spawn signal-cli; the deploy workflow also uses this path for success/failure notifications.
 - **SSH key (local):** ~/.ssh/lees-alpha-trading.pem
 
 Verify with: `./scripts/check-server.sh`
@@ -40,7 +40,7 @@ Run from repo root.
 
 Override via env: `SSH_KEY`, `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_DIR`.
 
-Make scripts executable once: `chmod +x scripts/deploy.sh scripts/rollback.sh`
+Make scripts executable once: `chmod +x scripts/deploy.sh scripts/rollback.sh scripts/check-server.sh`
 
 ## First-time repo setup (do once)
 

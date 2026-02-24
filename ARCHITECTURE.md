@@ -127,13 +127,13 @@ The CLI channel is important for development — it lets you test the full brain
 - **Claude API:** Anthropic Node SDK (@anthropic-ai/sdk)
 - **Home Assistant:** REST API (already running at http://192.168.4.126:8123)
 - **Google Calendar:** Google Calendar API via service account (config/google-service-account.json), full read/write scope. Calendar IDs per member in config/household.json. Shared client in src/utils/google-calendar.js.
-- **Signal:** signal-cli native (Homebrew, `/opt/homebrew/bin/signal-cli`) running as JSON-RPC daemon over TCP (127.0.0.1:7583). Spawned as child process by Iji. Account: +17074748930 (Google Voice).
+- **Signal:** signal-cli native, running as JSON-RPC daemon over TCP (127.0.0.1:7583). Spawned as child process by Iji. Account: +17074748930 (Google Voice). Local dev: Homebrew at `/opt/homebrew/bin/signal-cli`. Production (EC2): `/opt/signal-cli-0.13.24/bin/signal-cli` — set `SIGNAL_CLI_PATH` in server `.env`.
 - **Slack:** Slack Bolt for Node.js (@slack/bolt)
 - **Knowledge store:** SQLite via better-sqlite3 to start. Schema: id, content, reported_by, reported_at, expires_at, tags
 - **Conversation store:** In-memory Map with TTL, backed by SQLite for persistence across restarts
 - **Google Docs:** Google Docs API via service account (same as Calendar). Used for automated doc sync — see docs/docs-sync.md. Family doc ID in household.json under `google_docs.family_doc_id`.
 - **Cost tracking:** SQLite table logging every Claude API call with token counts and estimated USD cost. Weekly summary DM to Lee via Signal. Queryable via `cost_query` tool.
-- **Deployment:** EC2 instance (existing) for the brain + API integrations. Signal bridge may run on same instance or Pi.
+- **Deployment:** EC2 (ubuntu@3.149.229.204, app at `/home/ubuntu/household-agent`, systemd `iji.service`). Push to `main` triggers GitHub Actions: SSH, `git fetch`/`git reset`, `npm ci`, restart service, health check, rollback on failure, Signal notify. See docs/deploy.md. Manual scripts: `scripts/deploy.sh`, `scripts/rollback.sh`, `scripts/check-server.sh`.
 
 ## Project Structure
 
@@ -146,9 +146,13 @@ household-agent/
 │   ├── google-service-account.json  # Service account key (gitignored)
 │   └── system-prompt.md          # Claude system prompt template
 ├── data/                         # Created at startup; SQLite DB + optional seed
-├── docs/                         # Runbooks and ops notes (e.g. signal-ops.md, docs-sync.md)
+├── docs/                         # Runbooks and ops notes (e.g. signal-ops.md, deploy.md)
 ├── scripts/
-│   └── sync-docs-to-gdoc.js       # Weekly sync of .md files to shared Google Doc
+│   ├── deploy.sh                 # Manual deploy to EC2 (optional --push)
+│   ├── rollback.sh               # Manual rollback to previous commit
+│   ├── check-server.sh           # Verify EC2 is ready for deploy
+│   ├── sync-docs-to-gdoc.js      # Weekly sync of .md files to shared Google Doc
+│   └── weekly-cost-report.js     # Weekly cost summary DM to Lee (Signal)
 ├── src/
 │   ├── index.js                  # Entry point: load config, ensure data/, start broker
 │   ├── broker/
