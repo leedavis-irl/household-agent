@@ -55,6 +55,22 @@ function migrate(db) {
   `);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_claude_usage_timestamp ON claude_usage(timestamp)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_claude_usage_person ON claude_usage(person_id)`);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS reminders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      content TEXT NOT NULL,
+      target_person_id TEXT NOT NULL,
+      requested_by TEXT NOT NULL,
+      fire_at TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'pending',
+      fired_at TEXT
+    )
+  `);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_reminders_fire_at ON reminders(fire_at)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_reminders_status ON reminders(status)`);
+
   const seedGroup = db.prepare(
     'INSERT OR IGNORE INTO signal_groups (group_id, group_name) VALUES (?, ?)'
   );

@@ -10,7 +10,7 @@
         "cli": "lee"
       },
       "calendar_id": "leedavis.irl@gmail.com",
-      "permissions": ["ha_all", "calendar_all", "knowledge_all", "financial", "message_send", "email_all", "email_own"]
+      "permissions": ["ha_all", "calendar_all", "knowledge_all", "financial", "message_send", "reminder", "email_all", "email_own"]
     },
     "steve": {
       "display_name": "Steve",
@@ -21,7 +21,7 @@
         "slack": "UXXXXXXXX",
         "cli": "steve"
       },
-      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "email_own"]
+      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "reminder", "email_own"]
     },
     "kelly": {
       "display_name": "Kelly",
@@ -32,7 +32,7 @@
         "cli": "kelly"
       },
       "calendar_id": "Robinkellyroche@gmail.com",
-      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "email_own"]
+      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "reminder", "email_own"]
     },
     "hallie": {
       "display_name": "Hallie",
@@ -43,7 +43,7 @@
         "cli": "hallie"
       },
       "calendar_id": "23b34257d09f1f710a4316826bae1acbf64f956fea364f9eafe4e74307c608a5@group.calendar.google.com",
-      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "email_own"]
+      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "reminder", "email_own"]
     },
     "firen": {
       "display_name": "Firen",
@@ -53,7 +53,7 @@
         "signal_uuid": "e3eda4dc-5470-42b0-bd38-73eea5be1d27",
         "cli": "firen"
       },
-      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "email_own"]
+      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "reminder", "email_own"]
     },
     "ryker": {
       "display_name": "Ryker",
@@ -106,6 +106,7 @@
     "knowledge_read": "Read household knowledge only",
     "financial": "Access financial tools and data",
     "message_send": "Send Signal messages to household members or groups (adults only)",
+    "reminder": "Set, list, and cancel reminders for yourself or other household members",
     "email_own": "Search and read own Gmail",
     "email_all": "Search and read any household member's Gmail"
   }
