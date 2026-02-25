@@ -1,23 +1,9 @@
-# Cursor Rules for Iji (Household Agent)
+# Iji — Cursor Rules
 
-## Project Overview
-Iji is a household AI agent ("Chief of Staff") for a polyamorous family in Berkeley. Node.js, Claude API, Signal messaging, Home Assistant integration. Runs on EC2 as a systemd service with CI/CD via GitHub Actions.
-
-## Architecture
-Read `ARCHITECTURE.md` before any code change. Key concepts:
-- **Four flows:** Signal in → Brain (Claude) → Tool execution → Signal out
-- **Tools:** Each tool is a file in `src/tools/` with `definition` (schema) and `execute(input, envelope)` exports
-- **Broker:** `src/broker/signal.js` handles Signal daemon, message parsing, send/receive
-- **Router:** `src/router/` dispatches replies to the correct channel
-- **Brain:** `src/brain/` orchestrates Claude API calls with tool use
-- **Identity:** `src/broker/identity.js` resolves Signal senders to household members via `config/household.json`
-
-## Development Protocol
-Read `DEV-PROTOCOL.md`. Key rules:
-- Every change gets a spec in `specs/` BEFORE implementation
-- Every spec includes a Server Requirements checklist
-- Features are not done until server confirmation passes (step 5)
-- Post-mortems feed back into templates ("vaccinate the templates")
+Read `ARCHITECTURE.md` for design philosophy and scope.
+Read `DEV-PROTOCOL.md` for the build cycle.
+Read the spec in `specs/` for the current task before touching code.
+Look at 2-3 existing files in the same directory before creating new ones.
 
 ## Engineering Laws
 

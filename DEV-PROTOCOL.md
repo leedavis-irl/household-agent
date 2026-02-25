@@ -156,19 +156,14 @@ Engineer tracks these. After CI deploys code, Engineer reminds Product to apply 
 
 ---
 
-## What This Protocol Would Have Caught
+## Research-to-Repo Rule
 
-The two bugs from our first production session:
+When a conversation with Claude produces actionable recommendations:
+1. Claude creates deliverable files (specs, decision records, or backlog items) and writes them directly to the repo
+2. Actionable items get backlog entries with links to the decision record
+3. The chat is disposable — the repo is the record
 
-**Bug 1: Wave 2 tools deployed but unconfigured**
-- Spec had no server requirements checklist → code shipped without env vars
-- Server confirmation step was never run → nobody noticed for weeks
-- **Vaccination:** Server requirements checklist is now mandatory in every spec
-
-**Bug 2: Signal DM replies fail with null recipient**
-- No verification checklist existed → "send a DM and check logs" was never written down
-- No post-mortem process → the lesson would have been lost
-- **Vaccination:** Signal verification checklist now includes DM + group reply tests
+If a recommendation isn't worth putting in the repo, it wasn't worth the conversation. Decision records go in `docs/decisions/` per the ADR pattern (`docs/decisions/2026-02-25-adr-pattern.md`).
 
 ---
 
