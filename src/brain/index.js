@@ -18,10 +18,14 @@ export async function think(envelope, onAcknowledge) {
   const toolsCalled = [];
 
   const systemPrompt = buildSystemPrompt({
-    display_name: envelope.person,
-    role: envelope.role,
-    permissions: envelope.permissions,
-    isGroup: !!envelope.group_id,
+    person: {
+      display_name: envelope.person,
+      role: envelope.role,
+      permissions: envelope.permissions,
+      isGroup: !!envelope.group_id,
+    },
+    user_message: envelope.message,
+    person_id: envelope.person_id,
   });
 
   // Build messages: prior conversation history + new user message
