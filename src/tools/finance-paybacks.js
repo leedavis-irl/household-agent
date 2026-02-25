@@ -23,11 +23,7 @@ export const definition = {
 };
 
 function getStateFilePath() {
-  return (
-    process.env.MONARCH_PAYBACKS_STATE_FILE ||
-    (process.env.HOME && `${process.env.HOME}/Projects/Financial/monarch-slack-integration/data/state.json`) ||
-    ''
-  );
+  return process.env.MONARCH_PAYBACKS_STATE_FILE || '';
 }
 
 function loadState(path) {

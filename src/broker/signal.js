@@ -82,13 +82,23 @@ function debugLog(line) {
 export function sendMessage(recipient, text) {
   debugLog('OUTGOING DM to=' + recipient + ' len=' + text.length);
   log.info('Sending Signal DM', { recipient, length: text.length });
+  if (!tcpClient || tcpClient.destroyed) {
+    log.error('Signal send failed: TCP client unavailable', { recipient });
+    return false;
+  }
   sendRpc('send', { recipient: [recipient], message: text });
+  return true;
 }
 
 export function sendGroupMessage(groupId, text) {
   debugLog('OUTGOING GROUP to=' + groupId + ' len=' + text.length);
   log.info('Sending Signal group message', { groupId, length: text.length });
+  if (!tcpClient || tcpClient.destroyed) {
+    log.error('Signal group send failed: TCP client unavailable', { groupId });
+    return false;
+  }
   sendRpc('send', { groupId, message: text });
+  return true;
 }
 
 // --- Handle incoming JSON-RPC messages ---

@@ -59,7 +59,10 @@ export async function execute(input, envelope) {
   // Try group by name first (case-insensitive)
   const group = getGroupByName(recipient);
   if (group) {
-    sendGroupMessage(group.group_id, formattedMessage);
+    const delivered = sendGroupMessage(group.group_id, formattedMessage);
+    if (!delivered) {
+      return { error: 'Signal is temporarily unavailable. The message was not sent. Try again in a moment.' };
+    }
     log.info('message_send: group', {
       groupName: group.group_name,
       from: envelope.person,
@@ -80,7 +83,10 @@ export async function execute(input, envelope) {
     return { error: `No Signal number configured for ${member.display_name}.` };
   }
 
-  sendMessage(signalNumber, formattedMessage);
+  const delivered = sendMessage(signalNumber, formattedMessage);
+  if (!delivered) {
+    return { error: 'Signal is temporarily unavailable. The message was not sent. Try again in a moment.' };
+  }
   log.info('message_send: DM', {
     to: member.display_name,
     from: envelope.person,

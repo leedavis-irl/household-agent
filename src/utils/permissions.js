@@ -1,3 +1,14 @@
+/**
+ * Tool -> permission mapping.
+ *
+ * DESIGN NOTES:
+ * - Tools NOT listed here are accessible to all users (default allow).
+ *   This is intentional for: weather_query (everyone can ask about weather).
+ * - ha_control uses area-based substring matching on entity IDs.
+ *   If an entity ID doesn't contain an area token (office, kitchen, etc.),
+ *   non-admin users will be denied. Workaround: use ha_all, or name entities
+ *   with area prefixes. Future improvement: query HA area registry.
+ */
 const TOOL_PERMISSIONS = {
   knowledge_search: ['knowledge_all', 'knowledge_read'],
   knowledge_store: ['knowledge_all'],
