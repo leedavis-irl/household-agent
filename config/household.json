@@ -10,7 +10,7 @@
         "cli": "lee"
       },
       "calendar_id": "leedavis.irl@gmail.com",
-      "permissions": ["ha_all", "calendar_all", "knowledge_all", "financial", "message_send", "email_all"]
+      "permissions": ["ha_all", "calendar_all", "knowledge_all", "financial", "message_send", "email_all", "email_own"]
     },
     "steve": {
       "display_name": "Steve",

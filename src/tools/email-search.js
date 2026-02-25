@@ -17,11 +17,13 @@ function resolvePersonId(personInput, envelope) {
 }
 
 function checkEmailPermission(requestedPersonId, envelope) {
+  const perms = envelope.permissions || [];
+  if (perms.includes('email_all')) return true;
   const requesterId = (envelope.person_id || '').toLowerCase();
   if (requestedPersonId === requesterId) {
-    return envelope.permissions?.includes('email_own') ?? false;
+    return perms.includes('email_own');
   }
-  return envelope.permissions?.includes('email_all') ?? false;
+  return false;
 }
 
 export const definition = {
