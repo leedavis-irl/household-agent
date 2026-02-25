@@ -4,11 +4,19 @@ import * as conversation from './conversation.js';
 import { getToolDefinitions, executeTool } from '../tools/index.js';
 import log from '../utils/logger.js';
 import { recordUsage } from '../utils/usage-log.js';
+import { estimateCost } from '../utils/claude-pricing.js';
+import { recordConversationEval } from '../utils/eval-logger.js';
 
 const client = new Anthropic();
 const MODEL = 'claude-sonnet-4-20250514';
 
 export async function think(envelope, onAcknowledge) {
+  const loopStartedAt = Date.now();
+  let promptTokensTotal = 0;
+  let completionTokensTotal = 0;
+  let totalCostUsd = 0;
+  const toolsCalled = [];
+
   const systemPrompt = buildSystemPrompt({
     display_name: envelope.person,
     role: envelope.role,
@@ -38,6 +46,11 @@ export async function think(envelope, onAcknowledge) {
     const usage = response.usage;
     if (usage) {
       const model = response.model ?? MODEL;
+      const inputTokens = usage.input_tokens ?? 0;
+      const outputTokens = usage.output_tokens ?? 0;
+      promptTokensTotal += inputTokens;
+      completionTokensTotal += outputTokens;
+      totalCostUsd += estimateCost(model, inputTokens, outputTokens);
       recordUsage(envelope, model, { input_tokens: usage.input_tokens, output_tokens: usage.output_tokens });
     }
 
@@ -55,6 +68,18 @@ export async function think(envelope, onAcknowledge) {
         { role: 'assistant', content: response.content },
       ]);
 
+      recordConversationEval({
+        conversation_id: envelope.conversation_id ?? 'unknown',
+        person_id: envelope.person_id ?? envelope.person ?? 'unknown',
+        user_message: envelope.message ?? '',
+        assistant_response: finalText,
+        tools_called: toolsCalled,
+        prompt_tokens: promptTokensTotal,
+        completion_tokens: completionTokensTotal,
+        total_cost_usd: Math.round(totalCostUsd * 1e6) / 1e6,
+        response_time_ms: Date.now() - loopStartedAt,
+      });
+
       return finalText;
     }
 
@@ -71,6 +96,10 @@ export async function think(envelope, onAcknowledge) {
     messages.push({ role: 'assistant', content: response.content });
 
     // Execute all tools in parallel
+    for (const toolUse of toolUseBlocks) {
+      toolsCalled.push(toolUse.name);
+    }
+
     const toolResults = await Promise.all(
       toolUseBlocks.map(async (toolUse) => {
         const result = await executeTool(toolUse.name, toolUse.input, envelope);

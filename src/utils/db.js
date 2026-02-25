@@ -71,6 +71,27 @@ function migrate(db) {
   db.exec(`CREATE INDEX IF NOT EXISTS idx_reminders_fire_at ON reminders(fire_at)`);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_reminders_status ON reminders(status)`);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS conversation_evals (
+      id INTEGER PRIMARY KEY,
+      conversation_id TEXT NOT NULL,
+      person_id TEXT NOT NULL,
+      user_message TEXT NOT NULL,
+      assistant_response TEXT NOT NULL,
+      tools_called TEXT,
+      capabilities_loaded TEXT,
+      prompt_tokens INTEGER,
+      completion_tokens INTEGER,
+      total_cost_usd REAL,
+      response_time_ms INTEGER,
+      created_at TEXT DEFAULT (datetime('now')),
+      quality_score INTEGER,
+      quality_notes TEXT,
+      failure_category TEXT,
+      eval_source TEXT
+    )
+  `);
+
   const seedGroup = db.prepare(
     'INSERT OR IGNORE INTO signal_groups (group_id, group_name) VALUES (?, ?)'
   );
