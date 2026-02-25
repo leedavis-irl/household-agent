@@ -7,19 +7,19 @@ The backlog is the single source of truth for what to build and fix.
 | Bucket | Verified | Fix Pending | Untested | Not Built |
 |--------|----------|-------------|----------|-----------|
 | Scheduling & Coordination | 4 | 0 | 0 | 5 |
-| Communication | 2 | 1 | 0 | 5 |
-| Email & Documents | 0 | 2 | 0 | 6 |
-| Finances | 1 | 1 | 1 | 3 |
+| Communication | 3 | 0 | 0 | 5 |
+| Email & Documents | 2 | 0 | 0 | 6 |
+| Finances | 3 | 0 | 0 | 3 |
 | Home Operations | 2 | 1 | 0 | 10 |
 | Meals & Kitchen | 0 | 0 | 0 | 5 |
 | Children | 0 | 0 | 0 | 4 |
-| Weather & Daily Ops | 0 | 1 | 1 | 4 |
+| Weather & Daily Ops | 2 | 0 | 0 | 4 |
 | Maintenance & Property | 0 | 0 | 0 | 6 |
 | Institutional Memory | 2 | 0 | 0 | 7 |
 | Vehicles & Transport | 0 | 0 | 0 | 4 |
 | Entertaining & Hospitality | 0 | 0 | 0 | 4 |
 | Procurement | 0 | 0 | 0 | 6 |
-| Meta & Infrastructure | 1 | 3 | 0 | 9 |
+| Meta & Infrastructure | 2 | 2 | 0 | 9 |
 
 Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
@@ -45,7 +45,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 |-----------|-------|--------|---------|----------|-------|
 | Signal inbound/outbound assistant | `src/broker/signal.js`, `src/router/signal.js` | ✅ Verified | Household on Signal | High | Core channel working in production |
 | Relay/announce to people and groups | `message_send` | ✅ Verified | Adults (`message_send`) | High | Uses Signal + group registry (`signal_groups`) |
-| Delivery confirmation correctness | `message_send` | 🔧 Fix pending | Adults | High | Known issue: tool can report success if Signal RPC send failed |
+| Delivery confirmation correctness | `message_send` | ✅ Verified | Adults | High | Tool now returns send failure when Signal TCP client is unavailable |
 | Slack channel adapter | not built | ❌ Not built | Not rolled out | Medium | Architecture supports it; implementation pending |
 | Slack message search | `slack_search` (not built) | ❌ Not built | Not rolled out | Medium | Needs Slack API integration + auth |
 | SMS channel for non-Signal contacts | not built | ❌ Not built | Not rolled out | High | Twilio adapter needed (Lisa/contractors/schools) |
@@ -56,8 +56,8 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
 | Capability | Tools | Status | Rollout | Priority | Notes |
 |-----------|-------|--------|---------|----------|-------|
-| Search Gmail | `email_search` | 🔧 Fix pending | Lee only (OAuth token currently present) | High | Permission-superset fix tracked; deploy/verify pending |
-| Read full Gmail message/thread | `email_read` | 🔧 Fix pending | Lee only (OAuth token currently present) | High | Same deploy/verification dependency as `email_search` |
+| Search Gmail | `email_search` | ✅ Verified | Lee only (OAuth token currently present) | High | Verified for Lee; other adults require their own OAuth token setup |
+| Read full Gmail message/thread | `email_read` | ✅ Verified | Lee only (OAuth token currently present) | High | Verified for Lee; other adults require their own OAuth token setup |
 | Send email on behalf of user | `email_send` (not built) | ❌ Not built | Not rolled out | Medium | Requires Gmail modify scope + per-user OAuth |
 | Draft email for review | `email_draft` (not built) | ❌ Not built | Not rolled out | Medium | Requires Gmail modify scope + per-user OAuth |
 | Search shared Drive docs | `docs_search` (not built) | ❌ Not built | Not rolled out | Low | Needs Drive API tool |
@@ -69,8 +69,8 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
 | Capability | Tools | Status | Rollout | Priority | Notes |
 |-----------|-------|--------|---------|----------|-------|
-| Query transactions | `finance_transactions` | ⚠️ Untested | Lee only (`financial` permission) | High | Monarch creds present on server; end-to-end Signal test pending |
-| Payback ledger visibility | `finance_paybacks` | 🔧 Fix pending | Lee only (`financial`) | High | Known issue: default path points to local monarch-slack file |
+| Query transactions | `finance_transactions` | ✅ Verified | Lee only (`financial` permission) | High | Verified on EC2 with current Monarch auth/session setup |
+| Payback ledger visibility | `finance_paybacks` | ✅ Verified | Lee only (`financial`) | High | Verified expected behavior: returns "not configured" when state file is absent; no hardcoded Mac path |
 | Cost/usage visibility for Iji | `cost_query` | ✅ Verified | Lee only (`financial`) | Medium | Reads `claude_usage` in SQLite |
 | Account balances snapshot | `finance_balances` (not built) | ❌ Not built | Not rolled out | Medium | Planned Monarch-derived capability |
 | Budget tracking by category | `finance_budget` (not built) | ❌ Not built | Not rolled out | Medium | Planned Monarch-derived capability |
@@ -80,8 +80,8 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
 | Capability | Tools | Status | Rollout | Priority | Notes |
 |-----------|-------|--------|---------|----------|-------|
-| Query home/device state | `ha_query` | ✅ Verified | All members with HA permissions | High | Uses HA REST API + token |
-| Control devices | `ha_control` | ✅ Verified | Adults/admin per permissions | High | Area-gated control path works |
+| Query home/device state | `ha_query` | ✅ Verified | All members with HA permissions | High | Uses HA REST API + token; EC2 reaches HA via Tailscale (`100.127.233.50`) |
+| Control devices | `ha_control` | ✅ Verified | Adults/admin per permissions | High | Area-gated control path works; EC2 reaches HA via Tailscale (`100.127.233.50`) |
 | HA area permission robustness | `ha_control` | 🔧 Fix pending | Adults/admin | Medium | Known issue: substring matching can false-deny valid entities |
 | Presence query ("who is home") | `ha_query` (`person.*`) | ❌ Not built | Not rolled out | Medium | Primitive exists; explicit capability not productized |
 | Scene/automation triggers | `ha_scene` (not built) | ❌ Not built | Not rolled out | Medium | Planned HA service tooling |
@@ -117,8 +117,8 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
 | Capability | Tools | Status | Rollout | Priority | Notes |
 |-----------|-------|--------|---------|----------|-------|
-| Current weather + forecast | `weather_query` | ⚠️ Untested | Open to all users | Medium | No key needed (NWS). Server confirmation pending |
-| Weather permission policy documentation | `weather_query` | 🔧 Fix pending | Open to all users | Low | Known issue: intentionally open but not clearly documented in permission code |
+| Current weather + forecast | `weather_query` | ✅ Verified | Open to all users | Medium | No key needed (NWS). Verified end-to-end on server |
+| Weather permission policy documentation | `weather_query` | ✅ Verified | Open to all users | Low | Open-access policy is now documented in `permissions.js` comments |
 | Outfit/departure guidance | not built | ❌ Not built | Not rolled out | Medium | Uses weather + calendar + routines |
 | Severe weather alerts | not built | ❌ Not built | Not rolled out | Low | Proactive trigger infrastructure required |
 | Daily departure checklist | not built | ❌ Not built | Not rolled out | Medium | Intended for front-door display and messaging |
@@ -184,7 +184,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 |-----------|-------|--------|---------|----------|-------|
 | Cost telemetry query | `cost_query` | ✅ Verified | Lee only (`financial`) | Medium | Useful for governance and budget checks |
 | Secret synchronization hygiene | not built | 🔧 Fix pending | Not rolled out | High | CI deploys code but not gitignored secret files |
-| Environment template completeness | not built | 🔧 Fix pending | Not rolled out | Medium | Known issue: `.env.example` missing env vars used by code |
+| Environment template completeness | not built | ✅ Verified | Not rolled out | Medium | `.env.example` now documents required/optional runtime env vars |
 | Daily automated health checks | `scripts/health-check.js` | 🔧 Fix pending | Lee only alerts | High | Should auto-write `STATUS.md` + DM on failures |
 | Security hardening wave | not built | ❌ Not built | Not rolled out | Medium | Scope audits, key rotation, access review, abuse controls |
 | Web search capability | `web_search` (not built) | ❌ Not built | Not rolled out | Medium | Evaluate Brave/Tavily/SerpAPI |

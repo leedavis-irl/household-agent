@@ -64,3 +64,12 @@ journalctl -u iji.service --no-pager -n 50
 
 - [ ] **PASS** — All checks green. Feature is complete.
 - [ ] **FAIL** — Issues found. See notes. → Bugfix spec needed.
+
+## Rollout
+
+For each adult who has the relevant permission for this feature:
+
+- [ ] Can they use this feature end-to-end via Signal DM? If not, what's blocking them?
+- [ ] List specific blockers per person (e.g., "Steve needs OAuth token", "Firen needs calendar_id in config")
+- [ ] Update `docs/rollout.md` capabilities table with current state
+- [ ] For any person who CAN use the feature but hasn't been introduced to Iji yet, note that onboarding is pending

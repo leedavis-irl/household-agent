@@ -18,6 +18,8 @@ Read ARCHITECTURE.md for the four-flow design and tool patterns.
 
 ## What to Build
 
+If the tool has inner permission checks (e.g. checking whether the user is accessing their own resource vs. someone else's), ensure `_all` variants imply `_own`. See post-mortem: `docs/post-mortems/2025-02-25-email-permission-superset.md`.
+
 ### [Component 1]
 
 **File:** `src/tools/example.js` (Create / Modify)
