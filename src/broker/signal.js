@@ -164,10 +164,12 @@ function handleJsonRpc(line) {
     length: messageText.length,
   });
 
+  const replyNumber = person.identifiers?.signal || senderNumber || senderUuid;
+
   if (isGroup) {
     handleGroupMessage(person, messageText, groupId, dataMessage.mentions);
   } else {
-    handleDirectMessage(person, messageText, senderNumber);
+    handleDirectMessage(person, messageText, replyNumber);
   }
 }
 
@@ -247,7 +249,7 @@ async function absorbGroupMessage(person, messageText) {
 
 // --- Direct message handling ---
 
-function handleDirectMessage(person, messageText, senderNumber) {
+function handleDirectMessage(person, messageText, replyAddress) {
   const conversationId = `${person.id}-signal-${new Date().toISOString().slice(0, 10)}`;
 
   const msgEnvelope = {
@@ -257,7 +259,7 @@ function handleDirectMessage(person, messageText, senderNumber) {
     permissions: person.permissions,
     message: messageText,
     source_channel: 'signal',
-    reply_address: senderNumber,
+    reply_address: replyAddress,
     group_id: null,
     conversation_id: conversationId,
     timestamp: new Date().toISOString(),
@@ -270,8 +272,8 @@ function handleDirectMessage(person, messageText, senderNumber) {
       sendReply(msgEnvelope, response);
     })
     .catch((err) => {
-      log.error('Brain error (Signal)', { error: err.message, from: senderNumber });
-      sendMessage(senderNumber, 'Sorry, I hit an error processing that. Try again in a moment.');
+      log.error('Brain error (Signal)', { error: err.message, from: person.display_name });
+      if (replyAddress) sendMessage(replyAddress, 'Sorry, I hit an error processing that. Try again in a moment.');
     });
 }
 

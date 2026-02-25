@@ -10,6 +10,7 @@ export function resolve(channel, identifier) {
         display_name: member.display_name,
         role: member.role,
         permissions: member.permissions,
+        identifiers: member.identifiers,
       };
     }
   }
