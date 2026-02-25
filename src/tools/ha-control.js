@@ -1,4 +1,6 @@
 import log from '../utils/logger.js';
+import { getHousehold } from '../utils/config.js';
+import { getEntityArea } from '../utils/ha-areas.js';
 
 const HA_URL = process.env.HA_URL || 'http://100.127.233.50:8123';
 const HA_TOKEN = process.env.HA_TOKEN;
@@ -31,34 +33,48 @@ export const definition = {
   },
 };
 
-// Map entity areas to permission requirements
-// Entities containing these substrings require the corresponding permission
-const AREA_PERMISSIONS = {
-  office: 'ha_office',
-  bedroom: 'ha_office', // personal space, same gating
-  common: 'ha_common',
-  kitchen: 'ha_common',
-  living: 'ha_common',
-  bathroom: 'ha_common',
-  garage: 'ha_common',
-  front: 'ha_common',
-  back: 'ha_common',
-  porch: 'ha_common',
-};
+function toFriendlyArea(areaId) {
+  return (areaId || 'unknown area')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
 
-function checkAreaPermission(entityId, permissions) {
-  // ha_all grants everything
-  if (permissions.includes('ha_all')) return true;
+function ownerDisplayNames(ownerIds, household) {
+  return ownerIds.map((id) => household.members[id]?.display_name || id);
+}
 
-  const entityLower = entityId.toLowerCase();
-  for (const [area, requiredPerm] of Object.entries(AREA_PERMISSIONS)) {
-    if (entityLower.includes(area)) {
-      return permissions.includes(requiredPerm);
-    }
+async function checkAreaPermission(entityId, envelope) {
+  const permissions = envelope.permissions || [];
+  if (permissions.includes('ha_all')) {
+    return { allowed: true, areaId: null, reason: null };
   }
 
-  // Unknown area — require ha_all
-  return permissions.includes('ha_all');
+  const areaId = await getEntityArea(entityId);
+  if (!areaId) {
+    return { allowed: false, areaId: null, reason: 'unknown_area' };
+  }
+
+  const household = getHousehold();
+  const haAreas = household.ha_areas || {};
+  const common = haAreas.common;
+  const personal = haAreas.personal || {};
+
+  if (common === 'all') {
+    return { allowed: permissions.includes('ha_common'), areaId, reason: 'common' };
+  }
+
+  if (Array.isArray(common) && common.includes(areaId)) {
+    return { allowed: permissions.includes('ha_common'), areaId, reason: 'common' };
+  }
+
+  if (Array.isArray(personal[areaId])) {
+    const owners = personal[areaId];
+    const actor = (envelope.person_id || '').toLowerCase();
+    const allowed = permissions.includes('ha_office') && owners.includes(actor);
+    return { allowed, areaId, reason: allowed ? null : 'personal', owners };
+  }
+
+  return { allowed: false, areaId, reason: 'unmapped' };
 }
 
 export async function execute(input, envelope) {
@@ -67,9 +83,18 @@ export async function execute(input, envelope) {
   }
 
   // Check area-based permission
-  if (!checkAreaPermission(input.entity_id, envelope.permissions)) {
+  const areaCheck = await checkAreaPermission(input.entity_id, envelope);
+  if (!areaCheck.allowed) {
+    if (areaCheck.reason === 'personal' && Array.isArray(areaCheck.owners)) {
+      const household = getHousehold();
+      const owners = ownerDisplayNames(areaCheck.owners, household).join(', ');
+      return {
+        error: `Permission denied: ${envelope.person} cannot control devices in ${toFriendlyArea(areaCheck.areaId)}. That's a personal space belonging to ${owners}.`,
+      };
+    }
+
     return {
-      error: `Permission denied: ${envelope.person} cannot control ${input.entity_id}. You may not have access to devices in that area.`,
+      error: `Permission denied: ${envelope.person} cannot control devices in ${toFriendlyArea(areaCheck.areaId)}.`,
     };
   }
 

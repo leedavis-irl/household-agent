@@ -95,6 +95,9 @@
   "locations":{"home":{"lat":37.8716,"lng":-122.2727,"label":"Berkeley, CA"},"tahoe":{"lat":39.1968,"lng":-120.2354,"label":"Olympic Valley, CA"},"sf":{"lat":37.7749,"lng":-122.4194,"label":"San Francisco, CA"}},"google_docs": {
     "family_doc_id": "1OnLMbfoUb10gYFCZRPoi82Uk7wuJ-CLD7NYQ-45LRsI"
   },
+  "ha_areas": {
+    "common": "all"
+  },
   "permission_definitions": {
     "ha_all": "Control any Home Assistant device",
     "ha_office": "Control devices in own office only",
