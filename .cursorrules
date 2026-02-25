@@ -1,0 +1,69 @@
+# Cursor Rules for Iji (Household Agent)
+
+## Project Overview
+Iji is a household AI agent ("Chief of Staff") for a polyamorous family in Berkeley. Node.js, Claude API, Signal messaging, Home Assistant integration. Runs on EC2 as a systemd service with CI/CD via GitHub Actions.
+
+## Architecture
+Read `ARCHITECTURE.md` before any code change. Key concepts:
+- **Four flows:** Signal in → Brain (Claude) → Tool execution → Signal out
+- **Tools:** Each tool is a file in `src/tools/` with `definition` (schema) and `execute(input, envelope)` exports
+- **Broker:** `src/broker/signal.js` handles Signal daemon, message parsing, send/receive
+- **Router:** `src/router/` dispatches replies to the correct channel
+- **Brain:** `src/brain/` orchestrates Claude API calls with tool use
+- **Identity:** `src/broker/identity.js` resolves Signal senders to household members via `config/household.json`
+
+## Development Protocol
+Read `DEV-PROTOCOL.md`. Key rules:
+- Every change gets a spec in `specs/` BEFORE implementation
+- Every spec includes a Server Requirements checklist
+- Features are not done until server confirmation passes (step 5)
+- Post-mortems feed back into templates ("vaccinate the templates")
+
+## Engineering Laws
+
+### 1. The Envelope Rule
+Every tool receives an `envelope` with `person_id`, `person`, `role`, `permissions`, `reply_address`, `group_id`, `source_channel`. Tools MUST use the envelope for permission checks and context. Never assume who the caller is.
+
+### 2. The Reply Address Rule
+Signal messages may arrive with `sourceNumber: null` (UUID-only delivery). The reply address MUST be resolved from `person.identifiers.signal` via identity resolution, NOT from the raw message field. Never pass unvalidated sender data as a reply target.
+
+### 3. The Permission Rule
+Every tool that accesses sensitive data must check permissions via `checkPermission(envelope.permissions, toolName)` in `src/utils/permissions.js`. Permission requirements are defined in that file. Never bypass permission checks.
+
+### 4. The Pattern Rule
+Before creating a new tool, read 2-3 existing tools in `src/tools/`. Follow the same export shape (`definition` + `execute`), the same error handling pattern, the same logging conventions. Do not invent new patterns.
+
+### 5. The Env Rule
+Secrets go in `.env`, never in code or config files. When adding a new env var:
+1. Add it to `.env` locally
+2. Add a placeholder to `.env.example`
+3. Document it in the spec's Server Requirements
+4. It must be manually added to EC2 `.env` — CI does NOT deploy env vars
+
+### 6. The Scope Rule
+Do not modify files outside the spec's scope. If you see an improvement opportunity elsewhere, note it in a comment — do not make the change. Specs define boundaries.
+
+### 7. The Log Rule
+Use the project logger (`import log from '../utils/logger.js'`). Every tool execution, every external API call, every error gets logged. Log at appropriate levels: `debug` for tracing, `info` for operations, `warn` for recoverable issues, `error` for failures.
+
+## Code Style
+- **ES Modules** (`import`/`export`, not `require`)
+- **Functional style** — no classes unless wrapping an external SDK
+- **Error handling** — try/catch in every tool execute(), return `{ error: "..." }` not throw
+- **File naming** — `kebab-case.js` (e.g., `finance-transactions.js`)
+- **No TypeScript** — this is a plain Node.js project
+
+## Deployment
+- Push to `main` triggers CI/CD (GitHub Actions)
+- Server: `ubuntu@3.149.229.204`, app at `/home/ubuntu/household-agent`
+- Service: `iji.service` (systemd)
+- CI does: `git reset --hard origin/main` → `npm ci` → restart service
+- CI does NOT: copy `.env`, create data dirs, configure external services
+
+## Common Mistakes to Avoid
+- ❌ Assuming `sourceNumber` is always present in Signal messages (it's not — use identity resolution)
+- ❌ Adding env vars to code without updating `.env.example` and the spec
+- ❌ Modifying `config/household.json` permissions without noting it in the spec
+- ❌ Using `console.log` instead of the project logger
+- ❌ Installing npm packages without justification (prefer native Node.js APIs)
+- ❌ Refactoring adjacent code that isn't in the spec scope

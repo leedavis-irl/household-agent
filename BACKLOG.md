@@ -26,6 +26,67 @@ Examples: `ha_control`, `calendar_query`, `finance_transactions`, `list_modify`,
 
 ---
 
+## Hardware Prerequisites
+
+Physical infrastructure projects that aren't Iji tools but are prerequisites for Iji to work reliably or enable future capabilities.
+
+### 🔌 Shelly Switch Retrofit
+
+**Problem:** Hue bulbs lose power (and Iji loses control) when someone flips a physical wall switch to the off position. This is the #1 reliability gap in home automation.
+
+**Solution:** Shelly 1PM Mini Gen4 relays behind each Buster + Punch toggle switch, wired in detached mode. The Shelly keeps power flowing to the Hue bulbs permanently and fires an event to Home Assistant when the toggle is flipped. HA then tells Hue to toggle. Physical switches still work as expected, but bulbs never lose power.
+
+**Status:** Hardware purchased, installation pending.
+
+| Item | Status | Notes |
+|------|--------|-------|
+| 10x Shelly 1PM Mini Gen4 | ✅ Purchased | [amazon.com/dp/B0FPMMC9XG](https://www.amazon.com/Shelly-Zigbee-Matter-Metering-1-Channel/dp/B0FPMMC9XG) ~$15 each |
+| Wago 221 lever connector kit (105pc) | ✅ Purchased | [amazon.com/dp/B0C6R2J52C](https://www.amazon.com/Lever-Nuts-Connector-Assortment-221-412-221-2401/dp/B0C6R2J52C) |
+| 14 AWG solid THHN pigtail wire (black) | ❌ Need to buy | THE CIMPLE CO, 10ft, 14 AWG solid copper THHN, black — same listing as white below, select Black color variant |
+| 14 AWG solid THHN pigtail wire (white) | ❌ Need to buy | THE CIMPLE CO, 10ft, 14 AWG solid copper THHN, white — [amazon.com/dp/B07J9L6JD3](https://www.amazon.com/Feet-Meter-Residential-Commerical-Industrial/dp/B07J9L6JD3) |
+| Wire strippers + voltage tester | ✅ Have | From house rewire |
+
+**Pigtail wire:** You need short (~6") jumper wires to bridge between the Wago connectors and the Shelly terminals inside each switch box. Cut from the 10ft spools, strip both ends. 10ft of each color is enough for ~20 switches. Black = hot/line, white = neutral.
+
+**Installation:** ~15 min per switch once you've done the first one. Start with highest-traffic rooms (living room, kitchen, family room, stairwell). An electrician could do the whole initial batch in half a day. Wire strippers and a voltage tester are the only tools needed.
+
+**HA config after install:** Set each Shelly to detached mode. Create automations mapping each Shelly toggle event to the corresponding Hue light group.
+
+**Prerequisite for:** Reliable `ha_control` of lights, room display panels (controlling lights from a wall display is pointless if someone can cut power by flipping a switch).
+
+### 🖥️ Room Display Panels ("Physical Iji")
+
+**Concept:** Small touchscreen or e-ink displays in each major room that surface room-specific information and allow local adjustments. Each room's display is tailored to that room's function and occupant(s).
+
+**Example configurations:**
+
+- **Living room:** Light controls, Sonos speaker controls, current weather, household calendar highlights
+- **Bedrooms:** Light/blind controls, weather, the room owner's calendar for today, wake-up alarm status
+- **Kitchen:** Meal plan for the day, grocery list status, Lisa's upcoming visit, weather
+- **Kids' rooms:** AM/PM routine status (see Kids' Routine Displays below), next-day schedule
+- **Front door:** Departure checklist, weather, "who's home" status, next household event
+
+**Architecture:** These are HA dashboards (Bubble Card based) served on wall-mounted tablets or e-ink displays, with Iji providing the data layer. Iji surfaces context-aware information via HA entities and sensors; the displays render it. This is a parallel track to Iji software development — it depends on having a solid HA admin dashboard first, then extracting per-room views from it.
+
+**Hardware options:**
+- Color e-ink displays (ESP32 + Waveshare) — always-on, low power, clean look, slow refresh
+- Cheap tablets (Fire tablets, old phones) — color, interactive, faster, needs constant power
+- 1x e-ink display available now, earmarked for first prototype
+
+**Status:** Design phase. Admin HA dashboard (Bubble Cards) is being iterated on. Room views will be extracted from that.
+
+**Prerequisite for:** Iji becoming a physical presence in the home, not just a chat interface. Shelly switch retrofit should be done first (no point showing light controls on a display if someone can cut power at the switch).
+
+### 📋 Kids' AM/PM Routine Displays
+
+**Concept:** Dedicated display(s) for Ryker and Logan's daily routines. Physical buttons (Seeed XIAO ESP32-C6) placed at task locations (bathroom, laundry chute, kitchen, pill station) that the kids press when they complete each task. A command center e-ink display at the front door shows completion status. Signal/Slack reports sent to adults.
+
+**This is an HA/ESPHome project, not an Iji feature.** It runs entirely within Home Assistant — buttons → automations → display + notifications. Iji may eventually query or surface this data, but the system operates independently.
+
+**Status:** Designed but not built. Hardware (Seeed buttons) not yet purchased. See past chat sessions for full task list design (laundry, teeth, plates, pills, trumpet).
+
+---
+
 ## Backlog
 
 ### 🏠 Home Automation
@@ -162,6 +223,7 @@ Iji stops being reactive and starts noticing things.
 | Anomaly detection on HA data | Watch sensor history, flag unusual patterns. Door open at 3am. Water usage spike (Moen Flo). Temp diverging from setpoint. Not just alerts — *interpreted* alerts with context ("Garage door open 2 hours; Steve left at noon and hasn't returned"). | 🔧🧠 Build | Medium |
 | Presence inference engine | Go beyond HA binary presence. Combine phone pings, door sensors, calendar events, recent messages for probabilistic model of who's home, who's awake, who's arriving soon. Tools: `presence_query`, `presence_history`. | 🔧🧠 Build | Medium |
 | Package & delivery tracking | Parse email confirmations, track across carriers, announce arrivals. Correlate with doorbell events. | 🔌🧠 Integrate — evaluate per Growth Protocol | Medium |
+| AirTag / FindMy tracking | Query Apple FindMy for AirTagged items: keys, backpacks, vehicles. "Where are the car keys?" "Where's Logan's backpack?" Feeds into presence inference engine. | 🔌🧠 Integrate — pyicloud or reverse-engineered FindMy lib. Apple 2FA is the auth complexity risk. | Medium |
 
 ### 🤝 Household Coordination Engine
 
@@ -304,35 +366,36 @@ More front doors to the same brain.
 22. 🔧🧠 **Anomaly detection on HA data** — Interpreted alerts with context from sensor history.
 23. 🔧🧠 **Presence inference engine** — Probabilistic model from multi-source signals. `presence_query`, `presence_history`.
 24. 🔌🧠 **Package & delivery tracking** — Parse emails, track carriers, announce arrivals. Evaluate per Growth Protocol.
+25. 🔌🧠 **AirTag / FindMy location tracking** — Query Apple FindMy for AirTagged items (car keys, backpacks, vehicles). Wrap as `location_airtag` tool. No public Apple API — requires pyicloud or a reverse-engineered FindMy library. Use cases: "where are the car keys?", "where's Logan's backpack?", vehicle location. Feeds into presence inference engine (#23). Evaluate auth complexity (Apple 2FA) before committing.
 
 ### Wave 6: Household Coordination Engine
-25. 🧠 **Multi-person scheduling negotiation** — Reasoning layer over FreeBusy with preferences and back-and-forth.
-26. 🔧🧠 **Task delegation & follow-up** — `task_create`, `task_query`, `task_update` with proactive follow-up.
-27. 🧠 **Conflict detection** — Proactive logistics problem identification.
-28. 🔧🧠 **Meal planning & grocery coordination** — Dietary prefs + purchase history → suggestions and grocery lists.
+26. 🧠 **Multi-person scheduling negotiation** — Reasoning layer over FreeBusy with preferences and back-and-forth.
+27. 🔧🧠 **Task delegation & follow-up** — `task_create`, `task_query`, `task_update` with proactive follow-up.
+28. 🧠 **Conflict detection** — Proactive logistics problem identification.
+29. 🔧🧠 **Meal planning & grocery coordination** — Dietary prefs + purchase history → suggestions and grocery lists.
 
 ### Wave 7: Learning & Preference Modeling
-29. 🔧🧠 **Individual preference profiles** — Learned from observation, stored with confidence scores.
-30. 🔧🧠 **Routine detection** — Batch analysis of stored data to identify recurring patterns.
-31. 🔧🧠 **Feedback loops** — Track suggestion acceptance/rejection to calibrate behavior.
-32. 🔧🧠 **Forgetting curves** — TTL tiers and confidence decay for knowledge entries.
+30. 🔧🧠 **Individual preference profiles** — Learned from observation, stored with confidence scores.
+31. 🔧🧠 **Routine detection** — Batch analysis of stored data to identify recurring patterns.
+32. 🔧🧠 **Feedback loops** — Track suggestion acceptance/rejection to calibrate behavior.
+33. 🔧🧠 **Forgetting curves** — TTL tiers and confidence decay for knowledge entries.
 
 ### Wave 8: Autonomous Operations
-33. 🧠 **Anticipatory actions** — Weather/calendar/email triggers → proactive alerts. Cron or event-driven.
-34. 🔧🧠 **Automation authoring** — Iji writes and deploys HA automations. Approval workflow.
-35. 🧠 **Vendor coordination** — Draft and follow up on contractor communications.
-36. 🔧 **Document generation** — Packing lists, checklists, summaries, expense reports.
+34. 🧠 **Anticipatory actions** — Weather/calendar/email triggers → proactive alerts. Cron or event-driven.
+35. 🔧🧠 **Automation authoring** — Iji writes and deploys HA automations. Approval workflow.
+36. 🧠 **Vendor coordination** — Draft and follow up on contractor communications.
+37. 🔧 **Document generation** — Packing lists, checklists, summaries, expense reports.
 
 ### Wave 9: Embodied & Physical
-37. 🔌🧠 **Camera/image understanding** — Doorbell feed, fridge contents via Claude vision.
-38. 🔧 **Wall displays** — Context-aware dynamic dashboards on tablets.
-39. 🔧🧠 **Physical world integration** — Vacuum, sprinklers, laundry coordination.
+38. 🔌🧠 **Camera/image understanding** — Doorbell feed, fridge contents via Claude vision.
+39. 🔧 **Room display panels** — See Hardware Prerequisites section above. Iji provides the data layer (calendar, weather, presence, knowledge); HA dashboards render per-room views on wall-mounted displays. This is a parallel workstream that can progress alongside Iji software waves.
+40. 🔧🧠 **Physical world integration** — Vacuum, sprinklers, laundry coordination.
 
 ### Wave 10: Meta-Cognition & Self-Improvement
-40. 🔧🧠 **Tool authoring** — Iji proposes, writes, and submits new tools for review.
-41. 🧠 **Confidence calibration** — Self-awareness about knowledge staleness and uncertainty.
-42. 🧠 **Escalation intelligence** — Learned autonomy boundaries.
-43. 🧠 **Conversation quality self-assessment** — Post-interaction follow-up.
+41. 🔧🧠 **Tool authoring** — Iji proposes, writes, and submits new tools for review.
+42. 🧠 **Confidence calibration** — Self-awareness about knowledge staleness and uncertainty.
+43. 🧠 **Escalation intelligence** — Learned autonomy boundaries.
+44. 🧠 **Conversation quality self-assessment** — Post-interaction follow-up.
 
 ### Wave 10b: Security Improvements
 - Audit Google Cloud API scopes — only enable what's actively used
@@ -344,7 +407,7 @@ More front doors to the same brain.
 - Review 1Password household usage — ensure all adults are onboarded
 
 ### Wave 11: Household Knowledge Graph
-44. 🔧 **Relationship graph** — Full social graph with contacts, context, interaction history. Evaluate Monica per Growth Protocol.
-45. 🔧 **Asset & maintenance registry** — Appliances, warranties, service history. Evaluate Homebox per Growth Protocol.
-46. 🔧🧠 **Institutional procedures** — Runbooks for recurring household operations.
-47. 🔧 **Decision log** — Major decisions with context and rationale.
+45. 🔧 **Relationship graph** — Full social graph with contacts, context, interaction history. Evaluate Monica per Growth Protocol.
+46. 🔧 **Asset & maintenance registry** — Appliances, warranties, service history. Evaluate Homebox per Growth Protocol.
+47. 🔧🧠 **Institutional procedures** — Runbooks for recurring household operations.
+48. 🔧 **Decision log** — Major decisions with context and rationale.
