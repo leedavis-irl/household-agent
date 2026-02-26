@@ -4,12 +4,7 @@ import { sendMessage } from '../broker/signal.js';
 import log from './logger.js';
 
 const CHECK_INTERVAL_MS = 60 * 1000;
-const BRIEFING_HOUR = Number(process.env.BRIEFING_HOUR || 7);
 const BRIEFING_ENABLED = process.env.BRIEFING_ENABLED !== 'false';
-const BRIEFING_RECIPIENTS = (process.env.BRIEFING_RECIPIENTS || 'lee,kelly')
-  .split(',')
-  .map((s) => s.trim().toLowerCase())
-  .filter(Boolean);
 
 const sentToday = new Set();
 
@@ -42,18 +37,25 @@ function pacificNowParts() {
 
 async function runMorningBriefingCycle() {
   if (!BRIEFING_ENABLED) return;
-  const { hour, minute, dateKey, longDate } = pacificNowParts();
-  if (hour !== BRIEFING_HOUR || minute !== 0) return;
+  const { hour, dateKey, longDate } = pacificNowParts();
 
   const household = getHousehold();
-  for (const personId of BRIEFING_RECIPIENTS) {
+  for (const [personId, member] of Object.entries(household.members || {})) {
+    const briefing = member?.briefing;
+    if (!briefing?.enabled) continue;
+    const deliveryHour = Number(briefing.delivery_hour);
+    if (!Number.isInteger(deliveryHour) || deliveryHour < 0 || deliveryHour > 23) {
+      log.warn('Morning briefing skipped: invalid delivery_hour', { person_id: personId, delivery_hour: briefing.delivery_hour });
+      continue;
+    }
+    if (hour < deliveryHour) continue;
+
     const sentKey = `${personId}:${dateKey}`;
     if (sentToday.has(sentKey)) continue;
     sentToday.add(sentKey);
 
-    const member = household.members[personId];
     if (!member?.identifiers?.signal) {
-      log.error('Morning briefing skipped: recipient missing Signal', { person_id: personId });
+      log.warn('Morning briefing skipped: recipient missing Signal', { person_id: personId });
       continue;
     }
 
@@ -65,15 +67,15 @@ async function runMorningBriefingCycle() {
       message: `Generate a morning briefing for ${member.display_name}. Today is ${longDate}.
 
 Check the following and include anything noteworthy:
-1. Their calendar for today — events, times, locations. Also check for conflicts across household members (e.g., two adults both marked for school pickup but one has a conflicting meeting).
-2. Current weather conditions and today's forecast — mention if it affects plans (rain during outdoor event, cold snap, etc.).
-3. Their pending reminders firing today.
+1. Their calendar for today — events, times, locations. Flag conflicts with other household members if you spot them.
+2. Current weather and today's forecast — mention only if it affects plans or is notable.
+3. Pending reminders due today or overdue.
 4. Anything stored in household knowledge in the last 24 hours that's relevant to them.
 
-Keep it concise — this is a Signal message, not an email. Lead with the most important item. Skip sections that have nothing noteworthy (don't say "no reminders today" — just omit it). Write naturally, like a Chief of Staff giving a verbal briefing.`,
+Keep it concise — this is a Signal message, not an email. Lead with the most important item. Skip sections with nothing noteworthy (don't say "no reminders" — just omit). Write like a Chief of Staff giving a 30-second verbal briefing.`,
       source_channel: 'signal',
       reply_address: member.identifiers.signal,
-      conversation_id: `briefing-${dateKey}`,
+      conversation_id: `briefing-${personId}-${dateKey}`,
       timestamp: new Date().toISOString(),
     };
 

@@ -21,7 +21,11 @@
         "email_own",
         "reminders",
         "reminders_others"
-      ]
+      ],
+      "briefing": {
+        "enabled": true,
+        "delivery_hour": 9
+      }
     },
     "steve": {
       "display_name": "Steve",
@@ -63,7 +67,11 @@
         "email_own",
         "reminders",
         "reminders_others"
-      ]
+      ],
+      "briefing": {
+        "enabled": true,
+        "delivery_hour": 9
+      }
     },
     "hallie": {
       "display_name": "Hallie",
