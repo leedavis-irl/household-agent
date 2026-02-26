@@ -10,6 +10,10 @@ const dataDir = join(__dirname, '..', 'data');
 
 loadConfig();
 
+if (!process.env.ANTHROPIC_API_KEY?.trim()) {
+  throw new Error('Missing required env: ANTHROPIC_API_KEY');
+}
+
 if (!existsSync(dataDir)) {
   mkdirSync(dataDir, { recursive: true });
 }

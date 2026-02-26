@@ -11,10 +11,6 @@ let household = null;
  * Load and validate config. Call once at startup. Throws if invalid or missing.
  */
 export function loadConfig() {
-  if (!process.env.ANTHROPIC_API_KEY?.trim()) {
-    throw new Error('Missing required env: ANTHROPIC_API_KEY');
-  }
-
   if (!existsSync(configPath)) {
     throw new Error(`Missing config: ${configPath}`);
   }
