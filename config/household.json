@@ -21,7 +21,8 @@
         "email_own",
         "reminders",
         "reminders_others",
-        "email_send"
+        "email_send",
+        "sms_send"
       ],
       "briefing": {
         "enabled": true,
@@ -206,6 +207,7 @@
     "email_all": "Search and read any household member's Gmail",
     "reminders": "Set, list, and update your own reminders",
     "reminders_others": "Set and manage reminders for other household members",
-    "email_send": "Send email from your own Gmail account"
+    "email_send": "Send email from your own Gmail account",
+    "sms_send": "Send SMS text messages to external contacts via Twilio"
   }
 }
