@@ -3,6 +3,7 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { getPermissionDescriptions } from '../broker/identity.js';
 import log from '../utils/logger.js';
+import { getDb } from '../utils/db.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const coreTemplatePath = join(__dirname, '../../config/prompts/core.md');
@@ -17,6 +18,7 @@ const capabilityFiles = {
   weather: 'weather.md',
   finance: 'finance.md',
   email: 'email.md',
+  reminders: 'reminders.md',
 };
 
 const CAPABILITY_TRIGGERS = {
@@ -27,6 +29,7 @@ const CAPABILITY_TRIGGERS = {
   finance: /\b(money|spend|cost|transaction|budget|pay|expense|financial)\b/i,
   email: /\b(email|inbox|gmail|message from|mail)\b/i,
   messaging: /\b(tell |send |message |text |relay |let .* know)\b/i,
+  reminders: /\b(remind|reminder|reminders|don't forget|don't let me forget|nudge|follow up|snooze)\b/i,
 };
 
 function loadCapability(fileName) {
@@ -61,6 +64,46 @@ function getCapabilitiesForMessage(userMessage) {
   return matches.length > 0 ? matches : Object.keys(capabilityFiles);
 }
 
+function formatPacific(isoTs) {
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    timeZoneName: 'short',
+  }).format(new Date(isoTs));
+}
+
+function getFiredReminderContext(personId) {
+  if (!personId) return '';
+  try {
+    const db = getDb();
+    const rows = db.prepare(
+      `SELECT id,
+              COALESCE(message, content) AS message,
+              fired_at
+       FROM reminders
+       WHERE status = 'fired'
+         AND COALESCE(target_id, target_person_id) = ?
+       ORDER BY fired_at DESC
+       LIMIT 5`
+    ).all(personId);
+
+    if (!rows.length) return '';
+
+    const lines = rows.map((r) => {
+      const fired = r.fired_at ? formatPacific(r.fired_at) : 'recently';
+      return `- #${r.id}: ${r.message} (sent ${fired})`;
+    });
+
+    return `\n\n## Outstanding fired reminders\nThis person has active fired reminders. If their reply looks like reminder follow-up, use reminder_update.\n${lines.join('\n')}`;
+  } catch (err) {
+    log.warn('Failed to load fired reminder context', { person_id: personId, error: err.message });
+    return '';
+  }
+}
+
 export function buildSystemPrompt({ person, user_message, person_id }) {
   const now = new Date().toLocaleString('en-US', {
     timeZone: 'America/Los_Angeles',
@@ -90,6 +133,7 @@ export function buildSystemPrompt({ person, user_message, person_id }) {
   });
 
   const groupBehavior = person.isGroup ? GROUP_BEHAVIOR : DM_BEHAVIOR;
+  const firedReminderContext = getFiredReminderContext(person_id);
   return coreTemplate
     .replace('{{current_datetime}}', now)
     .replace('{{capabilities}}', capabilities)
@@ -97,5 +141,6 @@ export function buildSystemPrompt({ person, user_message, person_id }) {
     .replace('{{person_name}}', person.display_name)
     .replace('{{person_role}}', person.role)
     .replace('{{permissions_description}}', getPermissionDescriptions(person.permissions))
-    .replace('{{group_behavior}}', groupBehavior);
+    .replace('{{group_behavior}}', groupBehavior)
+    + firedReminderContext;
 }

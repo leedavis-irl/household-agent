@@ -41,7 +41,7 @@ startBroker();
 const { startDailySummaryScheduler } = await import('./utils/usage-log.js');
 startDailySummaryScheduler();
 
-const { startReminderScheduler } = await import('./utils/reminder-scheduler.js');
+const { startReminderScheduler } = await import('./scheduler/reminders.js');
 startReminderScheduler();
 
 const { startMorningBriefing } = await import('./utils/morning-briefing.js');

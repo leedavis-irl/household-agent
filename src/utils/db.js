@@ -10,6 +10,14 @@ const seedPath = join(__dirname, '../../data/knowledge.json');
 
 let db;
 
+function ensureColumn(db, tableName, columnName, definitionSql) {
+  const cols = db.prepare(`PRAGMA table_info(${tableName})`).all();
+  const exists = cols.some((c) => c.name === columnName);
+  if (!exists) {
+    db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definitionSql}`);
+  }
+}
+
 export function getDb() {
   if (db) return db;
 
@@ -59,17 +67,40 @@ function migrate(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS reminders (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      content TEXT NOT NULL,
-      target_person_id TEXT NOT NULL,
-      requested_by TEXT NOT NULL,
+      message TEXT,
+      creator_id TEXT,
+      target_id TEXT,
       fire_at TEXT NOT NULL,
-      created_at TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending',
-      fired_at TEXT
+      follow_up_at TEXT,
+      snooze_count INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      fired_at TEXT,
+      completed_at TEXT,
+
+      -- Legacy columns kept for compatibility/migration
+      content TEXT,
+      target_person_id TEXT,
+      requested_by TEXT,
+      follow_up_count INTEGER DEFAULT 0
     )
   `);
-  db.exec(`CREATE INDEX IF NOT EXISTS idx_reminders_fire_at ON reminders(fire_at)`);
-  db.exec(`CREATE INDEX IF NOT EXISTS idx_reminders_status ON reminders(status)`);
+  ensureColumn(db, 'reminders', 'message', 'TEXT');
+  ensureColumn(db, 'reminders', 'creator_id', 'TEXT');
+  ensureColumn(db, 'reminders', 'target_id', 'TEXT');
+  ensureColumn(db, 'reminders', 'follow_up_at', 'TEXT');
+  ensureColumn(db, 'reminders', 'snooze_count', 'INTEGER DEFAULT 0');
+  ensureColumn(db, 'reminders', 'completed_at', 'TEXT');
+  ensureColumn(db, 'reminders', 'follow_up_count', 'INTEGER DEFAULT 0');
+
+  db.exec(`UPDATE reminders SET message = content WHERE message IS NULL AND content IS NOT NULL`);
+  db.exec(`UPDATE reminders SET creator_id = requested_by WHERE creator_id IS NULL AND requested_by IS NOT NULL`);
+  db.exec(`UPDATE reminders SET target_id = target_person_id WHERE target_id IS NULL AND target_person_id IS NOT NULL`);
+  db.exec(`UPDATE reminders SET snooze_count = 0 WHERE snooze_count IS NULL`);
+  db.exec(`UPDATE reminders SET follow_up_count = 0 WHERE follow_up_count IS NULL`);
+
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_reminders_status_fire ON reminders(status, fire_at)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_reminders_status_followup ON reminders(status, follow_up_at)`);
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS conversation_evals (

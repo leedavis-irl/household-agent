@@ -15,7 +15,7 @@ import * as emailSearch from './email-search.js';
 import * as emailRead from './email-read.js';
 import * as reminderSet from './reminder-set.js';
 import * as reminderList from './reminder-list.js';
-import * as reminderCancel from './reminder-cancel.js';
+import * as reminderUpdate from './reminder-update.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -37,7 +37,7 @@ const tools = {
   email_read: emailRead,
   reminder_set: reminderSet,
   reminder_list: reminderList,
-  reminder_cancel: reminderCancel,
+  reminder_update: reminderUpdate,
 };
 
 export function getToolDefinitions() {

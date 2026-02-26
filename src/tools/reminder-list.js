@@ -3,43 +3,31 @@ import { getHousehold } from '../utils/config.js';
 
 export const definition = {
   name: 'reminder_list',
-  description: 'List pending reminders for a household member.',
+  description: 'List active reminders (pending/snoozed) for yourself or another household member.',
   input_schema: {
     type: 'object',
     properties: {
-      person: {
+      target_id: {
         type: 'string',
-        description: 'Whose reminders to list. Default: the person speaking.',
-      },
-      include_fired: {
-        type: 'boolean',
-        description: 'Include reminders that already fired today. Default: false.',
+        description: 'Optional. Member id or display name. Defaults to the person asking.',
       },
     },
   },
 };
 
-function resolvePersonId(personInput, envelope) {
-  const id = (personInput || envelope.person_id || envelope.person || '')
+function resolveMemberId(input, fallbackId) {
+  const id = (input || fallbackId || '')
     .toString()
     .trim()
     .toLowerCase();
   if (!id) return null;
   const household = getHousehold();
+  if (id === 'me' || id === 'self') return fallbackId || null;
   if (household.members[id]) return id;
   for (const [memberId, member] of Object.entries(household.members)) {
     if (member.display_name?.toLowerCase() === id) return memberId;
   }
   return null;
-}
-
-function pacificDateKey(isoTs) {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Los_Angeles',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date(isoTs));
 }
 
 function formatPacific(isoTs) {
@@ -53,40 +41,48 @@ function formatPacific(isoTs) {
 }
 
 export async function execute(input, envelope) {
-  const includeFired = !!input?.include_fired;
-  const personId = resolvePersonId(input?.person, envelope);
-  if (!personId) {
-    return { error: "Could not identify whose reminders to list. Use a member name like 'steve' or 'lee'." };
+  const actorId = resolveMemberId(envelope.person_id, null);
+  if (!actorId) return { error: 'Could not identify who is requesting reminders.' };
+
+  const targetId = resolveMemberId(input?.target_id, actorId);
+  if (!targetId) {
+    return { error: 'Unknown target_id. Use a valid household member id or name.' };
+  }
+
+  const isOtherTarget = targetId !== actorId;
+  if (isOtherTarget && !(envelope.permissions || []).includes('reminders_others')) {
+    return { error: 'Permission denied: you can only list your own reminders.' };
   }
 
   const db = getDb();
   const rows = db.prepare(
-    `SELECT id, content, fire_at, fired_at, status
+    `SELECT id,
+            COALESCE(message, content) AS message,
+            COALESCE(target_id, target_person_id) AS target_id,
+            fire_at,
+            status,
+            COALESCE(snooze_count, 0) AS snooze_count
      FROM reminders
-     WHERE target_person_id = ?
-       AND (status = 'pending' OR status = 'fired')
+     WHERE COALESCE(target_id, target_person_id) = ?
+       AND status IN ('pending', 'snoozed')
      ORDER BY fire_at ASC`
-  ).all(personId);
+  ).all(targetId);
 
-  const todayPacific = pacificDateKey(new Date().toISOString());
-  const filtered = rows.filter((r) => {
-    if (r.status === 'pending') return true;
-    if (!includeFired) return false;
-    return r.fired_at && pacificDateKey(r.fired_at) === todayPacific;
-  });
+  const reminders = rows.map((r) => ({
+    id: r.id,
+    message: r.message,
+    fire_at_local: formatPacific(r.fire_at),
+    status: r.status,
+    snooze_count: r.snooze_count,
+  }));
 
-  const reminders = filtered.map((r) => {
-    if (r.status === 'fired') {
-      return `#${r.id} — ${r.content} (fired at ${formatPacific(r.fired_at)} ✓)`;
-    }
-    return `#${r.id} — ${r.content} (fires at ${formatPacific(r.fire_at)})`;
-  });
-
-  const pendingCount = filtered.filter((r) => r.status === 'pending').length;
+  const household = getHousehold();
+  const targetName = household.members[targetId]?.display_name || targetId;
   return {
     reminders,
-    message: pendingCount === 0
-      ? 'You have no pending reminders.'
-      : `You have ${pendingCount} pending reminder${pendingCount === 1 ? '' : 's'}.`,
+    target: targetName,
+    message: reminders.length === 0
+      ? `${targetName} has no active reminders.`
+      : `${targetName} has ${reminders.length} active reminder${reminders.length === 1 ? '' : 's'}.`,
   };
 }

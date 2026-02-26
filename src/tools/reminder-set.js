@@ -4,36 +4,37 @@ import { getHousehold } from '../utils/config.js';
 export const definition = {
   name: 'reminder_set',
   description:
-    'Set a reminder for a household member. Iji will deliver the reminder via Signal DM at the specified time.',
+    'Set a reminder at a specific time. Defaults to reminding yourself; can target another household member if you have reminders_others permission.',
   input_schema: {
     type: 'object',
     properties: {
-      person: {
+      message: {
+        type: 'string',
+        description: 'Reminder message text.',
+      },
+      target_id: {
         type: 'string',
         description:
-          'Who receives the reminder. Member id or display name. Defaults to the person speaking.',
-      },
-      content: {
-        type: 'string',
-        description: 'What to remind them about.',
+          'Optional. Person id or display name to remind. Defaults to the person asking. "me" means yourself.',
       },
       fire_at: {
         type: 'string',
         description:
-          'When to fire. ISO 8601 UTC timestamp. Relative times should be converted to absolute UTC first.',
+          'ISO datetime for when to fire (Claude should resolve natural language relative to current Pacific time).',
       },
     },
-    required: ['content', 'fire_at'],
+    required: ['message', 'fire_at'],
   },
 };
 
-function resolvePersonId(personInput, envelope) {
-  const id = (personInput || envelope.person_id || envelope.person || '')
+function resolveMemberId(input, fallbackId) {
+  const id = (input || fallbackId || '')
     .toString()
     .trim()
     .toLowerCase();
   if (!id) return null;
   const household = getHousehold();
+  if (id === 'me' || id === 'self') return fallbackId || null;
   if (household.members[id]) return id;
   for (const [memberId, member] of Object.entries(household.members)) {
     if (member.display_name?.toLowerCase() === id) return memberId;
@@ -54,18 +55,27 @@ function formatPacific(isoTs) {
 }
 
 export async function execute(input, envelope) {
-  const content = (input?.content || '').trim();
-  if (!content) return { error: 'content is required.' };
+  const message = (input?.message || '').trim();
+  if (!message) return { error: 'message is required.' };
 
-  const targetPersonId = resolvePersonId(input?.person, envelope);
-  if (!targetPersonId) {
-    return { error: "Could not identify who to remind. Use a member name like 'steve' or 'lee'." };
+  const creatorId = resolveMemberId(envelope.person_id, null);
+  if (!creatorId) {
+    return { error: 'Could not identify who is creating this reminder.' };
+  }
+
+  const targetId = resolveMemberId(input?.target_id, creatorId);
+  if (!targetId) return { error: 'Unknown target_id. Use a valid household member id or name.' };
+
+  const creatorPerms = envelope.permissions || [];
+  const isOtherTarget = targetId !== creatorId;
+  if (isOtherTarget && !creatorPerms.includes('reminders_others')) {
+    return { error: 'Permission denied: you can only set reminders for yourself.' };
   }
 
   const household = getHousehold();
-  const target = household.members[targetPersonId];
+  const target = household.members[targetId];
   if (!target) {
-    return { error: "Could not identify who to remind. Use a member name like 'steve' or 'lee'." };
+    return { error: 'Unknown target_id. Use a valid household member id or name.' };
   }
 
   if (!target.identifiers?.signal) {
@@ -84,15 +94,21 @@ export async function execute(input, envelope) {
   const db = getDb();
   const nowIso = new Date().toISOString();
   const fireAtIso = fireAtDate.toISOString();
+  const followUpIso = new Date(fireAtDate.getTime() + 30 * 60 * 1000).toISOString();
   const result = db.prepare(
-    `INSERT INTO reminders (content, target_person_id, requested_by, fire_at, created_at, status)
-     VALUES (?, ?, ?, ?, ?, 'pending')`
-  ).run(content, targetPersonId, envelope.person_id || 'unknown', fireAtIso, nowIso);
+    `INSERT INTO reminders (
+       message, creator_id, target_id, fire_at, status, follow_up_at, snooze_count, created_at, follow_up_count,
+       content, target_person_id, requested_by
+     )
+     VALUES (?, ?, ?, ?, 'pending', ?, 0, ?, 0, ?, ?, ?)`
+  ).run(message, creatorId, targetId, fireAtIso, followUpIso, nowIso, message, targetId, creatorId);
 
   return {
     reminder_id: result.lastInsertRowid,
-    content,
+    message,
     target: target.display_name,
+    target_id: targetId,
     fire_at_local: formatPacific(fireAtIso),
+    status: 'pending',
   };
 }

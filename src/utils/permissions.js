@@ -24,9 +24,9 @@ const TOOL_PERMISSIONS = {
   cost_query: ['financial'],
   email_search: ['email_own', 'email_all'],
   email_read: ['email_own', 'email_all'],
-  reminder_set: ['reminder'],
-  reminder_list: ['reminder'],
-  reminder_cancel: ['reminder'],
+  reminder_set: ['reminders', 'reminders_others'],
+  reminder_list: ['reminders', 'reminders_others'],
+  reminder_update: ['reminders', 'reminders_others'],
 };
 
 export function checkPermission(personPermissions, toolName) {

@@ -1,4 +1,5 @@
 {
+  "timezone": "America/Los_Angeles",
   "members": {
     "lee": {
       "display_name": "Lee",
@@ -10,7 +11,17 @@
         "cli": "lee"
       },
       "calendar_id": "leedavis.irl@gmail.com",
-      "permissions": ["ha_all", "calendar_all", "knowledge_all", "financial", "message_send", "reminder", "email_all", "email_own"]
+      "permissions": [
+        "ha_all",
+        "calendar_all",
+        "knowledge_all",
+        "financial",
+        "message_send",
+        "email_all",
+        "email_own",
+        "reminders",
+        "reminders_others"
+      ]
     },
     "steve": {
       "display_name": "Steve",
@@ -21,7 +32,17 @@
         "slack": "UXXXXXXXX",
         "cli": "steve"
       },
-      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "reminder", "email_own"]
+      "permissions": [
+        "ha_office",
+        "ha_common",
+        "calendar_own",
+        "calendar_household",
+        "knowledge_all",
+        "message_send",
+        "email_own",
+        "reminders",
+        "reminders_others"
+      ]
     },
     "kelly": {
       "display_name": "Kelly",
@@ -32,7 +53,17 @@
         "cli": "kelly"
       },
       "calendar_id": "Robinkellyroche@gmail.com",
-      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "reminder", "email_own"]
+      "permissions": [
+        "ha_office",
+        "ha_common",
+        "calendar_own",
+        "calendar_household",
+        "knowledge_all",
+        "message_send",
+        "email_own",
+        "reminders",
+        "reminders_others"
+      ]
     },
     "hallie": {
       "display_name": "Hallie",
@@ -43,7 +74,17 @@
         "cli": "hallie"
       },
       "calendar_id": "23b34257d09f1f710a4316826bae1acbf64f956fea364f9eafe4e74307c608a5@group.calendar.google.com",
-      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "reminder", "email_own"]
+      "permissions": [
+        "ha_office",
+        "ha_common",
+        "calendar_own",
+        "calendar_household",
+        "knowledge_all",
+        "message_send",
+        "email_own",
+        "reminders",
+        "reminders_others"
+      ]
     },
     "firen": {
       "display_name": "Firen",
@@ -53,7 +94,17 @@
         "signal_uuid": "e3eda4dc-5470-42b0-bd38-73eea5be1d27",
         "cli": "firen"
       },
-      "permissions": ["ha_office", "ha_common", "calendar_own", "calendar_household", "knowledge_all", "message_send", "reminder", "email_own"]
+      "permissions": [
+        "ha_office",
+        "ha_common",
+        "calendar_own",
+        "calendar_household",
+        "knowledge_all",
+        "message_send",
+        "email_own",
+        "reminders",
+        "reminders_others"
+      ]
     },
     "ryker": {
       "display_name": "Ryker",
@@ -62,7 +113,11 @@
         "cli": "ryker"
       },
       "calendar_id": "Rykerdavis.irl@gmail.com",
-      "permissions": ["ha_common", "knowledge_read"]
+      "permissions": [
+        "ha_common",
+        "knowledge_read",
+        "reminders"
+      ]
     },
     "logan": {
       "display_name": "Logan",
@@ -71,7 +126,11 @@
         "cli": "logan"
       },
       "calendar_id": "Logandavis.irl@gmail.com",
-      "permissions": ["ha_common", "knowledge_read"]
+      "permissions": [
+        "ha_common",
+        "knowledge_read",
+        "reminders"
+      ]
     },
     "hazel": {
       "display_name": "Hazel",
@@ -80,7 +139,11 @@
         "cli": "hazel"
       },
       "calendar_id": "Hazel.Hinkhouse@gmail.com",
-      "permissions": ["ha_common", "knowledge_read"]
+      "permissions": [
+        "ha_common",
+        "knowledge_read",
+        "reminders"
+      ]
     },
     "dj": {
       "display_name": "DJ",
@@ -89,10 +152,31 @@
         "cli": "dj"
       },
       "calendar_id": "djhinkhouse@gmail.com",
-      "permissions": ["ha_common", "knowledge_read"]
+      "permissions": [
+        "ha_common",
+        "knowledge_read",
+        "reminders"
+      ]
     }
   },
-  "locations":{"home":{"lat":37.8716,"lng":-122.2727,"label":"Berkeley, CA"},"tahoe":{"lat":39.1968,"lng":-120.2354,"label":"Olympic Valley, CA"},"sf":{"lat":37.7749,"lng":-122.4194,"label":"San Francisco, CA"}},"google_docs": {
+  "locations": {
+    "home": {
+      "lat": 37.8716,
+      "lng": -122.2727,
+      "label": "Berkeley, CA"
+    },
+    "tahoe": {
+      "lat": 39.1968,
+      "lng": -120.2354,
+      "label": "Olympic Valley, CA"
+    },
+    "sf": {
+      "lat": 37.7749,
+      "lng": -122.4194,
+      "label": "San Francisco, CA"
+    }
+  },
+  "google_docs": {
     "family_doc_id": "1OnLMbfoUb10gYFCZRPoi82Uk7wuJ-CLD7NYQ-45LRsI"
   },
   "ha_areas": {
@@ -109,8 +193,9 @@
     "knowledge_read": "Read household knowledge only",
     "financial": "Access financial tools and data",
     "message_send": "Send Signal messages to household members or groups (adults only)",
-    "reminder": "Set, list, and cancel reminders for yourself or other household members",
     "email_own": "Search and read own Gmail",
-    "email_all": "Search and read any household member's Gmail"
+    "email_all": "Search and read any household member's Gmail",
+    "reminders": "Set, list, and update your own reminders",
+    "reminders_others": "Set and manage reminders for other household members"
   }
 }
