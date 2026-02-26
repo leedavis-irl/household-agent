@@ -10,7 +10,7 @@ The backlog is the single source of truth for what to build and fix.
 | Communication | 3 | 0 | 0 | 5 |
 | Email & Documents | 2 | 0 | 1 | 5 |
 | Finances | 3 | 0 | 0 | 3 |
-| Home Operations | 3 | 0 | 1 | 11 |
+| Home Operations | 4 | 0 | 0 | 11 |
 | Meals & Kitchen | 0 | 0 | 0 | 5 |
 | Children | 0 | 0 | 0 | 4 |
 | Weather & Daily Ops | 2 | 0 | 0 | 4 |
@@ -19,7 +19,7 @@ The backlog is the single source of truth for what to build and fix.
 | Vehicles & Transport | 0 | 0 | 0 | 5 |
 | Entertaining & Hospitality | 0 | 0 | 0 | 4 |
 | Procurement | 0 | 0 | 0 | 6 |
-| Meta & Infrastructure | 7 | 1 | 4 | 9 |
+| Meta & Infrastructure | 9 | 1 | 2 | 9 |
 | Housekeeping & Hygiene | 0 | 0 | 0 | 1 |
 
 Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
@@ -51,7 +51,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Delivery confirmation correctness | `message_send` | ✅ Verified | Adults | High | Tool now returns send failure when Signal TCP client is unavailable |
 | Slack channel adapter | not built | ❌ Not built | Not rolled out | Medium | Architecture supports it; implementation pending |
 | Slack message search | `slack_search` (not built) | ❌ Not built | Not rolled out | Medium | Needs Slack API integration + auth |
-| SMS channel for non-Signal contacts | not built | ❌ Not built | Not rolled out | High | Twilio adapter needed (Lisa/contractors/schools) |
+| SMS channel for non-Signal contacts | `sms_send` | ❌ Spec written | Lee first, then rollout | High | Twilio REST API (no SDK). External contacts registry in `config/contacts.json`. Spec: `specs/SMS-SEND.md`. Decision: `docs/decisions/2026-02-26-outbound-comms-rollout.md`. Lee needs Twilio account + number before deploy. |
 | Email as a channel (inbound/outbound) | not built | ❌ Not built | Not rolled out | Medium | Distinct from Gmail search/read tools |
 | Voice channel adapter | not built | ❌ Not built | Not rolled out | High | Wyoming/STT/TTS path documented in architecture. Prerequisite for room tablets (Peninsula-style). Needs: STT (Whisper local or HA pipeline), TTS (Piper), wake word or push-to-talk, bridge to Iji brain. Either Iji becomes an HA conversation agent or tablets run custom voice UI hitting Iji API directly. |
 
@@ -61,11 +61,11 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 |-----------|-------|--------|---------|----------|-------|
 | Search Gmail | `email_search` | ✅ Verified | Lee only (OAuth token currently present) | High | Verified for Lee; other adults require their own OAuth token setup |
 | Read full Gmail message/thread | `email_read` | ✅ Verified | Lee only (OAuth token currently present) | High | Verified for Lee; other adults require their own OAuth token setup |
-| Send email on behalf of user | `email_send` (not built) | ❌ Not built | Not rolled out | Medium | Requires Gmail modify scope + per-user OAuth |
+| Send email on behalf of user | `email_send` | ✅ Verified | Lee first, then rollout | High | Spec: `specs/EMAIL-SEND.md`. Requires gmail.send scope + re-auth. Decision: `docs/decisions/2026-02-26-outbound-comms-rollout.md`. Rollout template: `docs/templates/rollout.md` |
 | Draft email for review | `email_draft` (not built) | ❌ Not built | Not rolled out | Medium | Requires Gmail modify scope + per-user OAuth |
 | Search shared Drive docs | `docs_search` (not built) | ❌ Not built | Not rolled out | Low | Needs Drive API tool |
 | Read Google Docs content | `docs_read` (not built) | ❌ Not built | Not rolled out | Low | Needs Drive/Docs read tools |
-| Weekly family-doc sync | `scripts/sync-docs-to-gdoc.js` | ⚠️ Untested | Not rolled out | Medium | Script exists; production scheduling/verification still needed |
+| Weekly family-doc sync | `scripts/sync-docs-to-gdoc.js` | ⚠️ Untested | Not rolled out | Low | Script works (doc was created successfully). Cron job status on EC2 unknown. Paused — v2 needs rethinking around purpose (originally: promote Iji capabilities to household without Lee having to talk about it). |
 | Generate operational documents | not built | ❌ Not built | Not rolled out | Medium | Packing lists, summaries, prep docs, reports |
 
 ## 4) 💰 Finances
@@ -87,7 +87,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Control devices | `ha_control` | ✅ Verified | Adults/admin per permissions | High | Area-gated control path works; EC2 reaches HA via Tailscale (`100.127.233.50`) |
 | HA area permission robustness | `ha_control` | ✅ Verified | Adults/admin | Medium | Commit `1cdf063`. Spec: `docs/specs/bugfix-hue-area-permissions.md`. Steve's permission-denied tests still pending. |
 | Ambient automation (lights/blinds/climate) | not built | ❌ Not built | Not rolled out | Medium | Predecessor `claude-home-agent` (AppDaemon) disabled due to feedback loops, runaway API costs, and stateless oscillation. Revisit as Iji-native capability with: event batching, cost ceiling, action memory, opt-in scope. Code archived at `~/Projects/Home/claude-home-agent/`. |
-| Presence query ("who is home") | `ha_query` (`person.*`) | ⚠️ Untested | Not rolled out | Medium | Primitive exists; explicit capability not productized |
+| Presence query ("who is home") | `ha_query` (`person.*`) | ✅ Verified | Adults with HA permissions | Medium | Works for members with presence configured (Lee, Steve, Hallie confirmed). Steve and Firen need to complete presence device setup. |
 | Scene/automation triggers | `ha_scene` (not built) | ❌ Not built | Not rolled out | Medium | Planned HA service tooling |
 | Historical state analysis | `ha_history` (not built) | ❌ Not built | Not rolled out | Medium | Planned HA history endpoint tool |
 | HA notification dispatch | `ha_notify` (not built) | ❌ Not built | Not rolled out | Low | Planned HA notify tools |
@@ -191,7 +191,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Cost telemetry query | `cost_query` | ✅ Verified | Lee only (`financial`) | Medium | Useful for governance and budget checks |
 | Secret synchronization hygiene | not built | 🔧 Fix pending | Not rolled out | High | CI deploys code but not gitignored secret files |
 | Environment template completeness | not built | ✅ Verified | Not rolled out | Medium | `.env.example` now documents required/optional runtime env vars |
-| Daily automated health checks | `scripts/health-check.js` | ⚠️ Untested | Lee only alerts | High | Script exists and writes `STATUS.md`; cron/ongoing operational verification still pending |
+| Daily automated health checks | `scripts/health-check.js` | ⚠️ Untested | Lee only alerts | High | Script exists, checks all external dependencies (HA, Signal, NWS, OAuth, Monarch, SQLite), writes STATUS.md, DMs Lee on failure. Built pre-protocol with no design doc. Cron job not confirmed on EC2. Needs operationalization. |
 | Conversation eval logging (prompt optimization phase 1) | `conversation_evals`, `src/utils/eval-logger.js` | ✅ Verified | Not rolled out | Medium | Logs completed brain loops with tools/tokens/cost/latency (commit `a7751fc`) |
 | Security hardening wave | not built | ❌ Not built | Not rolled out | Medium | Scope audits, key rotation, access review, abuse controls |
 | Web search capability | `web_search` (not built) | ❌ Not built | Not rolled out | Medium | Evaluate Brave/Tavily/SerpAPI |
@@ -203,8 +203,8 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Asset registry | not built | ❌ Not built | Not rolled out | Medium | Evaluate Homebox per Growth Protocol |
 | Automation authoring for HA | not built | ❌ Not built | Not rolled out | Medium | Approval workflow required |
 | Context file audit | `ARCHITECTURE.md`, `.cursorrules`, `DEV-PROTOCOL.md` | ✅ Verified | Not rolled out | High | Completed via `specs/CONTEXT-AUDIT.md` (commit `48fbd5a`). Decision: `docs/decisions/2026-02-25-context-audit.md` |
-| Layered context architecture | `src/brain/prompt.js`, `config/prompts/` | ⚠️ Untested | Not rolled out | High | Phase 1+2 shipped (`055ecab`, `8846e8e`): split prompt + intent-based selective loading. Phase 3 (measurement) still pending. Decision: `docs/decisions/2026-02-25-layered-context.md` |
-| Prompt optimization loop | `scripts/eval-conversations.js`, `scripts/optimize-prompt.js` | ⚠️ Untested | Not rolled out | Medium | Step 1 shipped (conversation_evals + logger). Batch eval script + optimizer still pending. Decision: `docs/decisions/2026-02-25-prompt-optimization.md` |
+| Layered context architecture | `src/brain/prompt.js`, `config/prompts/` | ✅ Verified | Not rolled out | High | Phase 1+2 shipped and verified in production (`055ecab`, `8846e8e`): split prompt + intent-based selective loading. Phase 3 (token measurement) still pending as separate item. Decision: `docs/decisions/2026-02-25-layered-context.md` |
+| Prompt optimization loop | `scripts/eval-conversations.js`, `scripts/optimize-prompt.js` | ✅ Verified | Not rolled out | Medium | Step 1 shipped and verified (conversation_evals table + logger, used for briefing dedup). Batch eval script + optimizer still pending. Decision: `docs/decisions/2026-02-25-prompt-optimization.md` |
 | Tailscale CI/CD migration | `.github/workflows/deploy.yml`, `scripts/*.sh` | ✅ Verified | Not rolled out | **Critical** | Completed: deploy workflow and manual scripts now default to Tailscale host (`100.124.0.46`). Spec: `specs/INFRA-RELIABILITY.md`. Decision: `docs/decisions/2026-02-25-infra-reliability.md` |
 | Elastic IP allocation | AWS infrastructure | ✅ Verified | Not rolled out | High | Allocated and associated (`13.58.219.0`) for stable public endpoint fallback. |
 | AMI snapshot + recovery | AWS infrastructure | ⚠️ Untested | Not rolled out | High | Baseline AMI created (`ami-0650bb542852313f9`); restore drill not yet exercised. |
