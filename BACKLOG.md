@@ -6,11 +6,11 @@ The backlog is the single source of truth for what to build and fix.
 
 | Bucket | Verified | Fix Pending | Untested | Not Built |
 |--------|----------|-------------|----------|-----------|
-| Scheduling & Coordination | 4 | 2 | 0 | 7 |
+| Scheduling & Coordination | 6 | 0 | 0 | 4 |
 | Communication | 3 | 0 | 0 | 5 |
-| Email & Documents | 2 | 0 | 0 | 6 |
+| Email & Documents | 2 | 0 | 1 | 5 |
 | Finances | 3 | 0 | 0 | 3 |
-| Home Operations | 3 | 0 | 0 | 11 |
+| Home Operations | 3 | 0 | 1 | 11 |
 | Meals & Kitchen | 0 | 0 | 0 | 5 |
 | Children | 0 | 0 | 0 | 4 |
 | Weather & Daily Ops | 2 | 0 | 0 | 4 |
@@ -19,7 +19,7 @@ The backlog is the single source of truth for what to build and fix.
 | Vehicles & Transport | 0 | 0 | 0 | 5 |
 | Entertaining & Hospitality | 0 | 0 | 0 | 4 |
 | Procurement | 0 | 0 | 0 | 6 |
-| Meta & Infrastructure | 2 | 2 | 0 | 16 |
+| Meta & Infrastructure | 7 | 1 | 4 | 9 |
 | Housekeeping & Hygiene | 0 | 0 | 0 | 1 |
 
 Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
@@ -31,12 +31,12 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Capability | Tools | Status | Rollout | Priority | Notes |
 |-----------|-------|--------|---------|----------|-------|
 | View personal/shared schedules | `calendar_query` | ✅ Verified | Adults with calendar permissions | High | Requires service account + `calendar_id` in `household.json` |
-| Create calendar events | `calendar_create` | 🔧 Fix pending | Adults with `calendar_own`/`calendar_all` | High | Read-only calendars return actionable error. **Bug:** When user says "April" without a year, Iji defaults to 2025 instead of next upcoming April (2026). Likely missing "assume future" logic in date parsing or system prompt. |
+| Create calendar events | `calendar_create` | ✅ Verified | Adults with `calendar_own`/`calendar_all` | High | Read-only calendars return actionable error. Timezone/year parsing fix shipped in calendar timezone bugfix wave. |
 | Modify/cancel calendar events | `calendar_modify` | ✅ Verified | Adults with `calendar_own`/`calendar_all` | High | Supports `event_id` or summary+date lookup |
-| Find overlapping free time | `calendar_freebusy` | 🔧 Fix pending | Adults with `calendar_household` or `calendar_all` | High | Missing member calendars are noted, not fatal. **Bug:** Freebusy reported a conflict at 4am instead of correct local time — likely UTC vs Pacific display issue in how results are formatted for the user. |
+| Find overlapping free time | `calendar_freebusy` | ✅ Verified | Adults with `calendar_household` or `calendar_all` | High | Missing member calendars are noted, not fatal. Pacific timezone display now corrected in shared calendar utils. |
 | Household conflict detection | not built | ❌ Not built | Not rolled out | Medium | Detect double-bookings, kid pickup conflicts, shared-car conflicts |
-| Reminder lifecycle (set/list/fire) | `reminder_set`, `reminder_list` (not built) | ❌ Not built | Not rolled out | High | Needs scheduler + delivery channel |
-| Morning briefing (v1) | not built | ❌ Not built | Not rolled out | High | Daily Signal DM: calendar, weather, reminders, conflicts, yesterday's knowledge. Guided prompt, Claude composes freely. |
+| Reminder lifecycle (set/list/fire) | `reminder_set`, `reminder_list`, `reminder_update` | ✅ Verified | Adults with `reminders` + `reminders_others` | High | Spec: `specs/REMINDERS-V1.md`. Decision: `docs/decisions/2026-02-26-reminders-v1.md`. Time-based reminders, 60s scheduler, follow-up cycling, cross-person with creator notifications. Scheduler infrastructure reusable for morning briefings. |
+| Morning briefing (v1) | `src/utils/morning-briefing.js` | ✅ Verified | Lee + Kelly | High | 9am Pacific daily Signal DM. Calendar, weather, reminders, knowledge. Per-person delivery hour in household.json. Email digest deferred to v2. Spec: `specs/MORNING-BRIEFINGS-V1.md`. Decision: `docs/decisions/2026-02-26-morning-briefings-v1.md`. |
 | Morning briefing opt-in/out | not built | ❌ Not built | Not rolled out | Medium | Adults can subscribe/unsubscribe from daily briefing. Depends on v1. |
 | Morning briefing + Trello tasks | not built | ❌ Not built | Not rolled out | Medium | Pull Lee + Kelly's Trello boards, fit actionable tasks into the day's schedule. Depends on Trello API integration. |
 | Multi-person scheduling negotiation | not built | ❌ Not built | Not rolled out | High | Reasoning layer on top of freebusy |
@@ -53,7 +53,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Slack message search | `slack_search` (not built) | ❌ Not built | Not rolled out | Medium | Needs Slack API integration + auth |
 | SMS channel for non-Signal contacts | not built | ❌ Not built | Not rolled out | High | Twilio adapter needed (Lisa/contractors/schools) |
 | Email as a channel (inbound/outbound) | not built | ❌ Not built | Not rolled out | Medium | Distinct from Gmail search/read tools |
-| Voice channel adapter | not built | ❌ Not built | Not rolled out | Medium | Wyoming/STT/TTS path documented in architecture |
+| Voice channel adapter | not built | ❌ Not built | Not rolled out | High | Wyoming/STT/TTS path documented in architecture. Prerequisite for room tablets (Peninsula-style). Needs: STT (Whisper local or HA pipeline), TTS (Piper), wake word or push-to-talk, bridge to Iji brain. Either Iji becomes an HA conversation agent or tablets run custom voice UI hitting Iji API directly. |
 
 ## 3) 📬 Email & Documents
 
@@ -65,7 +65,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Draft email for review | `email_draft` (not built) | ❌ Not built | Not rolled out | Medium | Requires Gmail modify scope + per-user OAuth |
 | Search shared Drive docs | `docs_search` (not built) | ❌ Not built | Not rolled out | Low | Needs Drive API tool |
 | Read Google Docs content | `docs_read` (not built) | ❌ Not built | Not rolled out | Low | Needs Drive/Docs read tools |
-| Weekly family-doc sync | `scripts/sync-docs-to-gdoc.js` | ❌ Not built | Not rolled out | Medium | Script exists; production scheduling/verification still needed |
+| Weekly family-doc sync | `scripts/sync-docs-to-gdoc.js` | ⚠️ Untested | Not rolled out | Medium | Script exists; production scheduling/verification still needed |
 | Generate operational documents | not built | ❌ Not built | Not rolled out | Medium | Packing lists, summaries, prep docs, reports |
 
 ## 4) 💰 Finances
@@ -87,7 +87,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Control devices | `ha_control` | ✅ Verified | Adults/admin per permissions | High | Area-gated control path works; EC2 reaches HA via Tailscale (`100.127.233.50`) |
 | HA area permission robustness | `ha_control` | ✅ Verified | Adults/admin | Medium | Commit `1cdf063`. Spec: `docs/specs/bugfix-hue-area-permissions.md`. Steve's permission-denied tests still pending. |
 | Ambient automation (lights/blinds/climate) | not built | ❌ Not built | Not rolled out | Medium | Predecessor `claude-home-agent` (AppDaemon) disabled due to feedback loops, runaway API costs, and stateless oscillation. Revisit as Iji-native capability with: event batching, cost ceiling, action memory, opt-in scope. Code archived at `~/Projects/Home/claude-home-agent/`. |
-| Presence query ("who is home") | `ha_query` (`person.*`) | ❌ Not built | Not rolled out | Medium | Primitive exists; explicit capability not productized |
+| Presence query ("who is home") | `ha_query` (`person.*`) | ⚠️ Untested | Not rolled out | Medium | Primitive exists; explicit capability not productized |
 | Scene/automation triggers | `ha_scene` (not built) | ❌ Not built | Not rolled out | Medium | Planned HA service tooling |
 | Historical state analysis | `ha_history` (not built) | ❌ Not built | Not rolled out | Medium | Planned HA history endpoint tool |
 | HA notification dispatch | `ha_notify` (not built) | ❌ Not built | Not rolled out | Low | Planned HA notify tools |
@@ -96,6 +96,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | HA automation authoring | not built | ❌ Not built | Not rolled out | Medium | Draft/deploy automations with approval workflow |
 | Camera/image understanding | not built | ❌ Not built | Not rolled out | Low | Doorbell/fridge/room context via vision inputs |
 | Wall/room display intelligence layer | not built | ❌ Not built | Not rolled out | Low | Dynamic context output for room displays (hardware in `docs/hardware.md`) |
+| Room tablets (Peninsula-style) | not built | ❌ Not built | Not rolled out | High | Fire tablets docked in every major room. Bedroom tablets: at-a-glance dashboard (lights, blinds, weather, calendar, music) + voice Iji interface. Common room tablets: lighting, sound, voice Iji. Room-local controls as default, whole-house lighting via popup or voice. Enables kids to control Hue colors without phones. Phase 1+2 combined: dashboard + voice Iji from day one. Prerequisite: voice channel for Iji (STT/TTS pipeline — HA Whisper/Piper or custom). Hardware: Fire HD 8/10 + docking station + USB power per room. Start with Ryker's bedroom. E-ink display repurposed for passive use (front door, kitchen). |
 | Physical world orchestration | not built | ❌ Not built | Not rolled out | Low | Vacuum/sprinklers/laundry coordination from context |
 
 ## 6) 👨‍🍳 Meals & Kitchen
@@ -190,7 +191,8 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Cost telemetry query | `cost_query` | ✅ Verified | Lee only (`financial`) | Medium | Useful for governance and budget checks |
 | Secret synchronization hygiene | not built | 🔧 Fix pending | Not rolled out | High | CI deploys code but not gitignored secret files |
 | Environment template completeness | not built | ✅ Verified | Not rolled out | Medium | `.env.example` now documents required/optional runtime env vars |
-| Daily automated health checks | `scripts/health-check.js` | 🔧 Fix pending | Lee only alerts | High | Should auto-write `STATUS.md` + DM on failures |
+| Daily automated health checks | `scripts/health-check.js` | ⚠️ Untested | Lee only alerts | High | Script exists and writes `STATUS.md`; cron/ongoing operational verification still pending |
+| Conversation eval logging (prompt optimization phase 1) | `conversation_evals`, `src/utils/eval-logger.js` | ✅ Verified | Not rolled out | Medium | Logs completed brain loops with tools/tokens/cost/latency (commit `a7751fc`) |
 | Security hardening wave | not built | ❌ Not built | Not rolled out | Medium | Scope audits, key rotation, access review, abuse controls |
 | Web search capability | `web_search` (not built) | ❌ Not built | Not rolled out | Medium | Evaluate Brave/Tavily/SerpAPI |
 | Tool authoring (self-extension) | not built | ❌ Not built | Not rolled out | Low | Meta-cognitive capability |
@@ -200,13 +202,13 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Relationship graph | not built | ❌ Not built | Not rolled out | Medium | Evaluate Monica per Growth Protocol |
 | Asset registry | not built | ❌ Not built | Not rolled out | Medium | Evaluate Homebox per Growth Protocol |
 | Automation authoring for HA | not built | ❌ Not built | Not rolled out | Medium | Approval workflow required |
-| Context file audit | `ARCHITECTURE.md`, `.cursorrules`, `DEV-PROTOCOL.md` | ❌ Not built | Not rolled out | High | Spec ready at `specs/CONTEXT-AUDIT.md`. Strip code-discoverable content from context files per ICSE JAWs 2026 / ETH Zurich research. Decision: `docs/decisions/2026-02-25-context-audit.md` |
-| Layered context architecture | `src/brain/prompt.js`, `config/prompts/` | ❌ Not built | Not rolled out | High | Spec at `specs/LAYERED-CONTEXT.md`. Three phases: extract/split (refactor), intent detection, measurement. Decision: `docs/decisions/2026-02-25-layered-context.md` |
-| Prompt optimization loop | `scripts/eval-conversations.js`, `scripts/optimize-prompt.js` | ❌ Not built | Not rolled out | Medium | Spec at `specs/PROMPT-OPTIMIZATION.md`. Step 1 (eval table + logger) ships independently. Decision: `docs/decisions/2026-02-25-prompt-optimization.md` |
-| Tailscale CI/CD migration | `.github/workflows/deploy.yml`, `scripts/*.sh` | ❌ Not built | Not rolled out | **Critical** | Migrate all SSH from public IP to Tailscale. Eliminates recurring EC2 SSH outages (3 incidents). Spec: `specs/INFRA-RELIABILITY.md`. Decision: `docs/decisions/2026-02-25-infra-reliability.md` |
-| Elastic IP allocation | AWS infrastructure | ❌ Not built | Not rolled out | High | Prevent IP churn on stop/start. Part of infra reliability spec. |
-| AMI snapshot + recovery | AWS infrastructure | ❌ Not built | Not rolled out | High | 5-minute disaster recovery. Snapshot after each infra change. Part of infra reliability spec. |
-| Provision script (documentation) | `scripts/provision-instance.sh` | ❌ Not built | Not rolled out | Medium | Document everything installed on EC2 for when AMI gets stale. Part of infra reliability spec. |
+| Context file audit | `ARCHITECTURE.md`, `.cursorrules`, `DEV-PROTOCOL.md` | ✅ Verified | Not rolled out | High | Completed via `specs/CONTEXT-AUDIT.md` (commit `48fbd5a`). Decision: `docs/decisions/2026-02-25-context-audit.md` |
+| Layered context architecture | `src/brain/prompt.js`, `config/prompts/` | ⚠️ Untested | Not rolled out | High | Phase 1+2 shipped (`055ecab`, `8846e8e`): split prompt + intent-based selective loading. Phase 3 (measurement) still pending. Decision: `docs/decisions/2026-02-25-layered-context.md` |
+| Prompt optimization loop | `scripts/eval-conversations.js`, `scripts/optimize-prompt.js` | ⚠️ Untested | Not rolled out | Medium | Step 1 shipped (conversation_evals + logger). Batch eval script + optimizer still pending. Decision: `docs/decisions/2026-02-25-prompt-optimization.md` |
+| Tailscale CI/CD migration | `.github/workflows/deploy.yml`, `scripts/*.sh` | ✅ Verified | Not rolled out | **Critical** | Completed: deploy workflow and manual scripts now default to Tailscale host (`100.124.0.46`). Spec: `specs/INFRA-RELIABILITY.md`. Decision: `docs/decisions/2026-02-25-infra-reliability.md` |
+| Elastic IP allocation | AWS infrastructure | ✅ Verified | Not rolled out | High | Allocated and associated (`13.58.219.0`) for stable public endpoint fallback. |
+| AMI snapshot + recovery | AWS infrastructure | ⚠️ Untested | Not rolled out | High | Baseline AMI created (`ami-0650bb542852313f9`); restore drill not yet exercised. |
+| Provision script (documentation) | `scripts/provision-instance.sh` | ✅ Verified | Not rolled out | Medium | Added reference inventory script for EC2 baseline/provisioning documentation. |
 
 ## 15) 🧹 Housekeeping & Hygiene
 
@@ -220,30 +222,30 @@ Non-Iji tasks that keep the underlying systems (HA, Hue, network, etc.) clean an
 
 ## Suggested Build Order (Updated)
 
-### Wave A — Stabilize Existing Wave 2 Capabilities
-1. Deploy/verify `email_search` + `email_read` fix (Email & Documents).
-2. Fix `finance_paybacks` EC2 state-file dependency (Finances).
-3. Confirm `finance_transactions` and `weather_query` end-to-end via Signal (Finances + Weather).
-4. Fix `message_send` delivery-result reporting (Communication).
-5. Implement `.env.example` + secret-process cleanup (Meta & Infrastructure).
+### Wave A — Stabilize Operations & Reliability
+1. Secret synchronization hygiene (gitignored server secrets/process hardening).
+2. Daily health checks operationalization (cron + alert validation + runbook).
+3. Run AMI recovery drill from `ami-0650bb542852313f9` and document timings.
+4. Finish layered context phase 3 (token measurement by layer).
 
-### Wave B — Proactive Core
-6. Build reminders engine (`reminder_set`, `reminder_list`) and trigger loop (Scheduling).
-7. Build morning briefing + proactive alerts (Scheduling, Weather, Maintenance).
-8. Add `web_search` for unknowns (Meta).
+### Wave B — Scheduling/Coordination Depth
+5. Morning briefing opt-in/out controls (config + UX).
+6. Morning briefing + Trello task integration.
+7. Household conflict detection and multi-person scheduling negotiation.
+8. Task delegation workflow (`task_create`, `task_query`, `task_update`).
 
-### Wave C — Write/Comms Expansion
-9. Build Gmail write tools (`email_send`, `email_draft`) with scope upgrade + re-auth rollout (Email).
-10. Add Slack/SMS channel adapters (Communication), unblocking chef workflow.
-11. Add Drive tools (`docs_search`, `docs_read`) (Email & Documents).
+### Wave C — Communication & Docs Expansion
+9. Gmail write tools (`email_send`, `email_draft`) + OAuth rollout to adults.
+10. Slack and SMS channel adapters.
+11. Drive tools (`docs_search`, `docs_read`) and document generation flows.
 
 ### Wave D — Household Operations Depth
-12. Build `ha_history`, `ha_scene`, `ha_notify` (Home Operations).
-13. Build meals stack (`meals_recipes`, `meals_menu`, `meals_feedback`) + chef workflow (Meals).
-14. Build Safeway stack (`safeway_list`, `safeway_skip`, `safeway_order`) (Procurement).
-15. Build `maintenance_log` + `contacts_search` + transport basics (Maintenance, Vehicles).
+12. Home operations tool expansion (`ha_history`, `ha_scene`, `ha_notify`) and presence productization.
+13. Meals stack (`meals_recipes`, `meals_menu`, `meals_feedback`) + chef workflow.
+14. Procurement stack (`safeway_list`, `safeway_skip`, `safeway_order`).
+15. Maintenance/property + transport foundations (`maintenance_log`, vendor contacts, vehicle workflows).
 
 ### Wave E — Intelligence Layers
-16. Situational awareness stack (passive extraction, anomaly detection, presence inference, deliveries, AirTag).
-17. Coordination engine (task delegation, conflict detection, multi-person negotiation).
+16. Situational awareness stack (passive extraction, anomaly detection, presence inference, deliveries, Find My).
+17. Prompt optimization phase 2+ (weekly eval script + monthly optimizer loop).
 18. Learning/memory upgrades (preferences, routines, forgetting curves, decision log).
