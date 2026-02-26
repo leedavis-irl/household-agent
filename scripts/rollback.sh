@@ -5,7 +5,7 @@
 set -e
 
 SSH_KEY="${SSH_KEY:-$HOME/.ssh/lees-alpha-trading.pem}"
-DEPLOY_HOST="${DEPLOY_HOST:-3.149.229.204}"
+DEPLOY_HOST="${DEPLOY_HOST:-100.124.0.46}"
 DEPLOY_USER="${DEPLOY_USER:-ubuntu}"
 DEPLOY_DIR="${DEPLOY_DIR:-/home/ubuntu/household-agent}"
 

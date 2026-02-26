@@ -6,20 +6,21 @@ The backlog is the single source of truth for what to build and fix.
 
 | Bucket | Verified | Fix Pending | Untested | Not Built |
 |--------|----------|-------------|----------|-----------|
-| Scheduling & Coordination | 4 | 0 | 0 | 5 |
+| Scheduling & Coordination | 4 | 2 | 0 | 7 |
 | Communication | 3 | 0 | 0 | 5 |
 | Email & Documents | 2 | 0 | 0 | 6 |
 | Finances | 3 | 0 | 0 | 3 |
-| Home Operations | 2 | 1 | 0 | 10 |
+| Home Operations | 3 | 0 | 0 | 11 |
 | Meals & Kitchen | 0 | 0 | 0 | 5 |
 | Children | 0 | 0 | 0 | 4 |
 | Weather & Daily Ops | 2 | 0 | 0 | 4 |
 | Maintenance & Property | 0 | 0 | 0 | 6 |
 | Institutional Memory | 2 | 0 | 0 | 7 |
-| Vehicles & Transport | 0 | 0 | 0 | 4 |
+| Vehicles & Transport | 0 | 0 | 0 | 5 |
 | Entertaining & Hospitality | 0 | 0 | 0 | 4 |
 | Procurement | 0 | 0 | 0 | 6 |
-| Meta & Infrastructure | 2 | 2 | 0 | 9 |
+| Meta & Infrastructure | 2 | 2 | 0 | 16 |
+| Housekeeping & Hygiene | 0 | 0 | 0 | 1 |
 
 Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
@@ -30,12 +31,14 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Capability | Tools | Status | Rollout | Priority | Notes |
 |-----------|-------|--------|---------|----------|-------|
 | View personal/shared schedules | `calendar_query` | ✅ Verified | Adults with calendar permissions | High | Requires service account + `calendar_id` in `household.json` |
-| Create calendar events | `calendar_create` | ✅ Verified | Adults with `calendar_own`/`calendar_all` | High | Read-only calendars return actionable error |
+| Create calendar events | `calendar_create` | 🔧 Fix pending | Adults with `calendar_own`/`calendar_all` | High | Read-only calendars return actionable error. **Bug:** When user says "April" without a year, Iji defaults to 2025 instead of next upcoming April (2026). Likely missing "assume future" logic in date parsing or system prompt. |
 | Modify/cancel calendar events | `calendar_modify` | ✅ Verified | Adults with `calendar_own`/`calendar_all` | High | Supports `event_id` or summary+date lookup |
-| Find overlapping free time | `calendar_freebusy` | ✅ Verified | Adults with `calendar_household` or `calendar_all` | High | Missing member calendars are noted, not fatal |
+| Find overlapping free time | `calendar_freebusy` | 🔧 Fix pending | Adults with `calendar_household` or `calendar_all` | High | Missing member calendars are noted, not fatal. **Bug:** Freebusy reported a conflict at 4am instead of correct local time — likely UTC vs Pacific display issue in how results are formatted for the user. |
 | Household conflict detection | not built | ❌ Not built | Not rolled out | Medium | Detect double-bookings, kid pickup conflicts, shared-car conflicts |
 | Reminder lifecycle (set/list/fire) | `reminder_set`, `reminder_list` (not built) | ❌ Not built | Not rolled out | High | Needs scheduler + delivery channel |
-| Morning briefing | not built | ❌ Not built | Not rolled out | High | Proactive daily summary capability |
+| Morning briefing (v1) | not built | ❌ Not built | Not rolled out | High | Daily Signal DM: calendar, weather, reminders, conflicts, yesterday's knowledge. Guided prompt, Claude composes freely. |
+| Morning briefing opt-in/out | not built | ❌ Not built | Not rolled out | Medium | Adults can subscribe/unsubscribe from daily briefing. Depends on v1. |
+| Morning briefing + Trello tasks | not built | ❌ Not built | Not rolled out | Medium | Pull Lee + Kelly's Trello boards, fit actionable tasks into the day's schedule. Depends on Trello API integration. |
 | Multi-person scheduling negotiation | not built | ❌ Not built | Not rolled out | High | Reasoning layer on top of freebusy |
 | Task delegation + follow-up | `task_create`, `task_query`, `task_update` (not built) | ❌ Not built | Not rolled out | High | Assign/track/follow-up workflow across household members |
 
@@ -82,7 +85,8 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 |-----------|-------|--------|---------|----------|-------|
 | Query home/device state | `ha_query` | ✅ Verified | All members with HA permissions | High | Uses HA REST API + token; EC2 reaches HA via Tailscale (`100.127.233.50`) |
 | Control devices | `ha_control` | ✅ Verified | Adults/admin per permissions | High | Area-gated control path works; EC2 reaches HA via Tailscale (`100.127.233.50`) |
-| HA area permission robustness | `ha_control` | 🔧 Fix pending | Adults/admin | Medium | Known issue: substring matching can false-deny valid entities |
+| HA area permission robustness | `ha_control` | ✅ Verified | Adults/admin | Medium | Commit `1cdf063`. Spec: `docs/specs/bugfix-hue-area-permissions.md`. Steve's permission-denied tests still pending. |
+| Ambient automation (lights/blinds/climate) | not built | ❌ Not built | Not rolled out | Medium | Predecessor `claude-home-agent` (AppDaemon) disabled due to feedback loops, runaway API costs, and stateless oscillation. Revisit as Iji-native capability with: event batching, cost ceiling, action memory, opt-in scope. Code archived at `~/Projects/Home/claude-home-agent/`. |
 | Presence query ("who is home") | `ha_query` (`person.*`) | ❌ Not built | Not rolled out | Medium | Primitive exists; explicit capability not productized |
 | Scene/automation triggers | `ha_scene` (not built) | ❌ Not built | Not rolled out | Medium | Planned HA service tooling |
 | Historical state analysis | `ha_history` (not built) | ❌ Not built | Not rolled out | Medium | Planned HA history endpoint tool |
@@ -157,6 +161,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Vehicle maintenance schedule | not built | ❌ Not built | Not rolled out | Medium | Recurring reminders + records |
 | Registration/insurance tracking | not built | ❌ Not built | Not rolled out | Medium | Renewal reminders + document refs |
 | Parking/charging logistics | not built | ❌ Not built | Not rolled out | Low | Coordination + reminder workflows |
+| Apple Find My item/device locate | `findmy_locate` (not built) | ❌ Not built | Not rolled out | Medium | Via FindMySync Mac app → HA device_tracker. See [FindMySync](https://github.com/MartinPham/FindMySync). Needs: app running on a household Mac, HA long-lived token, Accessibility permission. No Apple API key needed. |
 
 ## 12) 🎉 Entertaining & Hospitality
 
@@ -195,6 +200,21 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Relationship graph | not built | ❌ Not built | Not rolled out | Medium | Evaluate Monica per Growth Protocol |
 | Asset registry | not built | ❌ Not built | Not rolled out | Medium | Evaluate Homebox per Growth Protocol |
 | Automation authoring for HA | not built | ❌ Not built | Not rolled out | Medium | Approval workflow required |
+| Context file audit | `ARCHITECTURE.md`, `.cursorrules`, `DEV-PROTOCOL.md` | ❌ Not built | Not rolled out | High | Spec ready at `specs/CONTEXT-AUDIT.md`. Strip code-discoverable content from context files per ICSE JAWs 2026 / ETH Zurich research. Decision: `docs/decisions/2026-02-25-context-audit.md` |
+| Layered context architecture | `src/brain/prompt.js`, `config/prompts/` | ❌ Not built | Not rolled out | High | Spec at `specs/LAYERED-CONTEXT.md`. Three phases: extract/split (refactor), intent detection, measurement. Decision: `docs/decisions/2026-02-25-layered-context.md` |
+| Prompt optimization loop | `scripts/eval-conversations.js`, `scripts/optimize-prompt.js` | ❌ Not built | Not rolled out | Medium | Spec at `specs/PROMPT-OPTIMIZATION.md`. Step 1 (eval table + logger) ships independently. Decision: `docs/decisions/2026-02-25-prompt-optimization.md` |
+| Tailscale CI/CD migration | `.github/workflows/deploy.yml`, `scripts/*.sh` | ❌ Not built | Not rolled out | **Critical** | Migrate all SSH from public IP to Tailscale. Eliminates recurring EC2 SSH outages (3 incidents). Spec: `specs/INFRA-RELIABILITY.md`. Decision: `docs/decisions/2026-02-25-infra-reliability.md` |
+| Elastic IP allocation | AWS infrastructure | ❌ Not built | Not rolled out | High | Prevent IP churn on stop/start. Part of infra reliability spec. |
+| AMI snapshot + recovery | AWS infrastructure | ❌ Not built | Not rolled out | High | 5-minute disaster recovery. Snapshot after each infra change. Part of infra reliability spec. |
+| Provision script (documentation) | `scripts/provision-instance.sh` | ❌ Not built | Not rolled out | Medium | Document everything installed on EC2 for when AMI gets stale. Part of infra reliability spec. |
+
+## 15) 🧹 Housekeeping & Hygiene
+
+Non-Iji tasks that keep the underlying systems (HA, Hue, network, etc.) clean and well-organized.
+
+| Task | System | Status | Priority | Notes |
+|------|--------|--------|----------|-------|
+| HA entity naming cleanup | Home Assistant / Hue | ❌ Not done | Medium | Multiple entity_id / friendly_name mismatches. Key offenders: `light.logan_bedside_lamp` → "Living Room Floor Lamp 1", `light.avalon_master_bedroom_status_light` → "Avalon Basement", `light.train_station_*` → still says train station (now Basement TV Room), `light.hallie_office` → entity says office but it's a bedroom, 4× generic `hue_ambiance_downlight_*` in Logan's closet, 7× WiZ bulbs in foyer with null friendly_names. Fix in HA entity registry and/or Hue app directly. Not blocking Iji — area registry is source of truth — but confusing for humans browsing HA and for Claude when friendly names contradict area assignments. |
 
 ---
 
