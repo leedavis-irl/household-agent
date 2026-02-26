@@ -1,5 +1,6 @@
 import { think } from '../brain/index.js';
 import { getHousehold } from './config.js';
+import { getDb } from './db.js';
 import { sendMessage } from '../broker/signal.js';
 import log from './logger.js';
 
@@ -35,6 +36,25 @@ function pacificNowParts() {
   return { hour, minute, dateKey, longDate };
 }
 
+function hasConversationEvalFor(conversationId) {
+  try {
+    const db = getDb();
+    const row = db.prepare(
+      `SELECT 1
+       FROM conversation_evals
+       WHERE conversation_id = ?
+       LIMIT 1`
+    ).get(conversationId);
+    return !!row;
+  } catch (err) {
+    log.warn('Morning briefing dedupe check failed', {
+      conversation_id: conversationId,
+      error: err.message,
+    });
+    return false;
+  }
+}
+
 async function runMorningBriefingCycle() {
   if (!BRIEFING_ENABLED) return;
   const { hour, dateKey, longDate } = pacificNowParts();
@@ -52,7 +72,12 @@ async function runMorningBriefingCycle() {
 
     const sentKey = `${personId}:${dateKey}`;
     if (sentToday.has(sentKey)) continue;
-    sentToday.add(sentKey);
+
+    const conversationId = `briefing-${personId}-${dateKey}`;
+    if (hasConversationEvalFor(conversationId)) {
+      sentToday.add(sentKey);
+      continue;
+    }
 
     if (!member?.identifiers?.signal) {
       log.warn('Morning briefing skipped: recipient missing Signal', { person_id: personId });
@@ -75,7 +100,7 @@ Check the following and include anything noteworthy:
 Keep it concise — this is a Signal message, not an email. Lead with the most important item. Skip sections with nothing noteworthy (don't say "no reminders" — just omit). Write like a Chief of Staff giving a 30-second verbal briefing.`,
       source_channel: 'signal',
       reply_address: member.identifiers.signal,
-      conversation_id: `briefing-${personId}-${dateKey}`,
+      conversation_id: conversationId,
       timestamp: new Date().toISOString(),
     };
 
@@ -85,6 +110,7 @@ Keep it concise — this is a Signal message, not an email. Lead with the most i
       if (!delivered) {
         log.error('Morning briefing send failed: Signal unavailable', { person_id: personId });
       } else {
+        sentToday.add(sentKey);
         log.info('Morning briefing sent', { person_id: personId, date: dateKey });
       }
     } catch (err) {
