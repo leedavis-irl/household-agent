@@ -62,6 +62,15 @@ function getCapabilitiesForMessage(userMessage) {
 }
 
 export function buildSystemPrompt({ person, user_message, person_id }) {
+  const now = new Date().toLocaleString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  });
   const loadedCapabilities = getCapabilitiesForMessage(user_message);
   const capabilityParts = loadedCapabilities
     .map((name) => capabilityContentByName[name])
@@ -82,6 +91,7 @@ export function buildSystemPrompt({ person, user_message, person_id }) {
 
   const groupBehavior = person.isGroup ? GROUP_BEHAVIOR : DM_BEHAVIOR;
   return coreTemplate
+    .replace('{{current_datetime}}', now)
     .replace('{{capabilities}}', capabilities)
     .replace('{{capability_guidelines}}', capabilityGuidelines)
     .replace('{{person_name}}', person.display_name)
