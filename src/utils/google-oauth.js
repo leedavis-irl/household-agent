@@ -11,7 +11,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const CREDENTIALS_PATH = join(__dirname, '../../config/google-oauth-credentials.json');
 const TOKENS_PATH = join(__dirname, '../../data/oauth-tokens.json');
 
-const GMAIL_SCOPE = 'https://www.googleapis.com/auth/gmail.readonly';
+const GMAIL_SCOPES = [
+  'https://www.googleapis.com/auth/gmail.readonly',
+  'https://www.googleapis.com/auth/gmail.send',
+];
 const REDIRECT_URI_OOB = 'urn:ietf:wg:oauth:2.0:oob';
 
 let OAuth2Client = null;
@@ -63,7 +66,7 @@ function saveTokens(tokens) {
  * @param {string} personId - household member id (e.g. 'lee', 'steve')
  * @returns {Promise<import('googleapis').auth.OAuth2Client|null>} client or null if no token
  */
-export async function getClient(personId, scopes = [GMAIL_SCOPE]) {
+export async function getClient(personId, scopes = GMAIL_SCOPES) {
   const person = (personId || '').toLowerCase().trim();
   if (!person) return null;
 
@@ -100,7 +103,7 @@ export async function getClient(personId, scopes = [GMAIL_SCOPE]) {
  * @param {{ redirectUri?: string }} [options] - If provided (e.g. http://localhost:3000/callback), use for local server flow
  * @returns {Promise<string>}
  */
-export async function getAuthUrl(personId, scopes = [GMAIL_SCOPE], options = {}) {
+export async function getAuthUrl(personId, scopes = GMAIL_SCOPES, options = {}) {
   const person = (personId || '').toLowerCase().trim();
   if (!person) throw new Error('personId is required');
 
@@ -123,7 +126,7 @@ export async function getAuthUrl(personId, scopes = [GMAIL_SCOPE], options = {})
  * @param {string[]} [scopes]
  * @param {{ redirectUri?: string }} [options] - Must match the redirect_uri used in getAuthUrl for this flow
  */
-export async function handleCallback(personId, authCode, scopes = [GMAIL_SCOPE], options = {}) {
+export async function handleCallback(personId, authCode, scopes = GMAIL_SCOPES, options = {}) {
   const person = (personId || '').toLowerCase().trim();
   const code = (authCode || '').trim();
   if (!person || !code) throw new Error('personId and authCode are required');

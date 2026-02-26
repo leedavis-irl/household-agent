@@ -20,7 +20,8 @@
         "email_all",
         "email_own",
         "reminders",
-        "reminders_others"
+        "reminders_others",
+        "email_send"
       ],
       "briefing": {
         "enabled": true,
@@ -204,6 +205,7 @@
     "email_own": "Search and read own Gmail",
     "email_all": "Search and read any household member's Gmail",
     "reminders": "Set, list, and update your own reminders",
-    "reminders_others": "Set and manage reminders for other household members"
+    "reminders_others": "Set and manage reminders for other household members",
+    "email_send": "Send email from your own Gmail account"
   }
 }

@@ -24,6 +24,7 @@ const TOOL_PERMISSIONS = {
   cost_query: ['financial'],
   email_search: ['email_own', 'email_all'],
   email_read: ['email_own', 'email_all'],
+  email_send: ['email_send'],
   reminder_set: ['reminders', 'reminders_others'],
   reminder_list: ['reminders', 'reminders_others'],
   reminder_update: ['reminders', 'reminders_others'],
