@@ -49,7 +49,13 @@ Any `_all` permission must imply the `_own` variant. Never check `_own` without 
 - CI does: `git reset --hard origin/main` → `npm ci` → restart service
 - CI does NOT: copy `.env`, create data dirs, configure external services
 
+## Branching
+- **Always branch off `main`** — run `git checkout main && git pull` before creating a feature branch
+- Feature branches: `feature/short-name`
+- Do not branch off other feature branches unless the spec explicitly says to
+
 ## Common Mistakes to Avoid
+- ❌ Branching off another feature branch instead of `main` (causes commit contamination)
 - ❌ Assuming `sourceNumber` is always present in Signal messages (it's not — use identity resolution)
 - ❌ Adding env vars to code without updating `.env.example` and the spec
 - ❌ Modifying `config/household.json` permissions without noting it in the spec

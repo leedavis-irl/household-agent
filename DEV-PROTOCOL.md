@@ -6,7 +6,7 @@ How we go from "build this" to "this works in production." Applies to every code
 
 | Role | Who | Does |
 |------|-----|------|
-| **Product** | Lee | Decides what, prioritizes, acceptance-tests in the real world |
+| **Product** | Lee (CTO) + domain contributors (e.g., Hallie) | Decides what, prioritizes, acceptance-tests in the real world |
 | **Engineer** | Claude (chat) | Writes specs, reviews code, debugs architecture issues, owns quality |
 | **Dev** | Cursor | Implements specs, writes tests, commits and pushes |
 
@@ -41,7 +41,9 @@ Cursor reads the spec, reads ARCHITECTURE.md, implements. Cursor must:
 - Follow existing patterns (look at sibling files before inventing new patterns)
 - Run `npm test` if tests exist
 - Not modify files outside the spec's scope without flagging it
-- Commit with the specified message and push to main
+- **Always branch off `main`** — run `git checkout main && git pull` before creating the feature branch
+- Commit with the specified message and push to a **feature branch** (`feature/short-name`)
+- Open a pull request against main
 
 ### 3. Verify Locally (Engineer or Dev)
 
@@ -52,11 +54,24 @@ Before deploy, confirm the change works locally if possible:
 
 If local verification isn't possible (e.g., EC2-only dependencies), note this in the spec and plan for server-side verification.
 
-### 4. Deploy (Automated)
+### 4. Review + Merge (Engineer + Product)
 
-Push to main triggers CI/CD. GitHub Actions deploys to EC2, runs health check, rolls back on failure. No manual deploys unless CI is broken.
+Before merging the feature branch to main:
+- Engineer reviews the diff against the spec (changes match, no scope creep, no hardcoded secrets/paths)
+- Product confirms the spec reflects what they want
+- Merge to main triggers deploy
 
-### 5. Server Confirmation (Engineer + Product)
+See `docs/decisions/2026-02-26-feature-branch-review.md` for the full review model.
+
+**Exceptions:**
+- **Hotfixes:** Urgent production fixes (Iji is down) can go direct to main. Post-mortem required within 24 hours.
+- **Documentation-only changes:** Backlog updates, specs, decision records, and other markdown-only changes that don't affect deployed code can go straight to main. No branch or PR needed.
+
+### 5. Deploy (Automated)
+
+Merge to main triggers CI/CD. GitHub Actions deploys to EC2, runs health check, rolls back on failure. No manual deploys unless CI is broken.
+
+### 6. Server Confirmation (Engineer + Product)
 
 **This is the step we've been skipping.** After CI reports success:
 
@@ -65,9 +80,9 @@ Push to main triggers CI/CD. GitHub Actions deploys to EC2, runs health check, r
 3. **Product tests for real**: Lee sends a real Signal message (or group message) that exercises the new/fixed capability
 4. **Engineer reviews the response logs**: confirm the right code path executed, no errors
 
-A feature is not done until step 5 passes. "Code is on main" ≠ "feature works."
+A feature is not done until step 6 passes. "Code is on main" ≠ "feature works."
 
-### 6. Close-Out (Engineer)
+### 7. Close-Out (Engineer)
 
 After server confirmation passes:
 - Mark the spec status as **Complete**
