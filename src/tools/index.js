@@ -18,6 +18,9 @@ import * as smsSend from './sms-send.js';
 import * as reminderSet from './reminder-set.js';
 import * as reminderList from './reminder-list.js';
 import * as reminderUpdate from './reminder-update.js';
+import * as featureRequest from './feature-request.js';
+import * as featureRequestList from './feature-request-list.js';
+import * as featureRequestTriage from './feature-request-triage.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -42,6 +45,9 @@ const tools = {
   reminder_set: reminderSet,
   reminder_list: reminderList,
   reminder_update: reminderUpdate,
+  feature_request: featureRequest,
+  feature_request_list: featureRequestList,
+  feature_request_triage: featureRequestTriage,
 };
 
 export function getToolDefinitions() {

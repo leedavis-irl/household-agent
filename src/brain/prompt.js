@@ -20,6 +20,7 @@ const capabilityFiles = {
   email: 'email.md',
   sms: 'sms.md',
   reminders: 'reminders.md',
+  'feature-requests': 'feature-requests.md',
 };
 
 const CAPABILITY_TRIGGERS = {

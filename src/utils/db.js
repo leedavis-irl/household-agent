@@ -123,6 +123,19 @@ function migrate(db) {
     )
   `);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS feature_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      requester_id TEXT NOT NULL,
+      request_text TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'new',
+      triage_notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      triaged_at TEXT
+    )
+  `);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_feature_requests_status ON feature_requests(status)`);
+
   const seedGroup = db.prepare(
     'INSERT OR IGNORE INTO signal_groups (group_id, group_name) VALUES (?, ?)'
   );
