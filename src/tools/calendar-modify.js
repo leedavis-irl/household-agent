@@ -4,6 +4,7 @@ import {
   getCalendarClient,
   getCalendarIds,
   resolveDate,
+  localDateTimeToISO,
   isReadOnlyCalendarError,
 } from '../utils/google-calendar.js';
 
@@ -198,14 +199,15 @@ export async function execute(input, envelope) {
 
   let eventId = input.event_id?.trim();
   if (!eventId && input.event_summary) {
-    const startDate = resolveDate(input.date || 'today');
-    startDate.setHours(0, 0, 0, 0);
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + (input.days ?? 7));
+    const startDateStr = resolveDate(input.date || 'today');
+    const days = Number(input.days ?? 7);
+    const endDateSeed = new Date(`${startDateStr}T00:00:00Z`);
+    endDateSeed.setUTCDate(endDateSeed.getUTCDate() + days);
+    const endDateStr = endDateSeed.toISOString().slice(0, 10);
     const res = await client.events.list({
       calendarId,
-      timeMin: startDate.toISOString(),
-      timeMax: endDate.toISOString(),
+      timeMin: localDateTimeToISO(startDateStr, '00:00'),
+      timeMax: localDateTimeToISO(endDateStr, '00:00'),
       singleEvents: true,
       orderBy: 'startTime',
       maxResults: 50,
@@ -236,16 +238,15 @@ export async function execute(input, envelope) {
     }
 
     if (action === 'reschedule') {
-      const day = resolveDate(input.new_date || 'today');
-      const dateStr = day.toISOString().slice(0, 10);
-      const start = new Date(`${dateStr}T${(input.new_start_time || '').trim()}`);
-      const end = new Date(`${dateStr}T${(input.new_end_time || '').trim()}`);
-      if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      const dateStr = resolveDate(input.new_date || 'today');
+      const startISO = localDateTimeToISO(dateStr, (input.new_start_time || '').trim());
+      const endISO = localDateTimeToISO(dateStr, (input.new_end_time || '').trim());
+      if (!startISO || !endISO) {
         return { error: 'reschedule requires new_date, new_start_time, and new_end_time.' };
       }
       const body = {
-        start: { dateTime: start.toISOString() },
-        end: { dateTime: end.toISOString() },
+        start: { dateTime: startISO },
+        end: { dateTime: endISO },
       };
       await client.events.patch({
         calendarId,

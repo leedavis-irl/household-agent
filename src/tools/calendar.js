@@ -1,6 +1,12 @@
 import log from '../utils/logger.js';
 import { getHousehold } from '../utils/config.js';
-import { getCalendarClient, getCalendarIds, resolveDate } from '../utils/google-calendar.js';
+import {
+  getCalendarClient,
+  getCalendarIds,
+  resolveDate,
+  localDateTimeToISO,
+  toLocalISOString,
+} from '../utils/google-calendar.js';
 
 const CALENDAR_IDS = getCalendarIds();
 
@@ -23,8 +29,8 @@ function checkCalendarPermission(requestedCalendar, envelope) {
 }
 
 function formatEvent(e) {
-  const start = e.start?.dateTime || e.start?.date;
-  const end = e.end?.dateTime || e.end?.date;
+  const start = e.start?.dateTime ? toLocalISOString(e.start.dateTime) : e.start?.date;
+  const end = e.end?.dateTime ? toLocalISOString(e.end.dateTime) : e.end?.date;
   const out = {
     id: e.id,
     summary: e.summary ?? null,
@@ -108,17 +114,20 @@ export async function execute(input, envelope) {
     return { error: `No calendar connected for ${name} yet.` };
   }
 
-  const startDate = resolveDate(input.date);
-  startDate.setHours(0, 0, 0, 0);
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + (input.days || 1));
+  const startDateStr = resolveDate(input.date);
+  const days = Number(input.days || 1);
+  const endDateSeed = new Date(`${startDateStr}T00:00:00Z`);
+  endDateSeed.setUTCDate(endDateSeed.getUTCDate() + days);
+  const endDateStr = endDateSeed.toISOString().slice(0, 10);
+  const timeMin = localDateTimeToISO(startDateStr, '00:00');
+  const timeMax = localDateTimeToISO(endDateStr, '00:00');
   const maxResults = Math.min(100, Math.max(1, Number(input.max_results) || 20));
 
   try {
     const res = await client.events.list({
       calendarId,
-      timeMin: startDate.toISOString(),
-      timeMax: endDate.toISOString(),
+      timeMin,
+      timeMax,
       singleEvents: true,
       orderBy: 'startTime',
       maxResults,

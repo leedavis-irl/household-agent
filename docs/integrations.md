@@ -14,6 +14,7 @@
 | NWS / OpenWeather | REST APIs | `weather_query` | No key (NWS) or API key (OpenWeather) |
 | Brave/Serp/Tavily | REST API | future `web_search` | API key |
 | Google Maps | Directions API | future `transit_directions` | API key |
+| Apple Find My (via FindMySync) | FindMySync → HA device_tracker | future `findmy_locate` | FindMySync Mac app + HA long-lived token |
 | Safeway | Unofficial reverse-engineered API | future `safeway_list`, `safeway_skip`, `safeway_order` | Session auth (fragile) |
 
 ## Auth Complexity Notes

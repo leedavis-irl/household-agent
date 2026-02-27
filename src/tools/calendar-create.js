@@ -4,6 +4,8 @@ import {
   getCalendarClient,
   getCalendarIds,
   resolveDate,
+  localDateTimeToISO,
+  toLocalISOString,
   isReadOnlyCalendarError,
 } from '../utils/google-calendar.js';
 
@@ -188,18 +190,17 @@ export async function execute(input, envelope) {
     return { error: `No calendar connected for ${name} yet.` };
   }
 
-  const day = resolveDate(input.date);
-  const dateStr = day.toISOString().slice(0, 10);
-  const start = new Date(`${dateStr}T${(input.start_time || '').trim()}`);
-  const end = new Date(`${dateStr}T${(input.end_time || '').trim()}`);
-  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+  const dateStr = resolveDate(input.date);
+  const startISO = localDateTimeToISO(dateStr, (input.start_time || '').trim());
+  const endISO = localDateTimeToISO(dateStr, (input.end_time || '').trim());
+  if (!startISO || !endISO) {
     return { error: 'Invalid date or time format. Use YYYY-MM-DD and HH:MM.' };
   }
 
   const body = {
     summary: (input.summary && input.summary.trim()) || 'Event',
-    start: { dateTime: start.toISOString() },
-    end: { dateTime: end.toISOString() },
+    start: { dateTime: startISO },
+    end: { dateTime: endISO },
   };
   if (input.location?.trim()) body.location = input.location.trim();
   if (input.description?.trim()) body.description = input.description.trim();
@@ -252,8 +253,8 @@ export async function execute(input, envelope) {
       created: true,
       event_id: res.data.id,
       summary: res.data.summary,
-      start: res.data.start?.dateTime,
-      end: res.data.end?.dateTime,
+      start: toLocalISOString(res.data.start?.dateTime),
+      end: toLocalISOString(res.data.end?.dateTime),
       message: `Added "${body.summary}" to ${name}'s calendar.`,
     };
     if (res.data.hangoutLink) out.hangout_link = res.data.hangoutLink;

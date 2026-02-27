@@ -1,6 +1,12 @@
 import log from '../utils/logger.js';
 import { getHousehold } from '../utils/config.js';
-import { getCalendarClient, getCalendarIds, resolveDate } from '../utils/google-calendar.js';
+import {
+  getCalendarClient,
+  getCalendarIds,
+  resolveDate,
+  localDateTimeToISO,
+  toLocalISOString,
+} from '../utils/google-calendar.js';
 
 const CALENDAR_IDS = getCalendarIds();
 
@@ -64,8 +70,8 @@ function busyToFreeSlots(mergedBusy, timeMinMs, timeMaxMs, durationMinutes) {
     const end = Math.min(b.start, timeMaxMs);
     if (end - start >= durationMs && end > start) {
       slots.push({
-        start: new Date(start).toISOString(),
-        end: new Date(end).toISOString(),
+        start: toLocalISOString(new Date(start).toISOString()),
+        end: toLocalISOString(new Date(end).toISOString()),
         duration_minutes: Math.round((end - start) / 60000),
       });
     }
@@ -73,8 +79,8 @@ function busyToFreeSlots(mergedBusy, timeMinMs, timeMaxMs, durationMinutes) {
   }
   if (timeMaxMs - prevEnd >= durationMs) {
     slots.push({
-      start: new Date(prevEnd).toISOString(),
-      end: new Date(timeMaxMs).toISOString(),
+      start: toLocalISOString(new Date(prevEnd).toISOString()),
+      end: toLocalISOString(new Date(timeMaxMs).toISOString()),
       duration_minutes: Math.round((timeMaxMs - prevEnd) / 60000),
     });
   }
@@ -123,12 +129,13 @@ export async function execute(input, envelope) {
     };
   }
 
-  const startDate = resolveDate(input.date || 'today');
-  startDate.setHours(0, 0, 0, 0);
-  const endDate = new Date(startDate);
-  endDate.setDate(endDate.getDate() + (input.days ?? 1));
-  const timeMin = startDate.toISOString();
-  const timeMax = endDate.toISOString();
+  const startDateStr = resolveDate(input.date || 'today');
+  const days = Number(input.days ?? 1);
+  const endDateSeed = new Date(`${startDateStr}T00:00:00Z`);
+  endDateSeed.setUTCDate(endDateSeed.getUTCDate() + days);
+  const endDateStr = endDateSeed.toISOString().slice(0, 10);
+  const timeMin = localDateTimeToISO(startDateStr, '00:00');
+  const timeMax = localDateTimeToISO(endDateStr, '00:00');
 
   try {
     const res = await client.freebusy.query({
@@ -143,8 +150,8 @@ export async function execute(input, envelope) {
       .map((c) => c.busy || [])
       .filter((arr) => arr.length > 0);
     const merged = mergeBusyIntervals(calendarsBusy);
-    const timeMinMs = startDate.getTime();
-    const timeMaxMs = endDate.getTime();
+    const timeMinMs = new Date(timeMin).getTime();
+    const timeMaxMs = new Date(timeMax).getTime();
     const free_slots = busyToFreeSlots(
       merged,
       timeMinMs,

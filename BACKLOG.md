@@ -7,7 +7,7 @@ The backlog is the single source of truth for what to build and fix.
 | Bucket | Verified | Fix Pending | Untested | Not Built |
 |--------|----------|-------------|----------|-----------|
 | Scheduling & Coordination | 6 | 0 | 0 | 4 |
-| Communication | 3 | 0 | 0 | 5 |
+| Communication | 3 | 0 | 1 | 4 |
 | Email & Documents | 2 | 0 | 1 | 5 |
 | Finances | 3 | 0 | 0 | 3 |
 | Home Operations | 4 | 0 | 0 | 11 |
@@ -19,7 +19,7 @@ The backlog is the single source of truth for what to build and fix.
 | Vehicles & Transport | 0 | 0 | 0 | 5 |
 | Entertaining & Hospitality | 0 | 0 | 0 | 4 |
 | Procurement | 0 | 0 | 0 | 6 |
-| Meta & Infrastructure | 9 | 1 | 2 | 9 |
+| Meta & Infrastructure | 10 | 1 | 2 | 9 |
 | Housekeeping & Hygiene | 0 | 0 | 0 | 1 |
 
 Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
@@ -51,7 +51,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Delivery confirmation correctness | `message_send` | ✅ Verified | Adults | High | Tool now returns send failure when Signal TCP client is unavailable |
 | Slack channel adapter | not built | ❌ Not built | Not rolled out | Medium | Architecture supports it; implementation pending |
 | Slack message search | `slack_search` (not built) | ❌ Not built | Not rolled out | Medium | Needs Slack API integration + auth |
-| SMS channel for non-Signal contacts | `sms_send` | ❌ Spec written | Lee first, then rollout | High | Twilio REST API (no SDK). External contacts registry in `config/contacts.json`. Spec: `specs/SMS-SEND.md`. Decision: `docs/decisions/2026-02-26-outbound-comms-rollout.md`. Lee needs Twilio account + number before deploy. |
+| SMS channel for non-Signal contacts | `sms_send` | ⚠️ Deployed, awaiting Twilio verification | Lee first, then rollout | High | Twilio REST API (no SDK). External contacts registry in `config/contacts.json`. Toll-free number purchased, awaiting carrier verification (1-3 business days). Spec: `specs/SMS-SEND.md`. Decision: `docs/decisions/2026-02-26-outbound-comms-rollout.md`. |
 | Email as a channel (inbound/outbound) | not built | ❌ Not built | Not rolled out | Medium | Distinct from Gmail search/read tools |
 | Voice channel adapter | not built | ❌ Not built | Not rolled out | High | Wyoming/STT/TTS path documented in architecture. Prerequisite for room tablets (Peninsula-style). Needs: STT (Whisper local or HA pipeline), TTS (Piper), wake word or push-to-talk, bridge to Iji brain. Either Iji becomes an HA conversation agent or tablets run custom voice UI hitting Iji API directly. |
 
@@ -209,6 +209,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Elastic IP allocation | AWS infrastructure | ✅ Verified | Not rolled out | High | Allocated and associated (`13.58.219.0`) for stable public endpoint fallback. |
 | AMI snapshot + recovery | AWS infrastructure | ⚠️ Untested | Not rolled out | High | Baseline AMI created (`ami-0650bb542852313f9`); restore drill not yet exercised. |
 | Provision script (documentation) | `scripts/provision-instance.sh` | ✅ Verified | Not rolled out | Medium | Added reference inventory script for EC2 baseline/provisioning documentation. |
+| Feature request intake | `feature_request`, `feature_request_list`, `feature_request_triage` | ✅ Verified | All adults can submit; Lee triages | Medium | Submit (default allow), list + triage (admin only). Morning briefing shows pending count for admin. Spec: `specs/FEATURE-REQUESTS.md`. |
 
 ## 15) 🧹 Housekeeping & Hygiene
 
@@ -235,8 +236,8 @@ Non-Iji tasks that keep the underlying systems (HA, Hue, network, etc.) clean an
 8. Task delegation workflow (`task_create`, `task_query`, `task_update`).
 
 ### Wave C — Communication & Docs Expansion
-9. Gmail write tools (`email_send`, `email_draft`) + OAuth rollout to adults.
-10. Slack and SMS channel adapters.
+9. Gmail `email_draft` + OAuth rollout to adults. (`email_send` shipped.)
+10. Slack channel adapter. (SMS deployed, awaiting Twilio verification.)
 11. Drive tools (`docs_search`, `docs_read`) and document generation flows.
 
 ### Wave D — Household Operations Depth
