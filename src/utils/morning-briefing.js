@@ -93,7 +93,7 @@ async function runMorningBriefingCycle() {
           .get();
         const count = Number(row?.count || 0);
         if (count > 0) {
-          featureRequestsLine = `\n5. 📋 ${count} new feature request${count > 1 ? 's' : ''} to review.`;
+          featureRequestsLine = `\n6. 📋 ${count} new feature request${count > 1 ? 's' : ''} to review.`;
         }
       } catch (err) {
         log.warn('Morning briefing feature request count failed', {
@@ -115,6 +115,7 @@ Check the following and include anything noteworthy:
 2. Current weather and today's forecast — mention only if it affects plans or is notable.
 3. Pending reminders due today or overdue.
 4. Anything stored in household knowledge in the last 24 hours that's relevant to them.
+5. Any tasks assigned to them that are overdue or due today.
 ${featureRequestsLine}
 
 Keep it concise — this is a Signal message, not an email. Lead with the most important item. Skip sections with nothing noteworthy (don't say "no reminders" — just omit). Write like a Chief of Staff giving a 30-second verbal briefing.`,

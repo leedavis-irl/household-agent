@@ -136,6 +136,25 @@ function migrate(db) {
   `);
   db.exec(`CREATE INDEX IF NOT EXISTS idx_feature_requests_status ON feature_requests(status)`);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS tasks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      creator_id TEXT NOT NULL,
+      assignee_id TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'open',
+      priority TEXT NOT NULL DEFAULT 'normal',
+      due_at TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now')),
+      updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      completed_at TEXT
+    )
+  `);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_assignee_status ON tasks(assignee_id, status)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_creator_status ON tasks(creator_id, status)`);
+  db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_status_due ON tasks(status, due_at)`);
+
   const seedGroup = db.prepare(
     'INSERT OR IGNORE INTO signal_groups (group_id, group_name) VALUES (?, ?)'
   );

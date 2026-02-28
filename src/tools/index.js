@@ -21,6 +21,9 @@ import * as reminderUpdate from './reminder-update.js';
 import * as featureRequest from './feature-request.js';
 import * as featureRequestList from './feature-request-list.js';
 import * as featureRequestTriage from './feature-request-triage.js';
+import * as taskCreate from './task-create.js';
+import * as taskQuery from './task-query.js';
+import * as taskUpdate from './task-update.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -48,6 +51,9 @@ const tools = {
   feature_request: featureRequest,
   feature_request_list: featureRequestList,
   feature_request_triage: featureRequestTriage,
+  task_create: taskCreate,
+  task_query: taskQuery,
+  task_update: taskUpdate,
 };
 
 export function getToolDefinitions() {
