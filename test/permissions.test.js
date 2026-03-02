@@ -1,0 +1,91 @@
+import { describe, it, expect } from 'vitest';
+import { checkPermission } from '../src/utils/permissions.js';
+
+describe('checkPermission', () => {
+  it('allows tools with no permission requirements (default allow)', () => {
+    const result = checkPermission([], 'weather_query');
+    expect(result.allowed).toBe(true);
+  });
+
+  it('allows tools with no permission requirements even with empty permissions', () => {
+    const result = checkPermission([], 'some_unknown_tool');
+    expect(result.allowed).toBe(true);
+  });
+
+  it('denies when user has no matching permission', () => {
+    const result = checkPermission(['ha_common'], 'finance_transactions');
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/Permission denied/);
+    expect(result.reason).toMatch(/financial/);
+  });
+
+  it('allows when user has one of the required permissions', () => {
+    const result = checkPermission(['ha_common', 'knowledge_read'], 'knowledge_search');
+    expect(result.allowed).toBe(true);
+  });
+
+  it('allows admin with ha_all for ha_control', () => {
+    const result = checkPermission(['ha_all'], 'ha_control');
+    expect(result.allowed).toBe(true);
+  });
+
+  it('allows ha_office for ha_query', () => {
+    const result = checkPermission(['ha_office'], 'ha_query');
+    expect(result.allowed).toBe(true);
+  });
+
+  it('denies finance tools without financial permission', () => {
+    const adultPerms = ['ha_office', 'ha_common', 'calendar_own', 'knowledge_all'];
+    for (const tool of ['finance_transactions', 'finance_paybacks', 'cost_query']) {
+      const result = checkPermission(adultPerms, tool);
+      expect(result.allowed).toBe(false);
+    }
+  });
+
+  it('denies email_send without email_send permission', () => {
+    const result = checkPermission(['email_own', 'email_all'], 'email_send');
+    expect(result.allowed).toBe(false);
+  });
+
+  it('allows email_search with email_own', () => {
+    const result = checkPermission(['email_own'], 'email_search');
+    expect(result.allowed).toBe(true);
+  });
+
+  it('allows reminder tools with reminders permission', () => {
+    for (const tool of ['reminder_set', 'reminder_list', 'reminder_update', 'reminder_cancel']) {
+      const result = checkPermission(['reminders'], tool);
+      expect(result.allowed).toBe(true);
+    }
+  });
+
+  it('allows task tools with tasks permission', () => {
+    for (const tool of ['task_create', 'task_query', 'task_update']) {
+      const result = checkPermission(['tasks'], tool);
+      expect(result.allowed).toBe(true);
+    }
+  });
+
+  it('denies task tools for a user with no task permissions', () => {
+    const result = checkPermission(['ha_common', 'knowledge_read'], 'task_create');
+    expect(result.allowed).toBe(false);
+  });
+
+  it('child permissions grant limited access', () => {
+    const childPerms = ['ha_common', 'knowledge_read', 'reminders', 'tasks'];
+
+    // Child can do
+    expect(checkPermission(childPerms, 'ha_query').allowed).toBe(true);
+    expect(checkPermission(childPerms, 'knowledge_search').allowed).toBe(true);
+    expect(checkPermission(childPerms, 'reminder_set').allowed).toBe(true);
+    expect(checkPermission(childPerms, 'task_create').allowed).toBe(true);
+    expect(checkPermission(childPerms, 'weather_query').allowed).toBe(true);
+
+    // Child cannot do
+    expect(checkPermission(childPerms, 'knowledge_store').allowed).toBe(false);
+    expect(checkPermission(childPerms, 'message_send').allowed).toBe(false);
+    expect(checkPermission(childPerms, 'email_search').allowed).toBe(false);
+    expect(checkPermission(childPerms, 'finance_transactions').allowed).toBe(false);
+    expect(checkPermission(childPerms, 'sms_send').allowed).toBe(false);
+  });
+});
