@@ -1,5 +1,5 @@
 import { createServer } from 'http';
-import { getDb } from './utils/db.js';
+import { getDb, getSchemaVersion } from './utils/db.js';
 import log from './utils/logger.js';
 
 const PORT = parseInt(process.env.HEALTH_PORT || '3001', 10);
@@ -19,7 +19,7 @@ export function startHealthServer() {
     try {
       const db = getDb();
       const row = db.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table'").get();
-      checks.db = { ok: true, tables: row.n };
+      checks.db = { ok: true, tables: row.n, schema_version: getSchemaVersion() };
     } catch (err) {
       checks.db = { ok: false, error: err.message };
       ok = false;
