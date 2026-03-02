@@ -8,7 +8,7 @@ import { estimateCost } from '../utils/claude-pricing.js';
 import { recordConversationEval } from '../utils/eval-logger.js';
 
 const client = new Anthropic();
-const MODEL = 'claude-sonnet-4-20250514';
+const MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514';
 
 export async function think(envelope, onAcknowledge) {
   const loopStartedAt = Date.now();
