@@ -23,7 +23,11 @@ export async function execute(input, envelope) {
 
   const db = getDb();
   const reminder = db.prepare(
-    `SELECT id, content, target_person_id, requested_by, status
+    `SELECT id,
+            COALESCE(message, content) AS message,
+            COALESCE(target_id, target_person_id) AS target_id,
+            COALESCE(creator_id, requested_by) AS creator_id,
+            status
      FROM reminders WHERE id = ?`
   ).get(reminderId);
 
@@ -39,11 +43,11 @@ export async function execute(input, envelope) {
 
   const actorId = (envelope.person_id || '').toLowerCase();
   const isAdmin = (envelope.role || '').toLowerCase() === 'admin';
-  const canCancel = isAdmin || actorId === reminder.target_person_id || actorId === reminder.requested_by;
+  const canCancel = isAdmin || actorId === reminder.target_id || actorId === reminder.creator_id;
   if (!canCancel) {
     return { error: 'Permission denied: you can only cancel your own reminders unless you are admin.' };
   }
 
   db.prepare(`UPDATE reminders SET status = 'cancelled' WHERE id = ?`).run(reminderId);
-  return { cancelled: true, content: reminder.content };
+  return { cancelled: true, message: reminder.message };
 }

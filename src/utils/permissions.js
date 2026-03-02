@@ -29,6 +29,7 @@ const TOOL_PERMISSIONS = {
   reminder_set: ['reminders', 'reminders_others'],
   reminder_list: ['reminders', 'reminders_others'],
   reminder_update: ['reminders', 'reminders_others'],
+  reminder_cancel: ['reminders', 'reminders_others'],
   task_create: ['tasks', 'tasks_others'],
   task_query: ['tasks', 'tasks_others'],
   task_update: ['tasks', 'tasks_others'],
