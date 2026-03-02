@@ -6,7 +6,7 @@ The backlog is the single source of truth for what to build and fix.
 
 | Bucket | Verified | Fix Pending | Untested | Not Built |
 |--------|----------|-------------|----------|-----------|
-| Scheduling & Coordination | 6 | 0 | 0 | 4 |
+| Scheduling & Coordination | 7 | 0 | 0 | 3 |
 | Communication | 3 | 0 | 1 | 4 |
 | Email & Documents | 2 | 0 | 1 | 5 |
 | Finances | 3 | 0 | 0 | 3 |
@@ -40,7 +40,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Morning briefing opt-in/out | not built | ❌ Not built | Not rolled out | Medium | Adults can subscribe/unsubscribe from daily briefing. Depends on v1. |
 | Morning briefing + Trello tasks | not built | ❌ Not built | Not rolled out | Medium | Pull Lee + Kelly's Trello boards, fit actionable tasks into the day's schedule. Depends on Trello API integration. |
 | Multi-person scheduling negotiation | not built | ❌ Not built | Not rolled out | High | Reasoning layer on top of freebusy |
-| Task delegation + follow-up | `task_create`, `task_query`, `task_update` (not built) | ❌ Not built | Not rolled out | High | Assign/track/follow-up workflow across household members |
+| Task delegation + follow-up | `task_create`, `task_query`, `task_update` | ✅ Verified | Adults with `tasks`/`tasks_others` permissions | High | Assign/track/follow-up workflow across household members. Signal notifications on assignment and completion. |
 
 ## 2) 💬 Communication
 
@@ -233,7 +233,7 @@ Non-Iji tasks that keep the underlying systems (HA, Hue, network, etc.) clean an
 5. Morning briefing opt-in/out controls (config + UX).
 6. Morning briefing + Trello task integration.
 7. Household conflict detection and multi-person scheduling negotiation.
-8. Task delegation workflow (`task_create`, `task_query`, `task_update`).
+8. ~~Task delegation workflow (`task_create`, `task_query`, `task_update`).~~ ✅ Shipped.
 
 ### Wave C — Communication & Docs Expansion
 9. Gmail `email_draft` + OAuth rollout to adults. (`email_send` shipped.)
