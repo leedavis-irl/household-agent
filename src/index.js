@@ -50,3 +50,6 @@ startReminderScheduler();
 
 const { startMorningBriefing } = await import('./utils/morning-briefing.js');
 startMorningBriefing();
+
+const { startHealthServer } = await import('./health.js');
+startHealthServer();

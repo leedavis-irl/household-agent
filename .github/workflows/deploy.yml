@@ -48,17 +48,17 @@ jobs:
       - name: Health check
         id: health
         run: |
-          for i in 1 2 3 4 5; do
-            status=$(ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" \
-              "systemctl is-active iji.service 2>/dev/null || echo failed")
-            if [ "$status" = "active" ]; then
-              echo "Service is active"
+          for i in 1 2 3 4 5 6; do
+            response=$(ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" \
+              "curl -sf http://127.0.0.1:3001/health 2>/dev/null || echo FAIL")
+            if echo "$response" | grep -q '"ok":true'; then
+              echo "Smoke test passed: $response"
               exit 0
             fi
-            echo "Attempt $i: $status, waiting 10s..."
+            echo "Attempt $i: $response, waiting 10s..."
             sleep 10
           done
-          echo "Health check failed"
+          echo "Smoke test failed — service is not healthy"
           exit 1
 
       - name: Rollback on failure
