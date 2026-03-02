@@ -41,6 +41,23 @@ jobs:
           echo "sha=$sha" >> $GITHUB_OUTPUT
           echo "Rollback SHA: $sha"
 
+      - name: Preflight — check required files on server
+        run: |
+          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "set -e
+            cd ${{ env.DEPLOY_DIR }}
+            missing=''
+            for f in .env config/google-service-account.json config/google-oauth-credentials.json; do
+              [ -f \"\$f\" ] || missing=\"\$missing \$f\"
+            done
+            if [ -n \"\$missing\" ]; then
+              echo \"PREFLIGHT FAILED — missing files:\$missing\"
+              echo \"These are gitignored secrets that must be manually placed on the server.\"
+              echo \"See docs/ops/secrets.md for instructions.\"
+              exit 1
+            fi
+            echo 'Preflight passed: all required files present'
+          "
+
       - name: Deploy
         run: |
           ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "set -e; cd ${{ env.DEPLOY_DIR }}; git fetch origin main; git reset --hard origin/main; npm ci; sudo systemctl stop iji.service || true; sleep 15; sudo systemctl start iji.service"
