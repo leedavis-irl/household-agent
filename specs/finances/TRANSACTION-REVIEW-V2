@@ -1,0 +1,58 @@
+# Transaction Review — Spec V2
+
+**Location:** `leedavis-irl/monarch-slack-integration` (standalone repo, runs independently of Iji)  
+**Slack identity:** Posts as Iji (same bot token), but is a discrete background process — not conversational  
+**Status:** Shipped, running in production. This spec documents current behavior and defines V2 improvements.
+
+---
+
+## What It Does (Current / V1)
+
+The Transaction Review process surfaces uncategorized Monarch Money transactions to the household for collaborative review — all without anyone needing to open the Monarch app.
+
+**Weekly batch flow:**
+1. Cron job fires every Sunday at 6 PM
+2. Fetches all transactions from Monarch with `needsReview = true`
+3. Posts each transaction one at a time to the designated Slack channel
+4. Household adults select a category from a dropdown; Monarch is updated and the transaction marked as reviewed
+
+**Adult Pay Backs flow:**
+When "Adult Pay Backs" is selected as a category, Iji follows up asking which household member is claiming the transaction. Ownership is tracked locally in `data/state.json` (Monarch has no owner field). A weekly balance summary shows who owes what net across all tracked paybacks.
+
+**Data store:** Local `data/state.json` on EC2 — tracks posted transaction IDs (to prevent duplicates) and payback ownership records.
+
+**Auth:** Monarch uses a reverse-engineered GraphQL API with session-based auth + TOTP MFA. Session token is cached; re-auth happens automatically on 401.
+
+---
+
+## Known Gaps & V2 Requirements
+
+### 1. Health Monitor (required)
+
+The process currently runs silently — there is no alerting if it fails, falls behind, or loses its Monarch session. Add the following:
+
+**Startup check:** On each cron invocation, verify the Monarch session is valid before doing any work. If invalid, attempt re-auth (including TOTP generation). If re-auth fails, send a Signal message to Lee: *"Transaction Review: Monarch authentication failed. Manual re-auth required."* Do not proceed with the batch.
+
+**Post-run summary to Lee:** After each weekly run, send Lee a brief Signal DM (not to the household channel) summarizing: transactions posted, any errors encountered, session status. Format: *"Transaction Review complete: 14 transactions posted, 0 errors. Next run: Sunday."*
+
+**Stale detection:** If no transactions have been posted in 14 days (two missed Sundays), send Lee a Signal alert. This catches silent cron failures, not just auth errors.
+
+**Signal, not Slack:** Health alerts go to Lee via Signal (same channel Iji uses for system alerts), not to the household Slack channel. Household channel is for financial content only.
+
+### 2. State File Resilience (required)
+
+The current `data/state.json` is a single file on EC2 with no backup. If the instance is rebuilt or the file is lost, the bot will re-post all historical transactions.
+
+**V2 requirement:** On startup, if `state.json` is missing or corrupted, log a warning and start fresh — do not crash. Consider adding a simple backup: copy `state.json` to `state.json.bak` before each write.
+
+### 3. Rename & Reframe (documentation only)
+
+The repo is named `monarch-slack-integration` — functional but opaque. Internal documentation and any future references should use the name **Transaction Review**. No code changes required; this is a naming convention for specs and project tracking only.
+
+### 4. Frequency Option (backlog)
+
+Currently hardcoded to weekly Sunday runs. Some weeks have heavier transaction volume than others. Future consideration: make the schedule configurable via env var, or add a manual trigger command Iji can invoke (`/review transactions now`). Not required for V2.
+
+---
+
+## Architecture (unchanged from V1)
