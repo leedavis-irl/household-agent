@@ -29,7 +29,7 @@ const CAPABILITY_TRIGGERS = {
   calendar: /\b(calendar|schedule|event|meeting|appointment|free|busy|available|book|when)\b/i,
   knowledge: /\b(remember|forgot|know|told you|last time|dinner|plan|logistics)\b/i,
   weather: /\b(weather|rain|cold|hot|umbrella|jacket|forecast|outside)\b/i,
-  finance: /\b(money|spend|cost|transaction|budget|pay|expense|financial)\b/i,
+  finance: /\b(money|spend|cost|transaction|budget|pay|expense|financial|account|balance|net worth|529|invest|cash|burn rate|withhold|equity|RSU|ESPP|tax)\b/i,
   email: /\b(email|inbox|gmail|message from|mail)\b/i,
   sms: /\b(text|sms|txt)\b/i,
   messaging: /\b(tell |send |message |text |relay |let .* know)\b/i,

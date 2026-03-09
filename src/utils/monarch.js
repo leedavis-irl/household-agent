@@ -247,6 +247,63 @@ const GET_CATEGORIES_QUERY = `
   }
 `;
 
+const GET_BUDGET_QUERY = `
+  query GetJointPlanningData($startDate: Date!, $endDate: Date!, $useV2Goals: Boolean!) {
+    budgetData(startMonth: $startDate, endMonth: $endDate) {
+      monthlyAmountsByCategory {
+        category {
+          id
+          __typename
+        }
+        monthlyAmounts {
+          month
+          plannedCashFlowAmount
+          actualAmount
+          remainingAmount
+          __typename
+        }
+        __typename
+      }
+      totalsByMonth {
+        month
+        totalIncome {
+          plannedAmount
+          actualAmount
+          remainingAmount
+          __typename
+        }
+        totalExpenses {
+          plannedAmount
+          actualAmount
+          remainingAmount
+          __typename
+        }
+        __typename
+      }
+      __typename
+    }
+    categoryGroups {
+      id
+      name
+      order
+      type
+      categories {
+        id
+        name
+        order
+        __typename
+      }
+      __typename
+    }
+    goalsV2 @include(if: $useV2Goals) {
+      id
+      name
+      __typename
+    }
+    budgetSystem
+  }
+`;
+
 const GET_TRANSACTIONS_QUERY = `
   query GetTransactionsList($offset: Int, $limit: Int, $filters: TransactionFilterInput, $orderBy: TransactionOrdering) {
     allTransactions(filters: $filters) {
@@ -290,6 +347,32 @@ export async function getCategories() {
     const data = await graphql('GetCategories', GET_CATEGORIES_QUERY, {}, token);
     if (data === 'UNAUTHORIZED') return data;
     return data?.categories ?? [];
+  });
+}
+
+/**
+ * Get budget data for a given month range.
+ * @param {Object} [opts]
+ * @param {string} [opts.startDate] - YYYY-MM-DD (default: first of current month)
+ * @param {string} [opts.endDate] - YYYY-MM-DD (default: last of current month)
+ */
+export async function getBudgets(opts = {}) {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = now.getMonth();
+  const startDate = opts.startDate || `${y}-${String(m + 1).padStart(2, '0')}-01`;
+  const lastDay = new Date(y, m + 1, 0).getDate();
+  const endDate = opts.endDate || `${y}-${String(m + 1).padStart(2, '0')}-${lastDay}`;
+
+  return withAuth(async (token) => {
+    const data = await graphql(
+      'GetJointPlanningData',
+      GET_BUDGET_QUERY,
+      { startDate, endDate, useV2Goals: false },
+      token
+    );
+    if (data === 'UNAUTHORIZED') return data;
+    return data;
   });
 }
 
