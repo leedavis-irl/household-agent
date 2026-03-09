@@ -21,6 +21,8 @@ const TOOL_PERMISSIONS = {
   message_send: ['message_send'],
   finance_transactions: ['financial'],
   finance_paybacks: ['financial'],
+  finance_accounts: ['financial'],
+  finance_budget_summary: ['financial'],
   cost_query: ['financial'],
   email_search: ['email_own', 'email_all'],
   email_read: ['email_own', 'email_all'],

@@ -9,7 +9,7 @@ The backlog is the single source of truth for what to build and fix.
 | Scheduling & Coordination | 7 | 0 | 0 | 3 |
 | Communication | 3 | 0 | 1 | 4 |
 | Email & Documents | 2 | 0 | 1 | 5 |
-| Finances | 3 | 0 | 0 | 3 |
+| Finances | 3 | 0 | 3 | 1 |
 | Home Operations | 4 | 0 | 0 | 11 |
 | Meals & Kitchen | 0 | 0 | 0 | 5 |
 | Children | 0 | 0 | 0 | 4 |
@@ -49,7 +49,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Signal inbound/outbound assistant | `src/broker/signal.js`, `src/router/signal.js` | ✅ Verified | Household on Signal | High | Core channel working in production |
 | Relay/announce to people and groups | `message_send` | ✅ Verified | Adults (`message_send`) | High | Uses Signal + group registry (`signal_groups`) |
 | Delivery confirmation correctness | `message_send` | ✅ Verified | Adults | High | Tool now returns send failure when Signal TCP client is unavailable |
-| Slack channel adapter | not built | ❌ Not built | Not rolled out | Medium | Architecture supports it; implementation pending |
+| Slack channel adapter | not built | ❌ Not built | Not rolled out | Medium | Architecture supports it; implementation pending. Prerequisite for Finances capability across all channels (currently Signal + CLI only). |
 | Slack message search | `slack_search` (not built) | ❌ Not built | Not rolled out | Medium | Needs Slack API integration + auth |
 | SMS channel for non-Signal contacts | `sms_send` | ⚠️ Deployed, awaiting Twilio verification | Lee first, then rollout | High | Twilio REST API (no SDK). External contacts registry in `config/contacts.json`. Toll-free number purchased, awaiting carrier verification (1-3 business days). Spec: `specs/SMS-SEND.md`. Decision: `docs/decisions/2026-02-26-outbound-comms-rollout.md`. |
 | Email as a channel (inbound/outbound) | not built | ❌ Not built | Not rolled out | Medium | Distinct from Gmail search/read tools |
@@ -75,8 +75,9 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Query transactions | `finance_transactions` | ✅ Verified | Lee only (`financial` permission) | High | Verified on EC2 with current Monarch auth/session setup |
 | Payback ledger visibility | `finance_paybacks` | ✅ Verified | Lee only (`financial`) | High | Verified expected behavior: returns "not configured" when state file is absent; no hardcoded Mac path |
 | Cost/usage visibility for Iji | `cost_query` | ✅ Verified | Lee only (`financial`) | Medium | Reads `claude_usage` in SQLite |
-| Account balances snapshot | `finance_balances` (not built) | ❌ Not built | Not rolled out | Medium | Planned Monarch-derived capability |
-| Budget tracking by category | `finance_budget` (not built) | ❌ Not built | Not rolled out | Medium | Planned Monarch-derived capability |
+| Account balances snapshot | `finance_accounts` | ⚠️ Untested | Lee only (`financial`) | High | Phase 1 Finances capability. Wraps `monarch.getAccounts()`. Spec: `specs/finances/FINANCES-CAPABILITY.md` |
+| Budget tracking by category | `finance_budget_summary` | ⚠️ Untested | Lee only (`financial`) | High | Phase 1 Finances capability. New `getBudgets()` GraphQL query. Spec: `specs/finances/FINANCES-CAPABILITY.md` |
+| Financial reasoning (prompt) | system prompt | ⚠️ Untested | Lee only (`financial`) | High | Phase 1. Capability prompt with tax context, equity withholding reasoning, advisor tone. |
 | Bill due reminders | not built | ❌ Not built | Not rolled out | Low | Proactive feature from status/backlog |
 
 ## 5) 🏠 Home Operations

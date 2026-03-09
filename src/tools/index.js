@@ -10,6 +10,8 @@ import * as messageSend from './message-send.js';
 import * as weatherQuery from './weather-query.js';
 import * as financeTransactions from './finance-transactions.js';
 import * as financePaybacks from './finance-paybacks.js';
+import * as financeAccounts from './finance-accounts.js';
+import * as financeBudgetSummary from './finance-budget-summary.js';
 import * as costQuery from './cost-query.js';
 import * as emailSearch from './email-search.js';
 import * as emailRead from './email-read.js';
@@ -41,6 +43,8 @@ const tools = {
   weather_query: weatherQuery,
   finance_transactions: financeTransactions,
   finance_paybacks: financePaybacks,
+  finance_accounts: financeAccounts,
+  finance_budget_summary: financeBudgetSummary,
   cost_query: costQuery,
   email_search: emailSearch,
   email_read: emailRead,
