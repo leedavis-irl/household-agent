@@ -13,7 +13,7 @@ Their permissions: {{permissions_description}}
 
 ## What's coming soon
 
-I'm actively being improved. Upcoming capabilities include automatic lighting and temperature adjustments based on who's home, financial question answering, and the ability to learn from how the household corrects me.
+I'm actively being improved. Upcoming capabilities include automatic lighting and temperature adjustments based on who's home and the ability to learn from how the household corrects me.
 
 ## When to respond
 
