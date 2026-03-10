@@ -30,7 +30,7 @@ Runtime environment variables. Without this the service won't start.
 **How to update:** SSH in, edit the file, restart the service.
 
 ```bash
-ssh ubuntu@100.124.0.46
+ssh ubuntu@34.208.73.189
 cd /home/ubuntu/household-agent
 nano .env
 sudo systemctl restart iji.service
@@ -47,7 +47,7 @@ delegation). Required for all calendar tools.
 1. Create a new key in the Cloud Console.
 2. SCP the file to the server:
    ```bash
-   scp google-service-account.json ubuntu@100.124.0.46:/home/ubuntu/household-agent/config/
+   scp google-service-account.json ubuntu@34.208.73.189:/home/ubuntu/household-agent/config/
    ```
 3. Restart the service: `sudo systemctl restart iji.service`
 4. Delete the old key in the Cloud Console.
@@ -76,7 +76,7 @@ browser, then SCP the updated tokens file to the server.
 # On your local machine:
 node scripts/gmail-auth.js <member_id>
 # Follow the browser OAuth flow, then:
-scp data/oauth-tokens.json ubuntu@100.124.0.46:/home/ubuntu/household-agent/data/
+scp data/oauth-tokens.json ubuntu@34.208.73.189:/home/ubuntu/household-agent/data/
 ```
 
 ### `data/monarch-session.json`
@@ -90,7 +90,7 @@ SQLite database. Created automatically on first startup. Migrations run inline.
 Back up periodically:
 
 ```bash
-ssh ubuntu@100.124.0.46
+ssh ubuntu@34.208.73.189
 cp /home/ubuntu/household-agent/data/iji.db ~/backups/iji-$(date +%Y%m%d).db
 ```
 
@@ -100,9 +100,7 @@ These are configured in the GitHub repo settings, not on the server filesystem:
 
 | Secret | Purpose |
 |--------|---------|
-| `EC2_SSH_KEY` | SSH private key for `ubuntu@100.124.0.46` |
-| `TS_OAUTH_CLIENT_ID` | Tailscale OAuth client for CI connectivity |
-| `TS_OAUTH_SECRET` | Tailscale OAuth secret |
+| `EC2_SSH_KEY` | SSH private key for `ubuntu@34.208.73.189` |
 
 ## Checklist for new EC2 instance
 
