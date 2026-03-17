@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@slack/bolt": "^4.6.0",
     "better-sqlite3": "^12.6.2",
     "dotenv": "^16.4.7",
     "googleapis": "^171.4.0",
