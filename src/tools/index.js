@@ -27,6 +27,8 @@ import * as featureRequestTriage from './feature-request-triage.js';
 import * as taskCreate from './task-create.js';
 import * as taskQuery from './task-query.js';
 import * as taskUpdate from './task-update.js';
+import * as briefingSubscribe from './briefing-subscribe.js';
+import * as briefingStatus from './briefing-status.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -60,6 +62,8 @@ const tools = {
   task_create: taskCreate,
   task_query: taskQuery,
   task_update: taskUpdate,
+  briefing_subscribe: briefingSubscribe,
+  briefing_status: briefingStatus,
 };
 
 export function getToolDefinitions() {

@@ -22,6 +22,7 @@ const capabilityFiles = {
   reminders: 'reminders.md',
   'feature-requests': 'feature-requests.md',
   tasks: 'tasks.md',
+  briefing: 'briefing.md',
 };
 
 const CAPABILITY_TRIGGERS = {
@@ -35,6 +36,7 @@ const CAPABILITY_TRIGGERS = {
   messaging: /\b(tell |send |message |text |relay |let .* know)\b/i,
   reminders: /\b(remind|reminder|reminders|don't forget|don't let me forget|nudge|follow up|snooze)\b/i,
   tasks: /\b(task|tasks|to.?do|to.?dos|assign|assigned|overdue|delegate|action item)\b/i,
+  briefing: /\b(briefing|morning briefing|daily briefing|subscribe|unsubscribe|opt.in|opt.out)\b/i,
 };
 
 function loadCapability(fileName) {

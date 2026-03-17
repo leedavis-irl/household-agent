@@ -35,6 +35,8 @@ const TOOL_PERMISSIONS = {
   task_create: ['tasks', 'tasks_others'],
   task_query: ['tasks', 'tasks_others'],
   task_update: ['tasks', 'tasks_others'],
+  briefing_subscribe: ['briefing_manage'],
+  briefing_status: ['briefing_manage'],
 };
 
 export function checkPermission(personPermissions, toolName) {

@@ -24,7 +24,8 @@
         "email_send",
         "sms_send",
         "tasks",
-        "tasks_others"
+        "tasks_others",
+        "briefing_manage"
       ],
       "briefing": {
         "enabled": true,
@@ -51,7 +52,8 @@
         "reminders",
         "reminders_others",
         "tasks",
-        "tasks_others"
+        "tasks_others",
+        "briefing_manage"
       ]
     },
     "kelly": {
@@ -74,7 +76,8 @@
         "reminders",
         "reminders_others",
         "tasks",
-        "tasks_others"
+        "tasks_others",
+        "briefing_manage"
       ],
       "briefing": {
         "enabled": true,
@@ -101,7 +104,8 @@
         "reminders",
         "reminders_others",
         "tasks",
-        "tasks_others"
+        "tasks_others",
+        "briefing_manage"
       ]
     },
     "firen": {
@@ -123,7 +127,8 @@
         "reminders",
         "reminders_others",
         "tasks",
-        "tasks_others"
+        "tasks_others",
+        "briefing_manage"
       ]
     },
     "ryker": {
@@ -224,6 +229,7 @@
     "email_send": "Send email from your own Gmail account",
     "sms_send": "Send SMS text messages to external contacts via Twilio",
     "tasks": "Create, query, and update your own tasks",
-    "tasks_others": "Assign tasks to others, query and update others' tasks"
+    "tasks_others": "Assign tasks to others, query and update others' tasks",
+    "briefing_manage": "Subscribe, unsubscribe, and configure morning briefing delivery"
   }
 }

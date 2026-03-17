@@ -182,8 +182,22 @@ const MIGRATIONS = [
       seedGroup.run('wABSnPZyvqntyh5NdUSwgNGcCBXCpeuEAYZUoAGchsM=', 'Avalon Logistics');
     },
   },
+  {
+    version: 2,
+    description: 'Briefing preferences table for opt-in/out',
+    up(db) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS briefing_preferences (
+          person_id TEXT PRIMARY KEY,
+          enabled INTEGER NOT NULL,
+          delivery_hour INTEGER,
+          updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+          updated_by TEXT NOT NULL
+        )
+      `);
+    },
+  },
   // Future migrations go here:
-  // { version: 2, description: '...', up(db) { ... } },
 ];
 
 function migrate(db) {

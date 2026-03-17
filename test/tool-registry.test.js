@@ -61,6 +61,7 @@ describe('tool registry integrity', () => {
       'reminder_set', 'reminder_list', 'reminder_update', 'reminder_cancel',
       'feature_request', 'feature_request_list', 'feature_request_triage',
       'task_create', 'task_query', 'task_update',
+      'briefing_subscribe', 'briefing_status',
     ];
     for (const name of expected) {
       expect(names.has(name), `missing tool: ${name}`).toBe(true);
@@ -83,6 +84,7 @@ describe('tool modules have execute functions', () => {
     'reminder-set', 'reminder-list', 'reminder-update', 'reminder-cancel',
     'feature-request', 'feature-request-list', 'feature-request-triage',
     'task-create', 'task-query', 'task-update',
+    'briefing-subscribe', 'briefing-status',
   ];
 
   for (const file of toolFiles) {

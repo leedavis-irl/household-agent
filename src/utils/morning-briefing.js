@@ -2,6 +2,7 @@ import { think } from '../brain/index.js';
 import { getHousehold } from './config.js';
 import { getDb } from './db.js';
 import { sendMessage } from '../broker/signal.js';
+import { getEffectiveBriefingConfig } from './briefing-preferences.js';
 import log from './logger.js';
 
 const CHECK_INTERVAL_MS = 60 * 1000;
@@ -61,11 +62,11 @@ async function runMorningBriefingCycle() {
 
   const household = getHousehold();
   for (const [personId, member] of Object.entries(household.members || {})) {
-    const briefing = member?.briefing;
-    if (!briefing?.enabled) continue;
-    const deliveryHour = Number(briefing.delivery_hour);
+    const config = getEffectiveBriefingConfig(personId, member);
+    if (!config?.enabled) continue;
+    const deliveryHour = config.deliveryHour;
     if (!Number.isInteger(deliveryHour) || deliveryHour < 0 || deliveryHour > 23) {
-      log.warn('Morning briefing skipped: invalid delivery_hour', { person_id: personId, delivery_hour: briefing.delivery_hour });
+      log.warn('Morning briefing skipped: invalid delivery_hour', { person_id: personId, delivery_hour: deliveryHour });
       continue;
     }
     if (hour < deliveryHour) continue;

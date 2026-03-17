@@ -8,7 +8,7 @@ Organized into **7 Spheres** (domain capabilities serving the household) and the
 
 | Section | Verified | Fix Pending | Untested | Not Built |
 |---------|----------|-------------|----------|-----------|
-| Scheduling & Logistics | 9 | 0 | 0 | 8 |
+| Scheduling & Logistics | 10 | 0 | 0 | 7 |
 | Property & Home | 4 | 0 | 0 | 24 |
 | Finances | 5 | 0 | 0 | 1 |
 | People & Relationships | 0 | 0 | 0 | 5 |
@@ -36,7 +36,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Household conflict detection | not built | ❌ Not built | Not rolled out | Medium | Detect double-bookings, kid pickup conflicts, shared-car conflicts |
 | Reminder lifecycle (set/list/fire) | `reminder_set`, `reminder_list`, `reminder_update` | ✅ Verified | Adults with `reminders` + `reminders_others` | High | Spec: `specs/REMINDERS-V1.md`. Decision: `docs/decisions/2026-02-26-reminders-v1.md`. Time-based reminders, 60s scheduler, follow-up cycling, cross-person with creator notifications. Scheduler infrastructure reusable for morning briefings. |
 | Morning briefing (v1) | `src/utils/morning-briefing.js` | ✅ Verified | Lee + Kelly | High | 9am Pacific daily Signal DM. Calendar, weather, reminders, knowledge. Per-person delivery hour in household.json. Email digest deferred to v2. Spec: `specs/MORNING-BRIEFINGS-V1.md`. Decision: `docs/decisions/2026-02-26-morning-briefings-v1.md`. |
-| Morning briefing opt-in/out | not built | ❌ Not built | Not rolled out | Medium | Adults can subscribe/unsubscribe from daily briefing. Depends on v1. |
+| Morning briefing opt-in/out | `briefing_subscribe`, `briefing_status` | ✅ Verified | Adults with `briefing_manage` | Medium | SQLite preferences overlay household.json defaults. Adults can opt in/out and set delivery hour via conversation. |
 | Morning briefing + Trello tasks | not built | ❌ Not built | Not rolled out | Medium | Pull Lee + Kelly's Trello boards, fit actionable tasks into the day's schedule. Depends on Trello API integration. |
 | Multi-person scheduling negotiation | not built | ❌ Not built | Not rolled out | High | Reasoning layer on top of freebusy |
 | Task delegation + follow-up | `task_create`, `task_query`, `task_update` | ✅ Verified | Adults with `tasks`/`tasks_others` permissions | High | Assign/track/follow-up workflow across household members. Signal notifications on assignment and completion. |
