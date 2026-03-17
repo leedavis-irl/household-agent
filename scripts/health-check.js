@@ -260,6 +260,8 @@ async function main() {
   rows.push(toRow('calendar_freebusy', 'calendar-freebusy.js', serviceAccountCheck, 'Google service account file exists'));
   rows.push(toRow('message_send', 'message-send.js', signalCheck, 'Signal daemon reachable on TCP 7583'));
   rows.push(toRow('weather_query', 'weather-query.js', nwsCheck, 'NWS endpoint reachable'));
+  rows.push(toRow('finance_accounts', 'finance-accounts.js', monarchCheck, 'Monarch auth health check'));
+  rows.push(toRow('finance_budget_summary', 'finance-budget-summary.js', monarchCheck, 'Monarch auth health check'));
   rows.push(toRow('finance_transactions', 'finance-transactions.js', monarchCheck, 'Monarch auth health check'));
   rows.push(toRow('finance_paybacks', 'finance-paybacks.js', financePaybacksCheck, 'Paybacks state-file dependency'));
   rows.push(toRow('cost_query', 'cost-query.js', dbCheck, 'SQLite claude_usage table'));

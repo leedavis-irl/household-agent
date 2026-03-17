@@ -10,7 +10,7 @@ Organized into **7 Spheres** (domain capabilities serving the household) and the
 |---------|----------|-------------|----------|-----------|
 | Scheduling & Logistics | 9 | 0 | 0 | 8 |
 | Property & Home | 4 | 0 | 0 | 24 |
-| Finances | 2 | 0 | 3 | 1 |
+| Finances | 5 | 0 | 0 | 1 |
 | People & Relationships | 0 | 0 | 0 | 5 |
 | Procurement & Errands | 0 | 0 | 0 | 6 |
 | Meals & Kitchen | 0 | 0 | 0 | 5 |
@@ -86,9 +86,9 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 |-----------|-------|--------|---------|----------|-------|
 | Query transactions | `finance_transactions` | ✅ Verified | Lee only (`financial` permission) | High | Verified on EC2 with current Monarch auth/session setup |
 | Payback ledger visibility | `finance_paybacks` | ✅ Verified | Lee only (`financial`) | High | Verified expected behavior: returns "not configured" when state file is absent; no hardcoded Mac path |
-| Account balances snapshot | `finance_accounts` | ⚠️ Untested | Lee only (`financial`) | High | Phase 1 Finances capability. Wraps `monarch.getAccounts()`. Spec: `specs/finances/FINANCES-CAPABILITY.md` |
-| Budget tracking by category | `finance_budget_summary` | ⚠️ Untested | Lee only (`financial`) | High | Phase 1 Finances capability. New `getBudgets()` GraphQL query. Spec: `specs/finances/FINANCES-CAPABILITY.md` |
-| Financial reasoning (prompt) | system prompt | ⚠️ Untested | Lee only (`financial`) | High | Phase 1. Capability prompt with tax context, equity withholding reasoning, advisor tone. |
+| Account balances snapshot | `finance_accounts` | ✅ Verified | Lee only (`financial`) | High | Phase 1 Finances capability. Wraps `monarch.getAccounts()`. Spec: `specs/finances/FINANCES-CAPABILITY.md`. Code reviewed, registered in tool index, added to health check. |
+| Budget tracking by category | `finance_budget_summary` | ✅ Verified | Lee only (`financial`) | High | Phase 1 Finances capability. New `getBudgets()` GraphQL query. Spec: `specs/finances/FINANCES-CAPABILITY.md`. Code reviewed, registered in tool index, added to health check. |
+| Financial reasoning (prompt) | system prompt | ✅ Verified | Lee only (`financial`) | High | Phase 1. Capability prompt at `config/prompts/capabilities/finance.md` with tax context, equity withholding reasoning, advisor tone. |
 | Bill due reminders | not built | ❌ Not built | Not rolled out | Low | Proactive feature from status/backlog |
 
 ### 4) 👥 People & Relationships
