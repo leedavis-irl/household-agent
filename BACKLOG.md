@@ -17,7 +17,7 @@ Organized into **7 Spheres** (domain capabilities serving the household) and the
 | Children | 0 | 0 | 0 | 4 |
 | Engine › Communication | 6 | 0 | 2 | 8 |
 | Engine › Memory | 2 | 0 | 0 | 7 |
-| Engine › Infrastructure | 10 | 1 | 2 | 6 |
+| Engine › Infrastructure | 12 | 0 | 1 | 6 |
 
 Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
@@ -175,9 +175,9 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Capability | Tools | Status | Rollout | Priority | Notes |
 |-----------|-------|--------|---------|----------|-------|
 | Cost telemetry query | `cost_query` | ✅ Verified | Lee only (`financial`) | Medium | Reads `claude_usage` in SQLite. Useful for governance and budget checks |
-| Secret synchronization hygiene | not built | 🔧 Fix pending | Not rolled out | High | CI deploys code but not gitignored secret files |
+| Secret synchronization hygiene | `docs/ops/secrets.md` | ✅ Verified | Not rolled out | High | Runbook at `docs/ops/secrets.md`. Deploy preflight checks required files. `.env.example` audited complete. New-instance checklist included. |
 | Environment template completeness | not built | ✅ Verified | Not rolled out | Medium | `.env.example` now documents required/optional runtime env vars |
-| Daily automated health checks | `scripts/health-check.js` | ⚠️ Untested | Lee only alerts | High | Script exists, checks all external dependencies (HA, Signal, NWS, OAuth, Monarch, SQLite), writes STATUS.md, DMs Lee on failure. Built pre-protocol with no design doc. Cron job not confirmed on EC2. Needs operationalization. |
+| Daily automated health checks | `scripts/health-check.js` | ✅ Verified | Lee only alerts | High | Cron installed on EC2 (daily 7:05 AM UTC). STATUS.md written, DMs Lee on failure. Runbook: `docs/ops/health-check.md`. Operationalized in commit `9f8aab6`. |
 | Conversation eval logging (prompt optimization phase 1) | `conversation_evals`, `src/utils/eval-logger.js` | ✅ Verified | Not rolled out | Medium | Logs completed brain loops with tools/tokens/cost/latency (commit `a7751fc`) |
 | Security hardening wave | not built | ❌ Not built | Not rolled out | Medium | Scope audits, key rotation, access review, abuse controls |
 | Web search capability | `web_search` (not built) | ❌ Not built | Not rolled out | Medium | Evaluate Brave/Tavily/SerpAPI |
