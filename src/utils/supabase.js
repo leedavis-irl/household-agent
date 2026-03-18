@@ -34,6 +34,58 @@ export async function query(table, params = '') {
   return res.json();
 }
 
+export async function insert(table, row) {
+  if (!isConfigured()) {
+    throw new Error('Supabase not configured — set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env');
+  }
+
+  const url = `${SUPABASE_URL}/rest/v1/${table}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    },
+    body: JSON.stringify(row),
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    log.error('Supabase insert failed', { table, status: res.status, body: text.slice(0, 200) });
+    throw new Error(`Supabase insert failed (${res.status}): ${text.slice(0, 200)}`);
+  }
+
+  return res.json();
+}
+
+export async function uploadFile(bucket, path, buffer, contentType) {
+  if (!isConfigured()) {
+    throw new Error('Supabase not configured — set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env');
+  }
+
+  const url = `${SUPABASE_URL}/storage/v1/object/${encodeURIComponent(bucket)}/${path}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': contentType,
+      'x-upsert': 'true',
+    },
+    body: buffer,
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    log.error('Supabase storage upload failed', { bucket, path, status: res.status, body: text.slice(0, 200) });
+    throw new Error(`Supabase storage upload failed (${res.status}): ${text.slice(0, 200)}`);
+  }
+
+  return `${SUPABASE_URL}/storage/v1/object/public/${encodeURIComponent(bucket)}/${path}`;
+}
+
 export async function rpc(fn, params = {}) {
   if (!isConfigured()) {
     throw new Error('Supabase not configured — set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY in .env');

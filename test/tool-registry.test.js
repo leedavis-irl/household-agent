@@ -62,7 +62,7 @@ describe('tool registry integrity', () => {
       'feature_request', 'feature_request_list', 'feature_request_triage',
       'task_create', 'task_query', 'task_update',
       'web_search',
-      'education_profile', 'education_documents', 'education_goals', 'education_team',
+      'education_profile', 'education_documents', 'education_goals', 'education_team', 'education_upload',
       'docs_search', 'docs_read',
       'slack_search',
     ];
@@ -88,7 +88,7 @@ describe('tool modules have execute functions', () => {
     'feature-request', 'feature-request-list', 'feature-request-triage',
     'task-create', 'task-query', 'task-update',
     'web-search',
-    'education-profile', 'education-documents', 'education-goals', 'education-team',
+    'education-profile', 'education-documents', 'education-goals', 'education-team', 'education-upload',
     'docs-search', 'docs-read',
     'slack-search',
   ];

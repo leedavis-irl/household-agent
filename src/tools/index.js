@@ -40,6 +40,7 @@ import * as webSearch from './web-search.js';
 import * as docsSearch from './docs-search.js';
 import * as docsRead from './docs-read.js';
 import * as slackSearch from './slack-search.js';
+import * as educationUpload from './education-upload.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -82,6 +83,7 @@ const tools = {
   education_documents: educationDocuments,
   education_goals: educationGoals,
   education_team: educationTeam,
+  education_upload: educationUpload,
   web_search: webSearch,
   docs_search: docsSearch,
   docs_read: docsRead,
