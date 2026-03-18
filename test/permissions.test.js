@@ -71,6 +71,17 @@ describe('checkPermission', () => {
     expect(result.allowed).toBe(false);
   });
 
+  it('allows web_search with web_search permission', () => {
+    const result = checkPermission(['web_search'], 'web_search');
+    expect(result.allowed).toBe(true);
+  });
+
+  it('denies web_search without web_search permission', () => {
+    const result = checkPermission(['ha_common', 'knowledge_read'], 'web_search');
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/web_search/);
+  });
+
   it('child permissions grant limited access', () => {
     const childPerms = ['ha_common', 'knowledge_read', 'reminders', 'tasks'];
 
@@ -87,5 +98,6 @@ describe('checkPermission', () => {
     expect(checkPermission(childPerms, 'email_search').allowed).toBe(false);
     expect(checkPermission(childPerms, 'finance_transactions').allowed).toBe(false);
     expect(checkPermission(childPerms, 'sms_send').allowed).toBe(false);
+    expect(checkPermission(childPerms, 'web_search').allowed).toBe(false);
   });
 });

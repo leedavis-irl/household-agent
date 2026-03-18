@@ -43,6 +43,7 @@ const TOOL_PERMISSIONS = {
   education_documents: ['education'],
   education_goals: ['education'],
   education_team: ['education'],
+  web_search: ['web_search'],
 };
 
 export function checkPermission(personPermissions, toolName) {

@@ -23,6 +23,7 @@ const capabilityFiles = {
   'feature-requests': 'feature-requests.md',
   tasks: 'tasks.md',
   education: 'education.md',
+  'web-search': 'web-search.md',
 };
 
 const CAPABILITY_TRIGGERS = {
@@ -37,6 +38,7 @@ const CAPABILITY_TRIGGERS = {
   reminders: /\b(remind|reminder|reminders|don't forget|don't let me forget|nudge|follow up|snooze|briefing|morning briefing)\b/i,
   tasks: /\b(task|tasks|to.?do|to.?dos|assign|assigned|overdue|delegate|action item)\b/i,
   education: /\b(school|grade|teacher|tutor|IEP|504|accommodation|assessment|DIBELS|STAR|CAASPP|report card|education|learning|neuropsych|dyslexia|ADHD|homework|reading level|math level|curriculum)\b/i,
+  'web-search': /\b(search|google|look up|look it up|find out|what is|who is|latest|news|current|hours|open|price|cost of|how much|website|online|recent|today's|is .* open)\b/i,
 };
 
 function loadCapability(fileName) {

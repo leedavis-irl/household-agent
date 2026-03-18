@@ -35,6 +35,7 @@ import * as educationProfile from './education-profile.js';
 import * as educationDocuments from './education-documents.js';
 import * as educationGoals from './education-goals.js';
 import * as educationTeam from './education-team.js';
+import * as webSearch from './web-search.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -76,6 +77,7 @@ const tools = {
   education_documents: educationDocuments,
   education_goals: educationGoals,
   education_team: educationTeam,
+  web_search: webSearch,
 };
 
 export function getToolDefinitions() {
