@@ -72,8 +72,8 @@ This has the same null problem. Use `person.identifiers?.signal || senderNumber`
 ## Testing
 
 1. Restart Iji: `sudo systemctl restart iji.service`
-2. Send a DM to Iji (+17074748930) from Lee's phone
-3. Logs should show `"recipient":"+13392360070"` (Lee's number) instead of `"recipient":null`
+2. Send a DM to Iji (+1XXXXXXXXXX) from Lee's phone
+3. Logs should show `"recipient":"+1XXXXXXXXXX"` (Lee's number) instead of `"recipient":null`
 4. Lee should receive the reply in Signal
 5. Also test: send a message in a group chat with @Iji mention — reply should go to the group, not DM
 

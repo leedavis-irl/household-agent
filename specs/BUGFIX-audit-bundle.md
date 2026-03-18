@@ -112,7 +112,7 @@ return { sent: true, to: member.display_name };
 
 ```
 # === Signal ===
-SIGNAL_ACCOUNT=+17074748930
+SIGNAL_ACCOUNT=+1XXXXXXXXXX
 SIGNAL_ENABLED=true
 # Path to signal-cli binary. Mac default: /opt/homebrew/bin/signal-cli
 # EC2 default: /opt/signal-cli-0.13.24/bin/signal-cli

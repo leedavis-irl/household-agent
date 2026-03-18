@@ -51,8 +51,8 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
 | Capability | Tools | Status | Rollout | Priority | Notes |
 |-----------|-------|--------|---------|----------|-------|
-| Query home/device state | `ha_query` | ✅ Verified | All members with HA permissions | High | Uses HA REST API + token; EC2 reaches HA via Tailscale (`100.127.233.50`) |
-| Control devices | `ha_control` | ✅ Verified | Adults/admin per permissions | High | Area-gated control path works; EC2 reaches HA via Tailscale (`100.127.233.50`) |
+| Query home/device state | `ha_query` | ✅ Verified | All members with HA permissions | High | Uses HA REST API + token; EC2 reaches HA via Tailscale (`<TAILSCALE_IP>`) |
+| Control devices | `ha_control` | ✅ Verified | Adults/admin per permissions | High | Area-gated control path works; EC2 reaches HA via Tailscale (`<TAILSCALE_IP>`) |
 | HA area permission robustness | `ha_control` | ✅ Verified | Adults/admin | Medium | Commit `1cdf063`. Spec: `docs/specs/bugfix-hue-area-permissions.md`. Steve's permission-denied tests still pending. |
 | Presence query ("who is home") | `ha_query` (`person.*`) | ✅ Verified | Adults with HA permissions | Medium | Works for members with presence configured (Lee, Steve, Hallie confirmed). Steve and Firen need to complete presence device setup. |
 | Ambient automation (lights/blinds/climate) | not built | ❌ Not built | Not rolled out | Medium | Predecessor `claude-home-agent` (AppDaemon) disabled due to feedback loops, runaway API costs, and stateless oscillation. Revisit as Iji-native capability with: event batching, cost ceiling, action memory, opt-in scope. Code archived at `~/Projects/Home/claude-home-agent/`. |
@@ -188,8 +188,8 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Context file audit | `ARCHITECTURE.md`, `.cursorrules`, `DEV-PROTOCOL.md` | ✅ Verified | Not rolled out | High | Completed via `specs/CONTEXT-AUDIT.md` (commit `48fbd5a`). Decision: `docs/decisions/2026-02-25-context-audit.md` |
 | Layered context architecture | `src/brain/prompt.js`, `config/prompts/` | ✅ Verified | Not rolled out | High | Phase 1+2 shipped and verified in production (`055ecab`, `8846e8e`): split prompt + intent-based selective loading. Phase 3 (token measurement) still pending as separate item. Decision: `docs/decisions/2026-02-25-layered-context.md` |
 | Prompt optimization loop | `scripts/eval-conversations.js`, `scripts/optimize-prompt.js` | ✅ Verified | Not rolled out | Medium | Step 1 shipped and verified (conversation_evals table + logger, used for briefing dedup). Batch eval script + optimizer still pending. Decision: `docs/decisions/2026-02-25-prompt-optimization.md` |
-| Tailscale CI/CD migration | `.github/workflows/deploy.yml`, `scripts/*.sh` | ✅ Verified | Not rolled out | **Critical** | Completed: deploy workflow and manual scripts now default to Tailscale host (`100.124.0.46`). Spec: `specs/INFRA-RELIABILITY.md`. Decision: `docs/decisions/2026-02-25-infra-reliability.md` |
-| Elastic IP allocation | AWS infrastructure | ✅ Verified | Not rolled out | High | Allocated and associated (`13.58.219.0`) for stable public endpoint fallback. |
+| Tailscale CI/CD migration | `.github/workflows/deploy.yml`, `scripts/*.sh` | ✅ Verified | Not rolled out | **Critical** | Completed: deploy workflow and manual scripts now default to Tailscale host (`<TAILSCALE_HOST>`). Spec: `specs/INFRA-RELIABILITY.md`. Decision: `docs/decisions/2026-02-25-infra-reliability.md` |
+| Elastic IP allocation | AWS infrastructure | ✅ Verified | Not rolled out | High | Allocated and associated (`<OLD_EC2_IP>`) for stable public endpoint fallback. |
 | AMI snapshot + recovery | AWS infrastructure | ⚠️ Untested | Not rolled out | High | Baseline AMI created (`ami-0650bb542852313f9`); restore drill not yet exercised. |
 | Provision script (documentation) | `scripts/provision-instance.sh` | ✅ Verified | Not rolled out | Medium | Added reference inventory script for EC2 baseline/provisioning documentation. |
 | Feature request intake | `feature_request`, `feature_request_list`, `feature_request_triage` | ✅ Verified | All adults can submit; Lee triages | Medium | Submit (default allow), list + triage (admin only). Morning briefing shows pending count for admin. Spec: `specs/FEATURE-REQUESTS.md`. |

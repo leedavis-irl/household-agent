@@ -5,7 +5,7 @@
 set -e
 
 SSH_KEY="${SSH_KEY:-$HOME/.ssh/lees-alpha-trading.pem}"
-HOST="${DEPLOY_HOST:-100.124.0.46}"
+HOST="${DEPLOY_HOST:?Set DEPLOY_HOST env var}"
 USER="${DEPLOY_USER:-ubuntu}"
 DIR="${DEPLOY_DIR:-/home/ubuntu/household-agent}"
 SIGNAL_CLI_PATH="${SIGNAL_CLI_PATH:-/opt/signal-cli-0.13.24/bin/signal-cli}"

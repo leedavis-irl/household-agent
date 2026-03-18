@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 env:
-  DEPLOY_HOST: "34.208.73.189"
+  DEPLOY_HOST: "${{ secrets.DEPLOY_HOST }}"
   DEPLOY_USER: "ubuntu"
   DEPLOY_DIR: "/home/ubuntu/household-agent"
 

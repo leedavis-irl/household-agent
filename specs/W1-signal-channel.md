@@ -8,7 +8,7 @@ Now add Signal as the first real messaging channel so household members can text
 
 ## Signal Infrastructure
 
-**signal-cli** is already installed (version 0.13.24) and registered with the Google Voice number `+17074748930`. Local dev: `/opt/homebrew/bin/signal-cli`; account data at `~/.local/share/signal-cli/data/`. Production (EC2): `/opt/signal-cli-0.13.24/bin/signal-cli`; the app reads `SIGNAL_CLI_PATH` from the environment. No other process may use the same account (OpenClaw has been killed and disabled).
+**signal-cli** is already installed (version 0.13.24) and registered with the Google Voice number `+1XXXXXXXXXX`. Local dev: `/opt/homebrew/bin/signal-cli`; account data at `~/.local/share/signal-cli/data/`. Production (EC2): `/opt/signal-cli-0.13.24/bin/signal-cli`; the app reads `SIGNAL_CLI_PATH` from the environment. No other process may use the same account (OpenClaw has been killed and disabled).
 
 ## What to Build
 
@@ -17,7 +17,7 @@ Now add Signal as the first real messaging channel so household members can text
 Use signal-cli's **daemon mode** via child_process:
 
 ```
-signal-cli -a +17074748930 daemon --json
+signal-cli -a +1XXXXXXXXXX daemon --json
 ```
 
 This spawns signal-cli as a long-running subprocess that:
@@ -56,7 +56,7 @@ The signal broker module should expose a way for the router to send messages. Th
 
 - Import and start Signal alongside CLI
 - Signal should start in the background (don't block CLI)
-- Add env var `SIGNAL_ACCOUNT` (default: `+17074748930`) and `SIGNAL_ENABLED` (default: `true`)
+- Add env var `SIGNAL_ACCOUNT` (default: `+1XXXXXXXXXX`) and `SIGNAL_ENABLED` (default: `true`)
 - If `SIGNAL_ENABLED=false` or signal-cli is not found, skip gracefully
 
 ### 4. Update Router (`src/router/index.js`)
@@ -71,7 +71,7 @@ Update Lee's signal identifier to the real phone number:
 ```json
 "lee": {
   "identifiers": {
-    "signal": "+13392360070",
+    "signal": "+1XXXXXXXXXX",
     ...
   }
 }
@@ -83,7 +83,7 @@ Leave Steve's and River's signal identifiers as-is for now (they'll be updated w
 
 Add:
 ```
-SIGNAL_ACCOUNT=+17074748930
+SIGNAL_ACCOUNT=+1XXXXXXXXXX
 SIGNAL_ENABLED=true
 ```
 
@@ -98,7 +98,7 @@ SIGNAL_ENABLED=true
 
 After building, I should be able to:
 1. `npm start` — both CLI and Signal adapters start
-2. Send a text to +17074748930 from +13392360070
+2. Send a text to +1XXXXXXXXXX from +1XXXXXXXXXX
 3. Iji resolves identity as Lee, processes the message, replies via Signal
 4. CLI still works simultaneously
 

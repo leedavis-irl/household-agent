@@ -1,7 +1,7 @@
 import log from '../utils/logger.js';
 import { getAreaEntityMap, getAreas } from '../utils/ha-areas.js';
 
-const HA_URL = process.env.HA_URL || 'http://100.127.233.50:8123';
+const HA_URL = process.env.HA_URL;
 const HA_TOKEN = process.env.HA_TOKEN;
 
 export const definition = {

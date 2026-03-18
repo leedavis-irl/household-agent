@@ -27,7 +27,7 @@ Verify with: `./scripts/check-server.sh`
 2. **Deploy** — Server runs: `git fetch origin main`, `git reset --hard origin/main`, `npm ci`, then stop iji, wait 15s (for systemd “deactivating”), start iji.
 3. **Health check** — Up to 5 attempts to confirm `systemctl is-active iji.service` is `active`.
 4. **On health failure** — Server is reset to the rollback SHA, `npm ci`, restart iji again.
-5. **Notify** — A Signal message is sent to +13392360070 (via signal-cli on the server): “Iji deploy succeeded” or “Iji deploy FAILED…”.
+5. **Notify** — A Signal message is sent to +1XXXXXXXXXX (via signal-cli on the server): “Iji deploy succeeded” or “Iji deploy FAILED…”.
 
 The server must have a **git repo** at `/home/ubuntu/household-agent` (so the workflow can `git fetch`/`git reset`), `node`/`npm` installed, and signal-cli at `/opt/signal-cli-0.13.24/bin/signal-cli` (workflow uses this path for deploy notifications). The 15s sleep helps when the systemd unit gets stuck in “deactivating”. If the app dir was set up by copy instead of clone, run on the server once: `cd /home/ubuntu/household-agent && git init && git remote add origin https://github.com/leedavis-irl/household-agent.git && git fetch origin main && git branch -M main && git reset --hard origin/main` (then re-copy any local-only files like `.env`/config if needed).
 

@@ -10,15 +10,15 @@ Let adults ask Iji whether kids have completed their morning and evening routine
 
 ## Context
 
-The Task Tracker runs on EC2 at 34.208.73.189:8765 with a `/state` endpoint that returns JSON with each child's task completion status. See ~/task-tracker/ for the server code. Iji already has HTTP fetch patterns in the HA tools (src/tools/ha-query.js).
+The Task Tracker runs on EC2 at <EC2_PUBLIC_IP>:8765 with a `/state` endpoint that returns JSON with each child's task completion status. See ~/task-tracker/ for the server code. Iji already has HTTP fetch patterns in the HA tools (src/tools/ha-query.js).
 
 ## Implementation notes
 
-Create `src/tools/routine-query.js` that fetches `http://34.208.73.189:8765/state` and returns structured status per child. Tool name: `routine_query`. Add `TASK_TRACKER_URL` env var. Register in index.js, add to permissions (all adults + children for own data). Add capability prompt with trigger keywords (routine, chores, teeth, laundry, plates, pills).
+Create `src/tools/routine-query.js` that fetches `http://<EC2_PUBLIC_IP>:8765/state` and returns structured status per child. Tool name: `routine_query`. Add `TASK_TRACKER_URL` env var. Register in index.js, add to permissions (all adults + children for own data). Add capability prompt with trigger keywords (routine, chores, teeth, laundry, plates, pills).
 
 ## Server requirements
 
-- [ ] `TASK_TRACKER_URL=http://34.208.73.189:8765` added to EC2 `.env`
+- [ ] `TASK_TRACKER_URL=http://<EC2_PUBLIC_IP>:8765` added to EC2 `.env`
 - [ ] Env var added to `.env.example`
 
 ## Verification

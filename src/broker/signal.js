@@ -9,7 +9,7 @@ import { registerGroup } from '../utils/signal-groups.js';
 import log from '../utils/logger.js';
 
 const SIGNAL_CLI = process.env.SIGNAL_CLI_PATH || '/opt/homebrew/bin/signal-cli';
-const SIGNAL_ACCOUNT = process.env.SIGNAL_ACCOUNT || '+17074748930';
+const SIGNAL_ACCOUNT = process.env.SIGNAL_ACCOUNT;
 const TCP_HOST = '127.0.0.1';
 const TCP_PORT = 7583;
 const RESTART_DELAY_MS = 5000;

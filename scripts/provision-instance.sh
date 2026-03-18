@@ -70,6 +70,6 @@ iptables -S || true
 echo
 
 echo "## Notes"
-echo "- SSH access path should be Tailscale (host: 100.124.0.46)."
+echo "- SSH access path should be Tailscale (host: \$DEPLOY_HOST)."
 echo "- Public SSH has shown intermittent banner-exchange failures."
 echo "- Keep AMI snapshots current after infra changes."

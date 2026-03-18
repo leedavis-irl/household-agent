@@ -52,8 +52,9 @@ const STATUS_IDS = {
   Done: '98236657',
 };
 
-// Track which cards we're currently processing
+// Track which cards we're currently processing or have failed
 const processing = new Set();
+const failed = new Map(); // cardId → { title, feedback, timestamp }
 
 // ── GitHub GraphQL helpers ──
 
@@ -152,10 +153,10 @@ function findSpecFile(card) {
 
 // ── Invoke Claude Code ──
 
-function invokeClaudeCode(specPath, title) {
+function invokeClaudeCode(specPath, title, feedback = null) {
   return new Promise((resolve, reject) => {
     const specContent = readFileSync(specPath, 'utf-8');
-    const prompt = [
+    const parts = [
       `Read ARCHITECTURE.md and DEV-PROTOCOL.md for project context.`,
       `Then read and execute the following queue spec: ${specPath}`,
       ``,
@@ -165,7 +166,19 @@ function invokeClaudeCode(specPath, title) {
       `Build everything described in the spec. Follow existing patterns in the codebase.`,
       `Run npm test when done. Commit your changes with the commit message from the spec.`,
       `Do not pause for confirmations.`,
-    ].join('\n');
+    ];
+
+    if (feedback) {
+      parts.push(
+        ``,
+        `IMPORTANT: A previous attempt was reviewed and FAILED. Here is the reviewer's feedback:`,
+        feedback,
+        ``,
+        `Address this feedback in your implementation. Make sure your changes are complete and substantive.`,
+      );
+    }
+
+    const prompt = parts.join('\n');
 
     log(`Invoking Claude Code for: ${title}`);
 
@@ -272,8 +285,8 @@ function notifyLee(message) {
   // Try Signal first (more reliable than Slack currently)
   try {
     execSync(
-      `ssh -i ~/.ssh/the-pem-key.pem -o ConnectTimeout=5 ubuntu@34.208.73.189 "cd ~/household-agent && node -e \\"
-        import('./src/broker/signal.js').then(s => s.sendMessage('+13392360070', '${message.replace(/'/g, "\\'")}'))
+      `ssh -i ~/.ssh/the-pem-key.pem -o ConnectTimeout=5 ubuntu@${process.env.DEPLOY_HOST || '<EC2_PUBLIC_IP>'} "cd ~/household-agent && node -e \\"
+        import('./src/broker/signal.js').then(s => s.sendMessage('+1XXXXXXXXXX', '${message.replace(/'/g, "\\'")}'))
       \\""`,
       { timeout: 15000, encoding: 'utf-8' }
     );
@@ -320,15 +333,18 @@ async function processCard(card) {
 
       // Invoke Claude Code
       try {
-        await invokeClaudeCode(specPath, title);
+        await invokeClaudeCode(specPath, title, lastFeedback);
         log(`Claude Code completed`);
       } catch (err) {
         log(`Claude Code failed: ${err.message}`);
         if (attempt >= MAX_REVIEW_ATTEMPTS) {
-          notifyLee(`⚠️ ${title} — Claude Code failed after ${attempt} attempts. Manual intervention needed.`);
-          updateCardStatus(id, 'In progress');
+          log(`Max attempts reached — moving back to Ready and escalating to Lee`);
+          updateCardStatus(id, 'Ready');
+          failed.set(id, { title, feedback: err.message, timestamp: new Date().toISOString() });
+          notifyLee(`⚠️ ${title} — Claude Code failed after ${attempt} attempts. Card moved back to Ready.`);
           break;
         }
+        lastFeedback = `Claude Code crashed: ${err.message}`;
         continue;
       }
 
@@ -377,14 +393,15 @@ async function processCard(card) {
         break;
       } else {
         // Failed review — retry if attempts remain
+        lastFeedback = review.feedback;
         if (attempt >= MAX_REVIEW_ATTEMPTS) {
-          log(`Max attempts reached — escalating to Lee`);
-          updateCardStatus(id, 'In progress');
-          notifyLee(`⚠️ ${title} — review failed after ${attempt} attempts. Feedback: ${review.feedback.slice(0, 200)}`);
+          log(`Max attempts reached — moving back to Ready and escalating to Lee`);
+          updateCardStatus(id, 'Ready');
+          failed.set(id, { title, feedback: review.feedback, timestamp: new Date().toISOString() });
+          notifyLee(`⚠️ ${title} — review failed after ${attempt} attempts. Card moved back to Ready. Feedback: ${review.feedback.slice(0, 200)}`);
         } else {
           log(`Retrying with feedback...`);
           updateCardStatus(id, 'In progress');
-          lastFeedback = review.feedback;
         }
       }
     }
@@ -399,7 +416,13 @@ async function processCard(card) {
 // ── Logging ──
 
 function log(msg) {
-  const ts = new Date().toISOString().slice(11, 19);
+  const ts = new Date().toLocaleTimeString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
   console.log(`[${ts}] ${msg}`);
 }
 
@@ -432,10 +455,13 @@ async function poll() {
     log(`Found ${readyCards.length} Ready card(s)`);
 
     for (const card of readyCards) {
-      if (!processing.has(card.id)) {
-        // Process sequentially to avoid conflicts
-        await processCard(card);
+      if (processing.has(card.id)) continue;
+      if (failed.has(card.id)) {
+        log(`Skipping previously failed card: ${card.title} (restart watcher to retry)`);
+        continue;
       }
+      // Process sequentially to avoid conflicts
+      await processCard(card);
     }
   } catch (err) {
     log(`Poll error: ${err.message}`);

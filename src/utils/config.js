@@ -3,7 +3,9 @@ import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const configPath = join(__dirname, '../../config/household.json');
+const primaryPath = join(__dirname, '../../config/household.json');
+const examplePath = join(__dirname, '../../config/household.example.json');
+const configPath = existsSync(primaryPath) ? primaryPath : examplePath;
 
 let household = null;
 

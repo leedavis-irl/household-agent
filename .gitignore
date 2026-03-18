@@ -15,3 +15,4 @@ logs/
 *.log
 .DS_Store
 .watcher.env
+config/household.json

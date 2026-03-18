@@ -1,6 +1,6 @@
 import log from './logger.js';
 
-const HA_URL = process.env.HA_URL || 'http://100.127.233.50:8123';
+const HA_URL = process.env.HA_URL;
 const HA_TOKEN = process.env.HA_TOKEN;
 const TTL_MS = 10 * 60 * 1000;
 

@@ -2,7 +2,7 @@
 
 ## Account Details
 
-- **Iji Signal number:** +17074748930 (Google Voice)
+- **Iji Signal number:** +1XXXXXXXXXX (Google Voice)
 - **signal-cli binary (local/Mac):** /opt/homebrew/bin/signal-cli
 - **signal-cli binary (production EC2):** /opt/signal-cli-0.13.24/bin/signal-cli — set `SIGNAL_CLI_PATH=/opt/signal-cli-0.13.24/bin/signal-cli` in the server’s `.env` so Iji can spawn it.
 - **signal-cli data (local):** ~/.local/share/signal-cli/data/
@@ -37,14 +37,14 @@ Iji will kill any existing signal-cli daemon and start a fresh one.
 Stop Iji first (only one process can use the account at a time), then:
 
 ```bash
-signal-cli -a +17074748930 send -m "test message" -g "GROUP_ID_HERE"
+signal-cli -a +1XXXXXXXXXX send -m "test message" -g "GROUP_ID_HERE"
 ```
 
 ### Update Iji's Signal profile name
 
 ```bash
 # Stop Iji first
-signal-cli -a +17074748930 updateProfile --given-name "Iji"
+signal-cli -a +1XXXXXXXXXX updateProfile --given-name "Iji"
 ```
 
 ### Add a new household member
@@ -88,7 +88,7 @@ Session keys are corrupted. This is usually caused by two processes sharing the 
 
 Another signal-cli process is running. Kill it:
 ```bash
-pkill -f "signal-cli.*+17074748930"
+pkill -f "signal-cli.*+1XXXXXXXXXX"
 ```
 
 ### Iji responds in DMs instead of group

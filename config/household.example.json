@@ -1,16 +1,16 @@
 {
   "timezone": "America/Los_Angeles",
   "members": {
-    "lee": {
-      "display_name": "Lee",
+    "alice": {
+      "display_name": "Alice",
       "role": "admin",
       "identifiers": {
-        "signal": "+13392360070",
-        "signal_uuid": "a62c32e9-e279-4f19-bc10-ee91cafaddf0",
-        "slack": "U07C26HRZD1",
-        "cli": "lee"
+        "signal": "+15550001001",
+        "signal_uuid": "00000000-0000-0000-0000-000000000001",
+        "slack": "UXXXXXXXXX1",
+        "cli": "alice"
       },
-      "calendar_id": "leedavis.irl@gmail.com",
+      "calendar_id": "alice@example.com",
       "permissions": [
         "ha_all",
         "calendar_all",
@@ -32,14 +32,14 @@
         "delivery_hour": 9
       }
     },
-    "steve": {
-      "display_name": "Steve",
+    "bob": {
+      "display_name": "Bob",
       "role": "adult",
       "identifiers": {
-        "signal": "+13392030291",
-        "signal_uuid": "886f92ec-b5c9-4b60-8249-b4cf25e0b29f",
-        "slack": "UXXXXXXXX",
-        "cli": "steve"
+        "signal": "+15550001002",
+        "signal_uuid": "00000000-0000-0000-0000-000000000002",
+        "slack": "UXXXXXXXXX2",
+        "cli": "bob"
       },
       "permissions": [
         "ha_office",
@@ -56,15 +56,15 @@
         "education"
       ]
     },
-    "kelly": {
-      "display_name": "Kelly",
+    "carol": {
+      "display_name": "Carol",
       "role": "adult",
       "identifiers": {
-        "signal": "+14159999707",
-        "signal_uuid": "61945e13-32cc-445c-ab1a-f955fa7924e9",
-        "cli": "kelly"
+        "signal": "+15550001003",
+        "signal_uuid": "00000000-0000-0000-0000-000000000003",
+        "cli": "carol"
       },
-      "calendar_id": "Robinkellyroche@gmail.com",
+      "calendar_id": "carol@example.com",
       "permissions": [
         "ha_all",
         "calendar_all",
@@ -86,15 +86,15 @@
         "delivery_hour": 9
       }
     },
-    "hallie": {
-      "display_name": "Hallie",
+    "dan": {
+      "display_name": "Dan",
       "role": "adult",
       "identifiers": {
-        "signal": "+16303362827",
-        "signal_uuid": "1216d8e5-2cb2-4955-a5ca-40f694874fa0",
-        "cli": "hallie"
+        "signal": "+15550001004",
+        "signal_uuid": "00000000-0000-0000-0000-000000000004",
+        "cli": "dan"
       },
-      "calendar_id": "23b34257d09f1f710a4316826bae1acbf64f956fea364f9eafe4e74307c608a5@group.calendar.google.com",
+      "calendar_id": "example-calendar-id@group.calendar.google.com",
       "permissions": [
         "ha_office",
         "ha_common",
@@ -110,13 +110,13 @@
         "education"
       ]
     },
-    "firen": {
-      "display_name": "Firen",
+    "eve": {
+      "display_name": "Eve",
       "role": "adult",
       "identifiers": {
-        "signal": "+12146760902",
-        "signal_uuid": "e3eda4dc-5470-42b0-bd38-73eea5be1d27",
-        "cli": "firen"
+        "signal": "+15550001005",
+        "signal_uuid": "00000000-0000-0000-0000-000000000005",
+        "cli": "eve"
       },
       "permissions": [
         "ha_office",
@@ -133,13 +133,13 @@
         "education"
       ]
     },
-    "ryker": {
-      "display_name": "Ryker",
+    "child_1": {
+      "display_name": "Child 1",
       "role": "child",
       "identifiers": {
-        "cli": "ryker"
+        "cli": "child_1"
       },
-      "calendar_id": "Rykerdavis.irl@gmail.com",
+      "calendar_id": "child1@example.com",
       "permissions": [
         "ha_common",
         "knowledge_read",
@@ -147,13 +147,13 @@
         "tasks"
       ]
     },
-    "logan": {
-      "display_name": "Logan",
+    "child_2": {
+      "display_name": "Child 2",
       "role": "child",
       "identifiers": {
-        "cli": "logan"
+        "cli": "child_2"
       },
-      "calendar_id": "Logandavis.irl@gmail.com",
+      "calendar_id": "child2@example.com",
       "permissions": [
         "ha_common",
         "knowledge_read",
@@ -161,13 +161,13 @@
         "tasks"
       ]
     },
-    "hazel": {
-      "display_name": "Hazel",
+    "child_3": {
+      "display_name": "Child 3",
       "role": "child",
       "identifiers": {
-        "cli": "hazel"
+        "cli": "child_3"
       },
-      "calendar_id": "Hazel.Hinkhouse@gmail.com",
+      "calendar_id": "child3@example.com",
       "permissions": [
         "ha_common",
         "knowledge_read",
@@ -175,13 +175,13 @@
         "tasks"
       ]
     },
-    "dj": {
-      "display_name": "DJ",
+    "child_4": {
+      "display_name": "Child 4",
       "role": "child",
       "identifiers": {
-        "cli": "dj"
+        "cli": "child_4"
       },
-      "calendar_id": "djhinkhouse@gmail.com",
+      "calendar_id": "child4@example.com",
       "permissions": [
         "ha_common",
         "knowledge_read",
@@ -192,23 +192,23 @@
   },
   "locations": {
     "home": {
-      "lat": 37.8716,
-      "lng": -122.2727,
-      "label": "Berkeley, CA"
+      "lat": 0.0,
+      "lng": 0.0,
+      "label": "Your City"
     },
-    "tahoe": {
-      "lat": 39.1968,
-      "lng": -120.2354,
-      "label": "Olympic Valley, CA"
+    "vacation": {
+      "lat": 0.0,
+      "lng": 0.0,
+      "label": "Vacation Home"
     },
-    "sf": {
-      "lat": 37.7749,
-      "lng": -122.4194,
-      "label": "San Francisco, CA"
+    "office": {
+      "lat": 0.0,
+      "lng": 0.0,
+      "label": "Office"
     }
   },
   "google_docs": {
-    "family_doc_id": "1OnLMbfoUb10gYFCZRPoi82Uk7wuJ-CLD7NYQ-45LRsI"
+    "family_doc_id": "your-google-doc-id-here"
   },
   "ha_areas": {
     "common": "all"

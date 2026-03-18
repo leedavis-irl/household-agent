@@ -78,7 +78,7 @@ The CLI channel is important for development — it lets you test the full brain
 
 **Naming:** The agent is called **Iji**.
 
-**Signal account:** Iji uses a dedicated Google Voice number (+17074748930) registered with signal-cli. This is critical — never share a signal-cli account between two processes (e.g., Iji and OpenClaw), as Signal's ratcheting protocol will corrupt session keys irreversibly.
+**Signal account:** Iji uses a dedicated Google Voice number (+1XXXXXXXXXX) registered with signal-cli. This is critical — never share a signal-cli account between two processes (e.g., Iji and OpenClaw), as Signal's ratcheting protocol will corrupt session keys irreversibly.
 
 **Passive listening:** Iji now monitors all group chat messages and decides whether to respond, acting as Chief of Staff for the household. Claude sees every message and speaks up when it can add value — answering questions, providing context, flagging conflicts, or acknowledging information. It stays silent for casual conversation, jokes, or topics outside its scope. This replaces the earlier direct-address-only model.
 
@@ -96,4 +96,4 @@ The Monarch-Slack integration (`~/Projects/Financial/monarch-slack-integration/`
 
 **signal-cli runtime paths:** Local development expects Homebrew at `/opt/homebrew/bin/signal-cli`. Production EC2 uses `/opt/signal-cli-0.13.24/bin/signal-cli`; set `SIGNAL_CLI_PATH` in server `.env`.
 
-**Dedicated Signal account:** Iji uses a dedicated Google Voice number (+17074748930) registered with signal-cli. Never share one signal-cli account between two processes (e.g., Iji and OpenClaw); Signal's ratcheting protocol can irreversibly corrupt session keys.
+**Dedicated Signal account:** Iji uses a dedicated Google Voice number (+1XXXXXXXXXX) registered with signal-cli. Never share one signal-cli account between two processes (e.g., Iji and OpenClaw); Signal's ratcheting protocol can irreversibly corrupt session keys.

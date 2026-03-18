@@ -3,25 +3,25 @@ import { resolve, getPermissionDescriptions } from '../src/broker/identity.js';
 import { resolveMemberId, formatPacific } from '../src/utils/resolve-member.js';
 
 describe('identity.resolve', () => {
-  it('resolves lee by Signal number', () => {
-    const member = resolve('signal', '+13392360070');
+  it('resolves admin by Signal number', () => {
+    const member = resolve('signal', '+15550001001');
     expect(member).not.toBeNull();
-    expect(member.id).toBe('lee');
-    expect(member.display_name).toBe('Lee');
+    expect(member.id).toBe('alice');
+    expect(member.display_name).toBe('Alice');
     expect(member.role).toBe('admin');
     expect(member.permissions).toContain('ha_all');
   });
 
-  it('resolves steve by Signal UUID', () => {
-    const member = resolve('signal_uuid', '886f92ec-b5c9-4b60-8249-b4cf25e0b29f');
+  it('resolves member by Signal UUID', () => {
+    const member = resolve('signal_uuid', '00000000-0000-0000-0000-000000000002');
     expect(member).not.toBeNull();
-    expect(member.id).toBe('steve');
+    expect(member.id).toBe('bob');
   });
 
-  it('resolves kelly by CLI identifier', () => {
-    const member = resolve('cli', 'kelly');
+  it('resolves member by CLI identifier', () => {
+    const member = resolve('cli', 'carol');
     expect(member).not.toBeNull();
-    expect(member.id).toBe('kelly');
+    expect(member.id).toBe('carol');
     expect(member.role).toBe('adult');
   });
 
@@ -31,12 +31,12 @@ describe('identity.resolve', () => {
   });
 
   it('returns null for unknown channel', () => {
-    const member = resolve('telegram', 'lee');
+    const member = resolve('telegram', 'alice');
     expect(member).toBeNull();
   });
 
   it('returns permissions array on resolved member', () => {
-    const member = resolve('cli', 'ryker');
+    const member = resolve('cli', 'child_1');
     expect(member).not.toBeNull();
     expect(Array.isArray(member.permissions)).toBe(true);
     expect(member.permissions).toContain('tasks');
@@ -44,9 +44,9 @@ describe('identity.resolve', () => {
   });
 
   it('returns identifiers on resolved member', () => {
-    const member = resolve('cli', 'lee');
+    const member = resolve('cli', 'alice');
     expect(member.identifiers).toBeDefined();
-    expect(member.identifiers.signal).toBe('+13392360070');
+    expect(member.identifiers.signal).toBe('+15550001001');
   });
 });
 
@@ -70,20 +70,20 @@ describe('identity.getPermissionDescriptions', () => {
 
 describe('resolveMemberId', () => {
   it('resolves by exact member ID', () => {
-    expect(resolveMemberId('lee')).toBe('lee');
+    expect(resolveMemberId('alice')).toBe('alice');
   });
 
   it('resolves by display name (case-insensitive)', () => {
-    expect(resolveMemberId('Steve')).toBe('steve');
-    expect(resolveMemberId('KELLY')).toBe('kelly');
+    expect(resolveMemberId('Bob')).toBe('bob');
+    expect(resolveMemberId('CAROL')).toBe('carol');
   });
 
   it('resolves "me" to fallback ID', () => {
-    expect(resolveMemberId('me', 'hallie')).toBe('hallie');
+    expect(resolveMemberId('me', 'dan')).toBe('dan');
   });
 
   it('resolves "self" to fallback ID', () => {
-    expect(resolveMemberId('self', 'firen')).toBe('firen');
+    expect(resolveMemberId('self', 'eve')).toBe('eve');
   });
 
   it('returns null for "me" with no fallback', () => {
@@ -101,18 +101,18 @@ describe('resolveMemberId', () => {
   });
 
   it('falls back to fallbackId when input is empty', () => {
-    expect(resolveMemberId('', 'lee')).toBe('lee');
-    expect(resolveMemberId(null, 'steve')).toBe('steve');
+    expect(resolveMemberId('', 'alice')).toBe('alice');
+    expect(resolveMemberId(null, 'bob')).toBe('bob');
   });
 
   it('trims and lowercases input', () => {
-    expect(resolveMemberId('  Lee  ')).toBe('lee');
-    expect(resolveMemberId('LEE')).toBe('lee');
+    expect(resolveMemberId('  Alice  ')).toBe('alice');
+    expect(resolveMemberId('ALICE')).toBe('alice');
   });
 
   it('resolves children by ID', () => {
-    expect(resolveMemberId('ryker')).toBe('ryker');
-    expect(resolveMemberId('Hazel')).toBe('hazel');
+    expect(resolveMemberId('child_1')).toBe('child_1');
+    expect(resolveMemberId('Child 3')).toBe('child_3');
   });
 });
 
