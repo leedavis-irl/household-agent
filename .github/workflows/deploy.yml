@@ -53,7 +53,7 @@ jobs:
 
       - name: Deploy
         run: |
-          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "set -e; cd ${{ env.DEPLOY_DIR }}; git fetch origin main; git reset --hard origin/main; npm ci; sudo systemctl stop iji.service || true; sleep 15; sudo systemctl start iji.service"
+          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "set -e; cd ${{ env.DEPLOY_DIR }}; cp -f config/household.json /tmp/household.json.bak 2>/dev/null || true; git fetch origin main; git reset --hard origin/main; cp -f /tmp/household.json.bak config/household.json 2>/dev/null || true; npm ci; sudo systemctl stop iji.service || true; sleep 15; sudo systemctl start iji.service"
 
       - name: Health check
         id: health
@@ -74,5 +74,5 @@ jobs:
       - name: Rollback on failure
         if: failure() && steps.rollback.outputs.sha != 'none' && steps.rollback.outputs.sha != ''
         run: |
-          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "set -e; cd ${{ env.DEPLOY_DIR }}; git reset --hard ${{ steps.rollback.outputs.sha }}; npm ci; sudo systemctl stop iji.service || true; sleep 15; sudo systemctl start iji.service"
+          ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "set -e; cd ${{ env.DEPLOY_DIR }}; cp -f config/household.json /tmp/household.json.bak 2>/dev/null || true; git reset --hard ${{ steps.rollback.outputs.sha }}; cp -f /tmp/household.json.bak config/household.json 2>/dev/null || true; npm ci; sudo systemctl stop iji.service || true; sleep 15; sudo systemctl start iji.service"
 
