@@ -6,16 +6,18 @@
 
 ## What to build
 
-Two things:
+Add the four education tools (`education_profile`, `education_documents`, `education_goals`, `education_team`) to existing test suites so CI knows they exist, and write mocked unit tests that verify each tool handles success, misconfiguration, and not-found cases correctly. This is a test-only change — no new features, no server deployment.
 
-1. **Add the four education tools to existing test suites** (tool-registry, permissions) so CI knows they exist.
-2. **Write unit tests for each tool's execute function** that verify the tools handle both success and error cases correctly, using mocked Supabase responses.
+## Context
 
-Tools: `education_profile`, `education_documents`, `education_goals`, `education_team`.
-Source: `src/tools/education-profile.js`, `education-documents.js`, `education-goals.js`, `education-team.js`.
-Supabase client: `src/utils/supabase.js`.
-Permission mapping: `src/utils/permissions.js` (already wired).
-Existing tests: `test/tool-registry.test.js`, `test/permissions.test.js`.
+The four tools bridge Iji to the Education Advisor Supabase database. They were built in commit c04c6f0 but never tested. All four use `src/utils/supabase.js` (a lightweight PostgREST client).
+
+Key files:
+- Tools: `src/tools/education-profile.js`, `education-documents.js`, `education-goals.js`, `education-team.js`
+- Supabase client: `src/utils/supabase.js` — exports `query(table, params)` and `isConfigured()`
+- Permissions: `src/utils/permissions.js` — education tools are gated by the `education` permission (lines 43-46)
+- Capability prompt: `config/prompts/capabilities/education.md`
+- Existing test patterns: `test/tool-registry.test.js`, `test/permissions.test.js` — follow these patterns exactly
 
 ## Implementation notes
 
@@ -55,14 +57,35 @@ Create `test/education.test.js` with mocked Supabase responses. Use `vi.mock('..
 - Call `execute({})` — expect `total: 1`, `team_members` array
 - Call with `child_name` filter — verify it resolves child, fetches goals, and filters members
 
+## Server requirements
+
+None — test-only change. No env vars or deployment needed.
+
+## Verification
+
+These are unit tests with mocked data, not conversational tests. Verify by running:
+
+```
+npm test
+```
+
+All tests in `test/education.test.js`, `test/tool-registry.test.js`, and `test/permissions.test.js` must pass.
+
 ## Done when
 
-- [ ] All 4 education tools listed in `test/tool-registry.test.js`
+- [ ] All 4 education tools listed in `test/tool-registry.test.js` expected and toolFiles arrays
 - [ ] Permission tests cover education tools (allow + deny)
 - [ ] `test/education.test.js` exists with mocked unit tests for all 4 tools
 - [ ] Each tool has at minimum: happy path test, not-configured test, not-found test
 - [ ] `npm test` passes with all new tests green
 - [ ] Committed
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Education tools — test & verify" "In Review"
+```
 
 ## Commit message
 
