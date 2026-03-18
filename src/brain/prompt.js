@@ -22,6 +22,7 @@ const capabilityFiles = {
   reminders: 'reminders.md',
   'feature-requests': 'feature-requests.md',
   tasks: 'tasks.md',
+  education: 'education.md',
 };
 
 const CAPABILITY_TRIGGERS = {
@@ -35,6 +36,7 @@ const CAPABILITY_TRIGGERS = {
   messaging: /\b(tell |send |message |text |relay |let .* know)\b/i,
   reminders: /\b(remind|reminder|reminders|don't forget|don't let me forget|nudge|follow up|snooze|briefing|morning briefing)\b/i,
   tasks: /\b(task|tasks|to.?do|to.?dos|assign|assigned|overdue|delegate|action item)\b/i,
+  education: /\b(school|grade|teacher|tutor|IEP|504|accommodation|assessment|DIBELS|STAR|CAASPP|report card|education|learning|neuropsych|dyslexia|ADHD|homework|reading level|math level|curriculum)\b/i,
 };
 
 function loadCapability(fileName) {

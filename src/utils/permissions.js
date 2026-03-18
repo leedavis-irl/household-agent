@@ -39,6 +39,10 @@ const TOOL_PERMISSIONS = {
   task_query: ['tasks', 'tasks_others'],
   task_update: ['tasks', 'tasks_others'],
   briefing_preferences: ['reminders'],
+  education_profile: ['education'],
+  education_documents: ['education'],
+  education_goals: ['education'],
+  education_team: ['education'],
 };
 
 export function checkPermission(personPermissions, toolName) {

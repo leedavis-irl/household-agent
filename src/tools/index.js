@@ -31,6 +31,10 @@ import * as taskCreate from './task-create.js';
 import * as taskQuery from './task-query.js';
 import * as taskUpdate from './task-update.js';
 import * as briefingPreferences from './briefing-preferences.js';
+import * as educationProfile from './education-profile.js';
+import * as educationDocuments from './education-documents.js';
+import * as educationGoals from './education-goals.js';
+import * as educationTeam from './education-team.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -68,6 +72,10 @@ const tools = {
   task_query: taskQuery,
   task_update: taskUpdate,
   briefing_preferences: briefingPreferences,
+  education_profile: educationProfile,
+  education_documents: educationDocuments,
+  education_goals: educationGoals,
+  education_team: educationTeam,
 };
 
 export function getToolDefinitions() {
