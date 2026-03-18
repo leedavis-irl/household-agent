@@ -32,7 +32,10 @@
       "Bash(./scripts/gh-update-card.sh \"Parenting Methods for Iji to reference\" \"Ready\" 2>&1)",
       "Bash(gh api:*)",
       "Bash(./scripts/gh-update-card.sh \"Read Google Docs content\" \"Backlog\")",
-      "Bash(./scripts/gh-update-card.sh \"Search shared Drive docs\" \"Backlog\")"
+      "Bash(./scripts/gh-update-card.sh \"Search shared Drive docs\" \"Backlog\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d,indent=2\\)\\)\")",
+      "Bash(gh api graphql -f 'query=:*)",
+      "Bash(python3 -c \"import json,sys; [print\\(f''''{f[\"\"name\"\"]}: {f[\"\"id\"\"]} \\({f.get\\(\"\"type\"\",\"\"?\"\"\\)}\\)''''\\) for f in json.load\\(sys.stdin\\).get\\(''''fields'''',[]\\)]\")"
     ]
   }
 }
