@@ -16,7 +16,7 @@ function resolvePersonId(personInput, envelope) {
   return null;
 }
 
-function checkEmailSendPermission(requestedPersonId, envelope) {
+function checkEmailDraftPermission(requestedPersonId, envelope) {
   const perms = envelope.permissions || [];
   const requesterId = (envelope.person_id || '').toLowerCase();
   if (requestedPersonId !== requesterId) return false;
@@ -72,7 +72,7 @@ export async function execute(input, envelope) {
     return { error: 'Could not identify whose Gmail to draft from. Use person id (e.g. lee, steve).' };
   }
 
-  if (!checkEmailSendPermission(personId, envelope)) {
+  if (!checkEmailDraftPermission(personId, envelope)) {
     return {
       error: `Permission denied: ${envelope.person} cannot create email drafts as ${personId}.`,
     };
