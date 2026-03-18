@@ -2,7 +2,7 @@
 
 ## What it does
 
-The OpenClaw watcher polls GitHub Project #2 every 5 minutes for cards moved to "Ready". When detected, it:
+The OpenClaw watcher polls GitHub Project #2 every 30 minutes during work hours (9am–6pm Pacific) for cards moved to "Ready". When detected, it:
 
 1. Finds the matching queue spec file (via the card's Spec field or fuzzy title match)
 2. Moves the card to "In progress"

@@ -3,7 +3,7 @@
 /**
  * OpenClaw GitHub Project Watcher
  *
- * Polls GitHub Project #2 every 5 minutes for cards moved to "Ready".
+ * Polls GitHub Project #2 every 30 minutes (9am–6pm Pacific) for cards moved to "Ready".
  * When detected:
  *   1. Finds the matching queue spec file
  *   2. Updates card to "In progress"
@@ -24,7 +24,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '..');
 const QUEUE_DIR = join(REPO_ROOT, 'queue');
 
-const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const POLL_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
+const WORK_HOURS_START = 9;  // 9am Pacific
+const WORK_HOURS_END = 18;   // 6pm Pacific
 const MAX_REVIEW_ATTEMPTS = 3;
 
 // GitHub Project IDs
@@ -392,7 +394,21 @@ function log(msg) {
 
 // ── Poll loop ──
 
+function isWorkHours() {
+  const hour = Number(new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles',
+    hour: 'numeric',
+    hour12: false,
+  }).format(new Date()));
+  return hour >= WORK_HOURS_START && hour < WORK_HOURS_END;
+}
+
 async function poll() {
+  if (!isWorkHours()) {
+    log('Outside work hours (9am–6pm Pacific) — skipping');
+    return;
+  }
+
   try {
     log('Polling for Ready cards...');
     const readyCards = getReadyCards();
@@ -418,7 +434,7 @@ async function poll() {
 // ── Main ──
 
 log('OpenClaw Watcher starting');
-log(`Polling every ${POLL_INTERVAL_MS / 1000}s`);
+log(`Polling every ${POLL_INTERVAL_MS / 60000} min, ${WORK_HOURS_START}am–${WORK_HOURS_END > 12 ? WORK_HOURS_END - 12 + 'pm' : WORK_HOURS_END + 'am'} Pacific`);
 log(`Queue dir: ${QUEUE_DIR}`);
 log(`Max review attempts: ${MAX_REVIEW_ATTEMPTS}`);
 
