@@ -2,6 +2,9 @@ import * as knowledgeSearch from './knowledge-search.js';
 import * as knowledgeStore from './knowledge-store.js';
 import * as haQuery from './ha-query.js';
 import * as haControl from './ha-control.js';
+import * as haHistory from './ha-history.js';
+import * as haScene from './ha-scene.js';
+import * as haNotify from './ha-notify.js';
 import * as calendar from './calendar.js';
 import * as calendarCreate from './calendar-create.js';
 import * as calendarModify from './calendar-modify.js';
@@ -35,6 +38,9 @@ const tools = {
   knowledge_store: knowledgeStore,
   ha_query: haQuery,
   ha_control: haControl,
+  ha_history: haHistory,
+  ha_scene: haScene,
+  ha_notify: haNotify,
   calendar_query: calendar,
   calendar_create: calendarCreate,
   calendar_modify: calendarModify,
