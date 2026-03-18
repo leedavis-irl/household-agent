@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Usage: ./scripts/gh-update-card.sh "Card Title" "Status"
 # Updates a card in GitHub Project #2 (user: leedavis-irl) to the given status.
-# Valid statuses: Backlog, Ready, In progress, In review, Done
+# Valid statuses: Backlog, Specd, Ready, In progress, In review, Done, Abandoned
 
 CARD_TITLE="${1:?Usage: gh-update-card.sh \"Card Title\" \"Status\"}"
 TARGET_STATUS="${2:?Usage: gh-update-card.sh \"Card Title\" \"Status\"}"
@@ -13,12 +13,14 @@ STATUS_FIELD="PVTSSF_lAHOAVcVpc4BSCAHzg_ryew"
 
 # Map status names to option IDs
 case "$TARGET_STATUS" in
-  "Backlog")      STATUS_ID="f75ad846" ;;
-  "Ready")        STATUS_ID="61e4505c" ;;
-  "In progress")  STATUS_ID="47fc9ee4" ;;
-  "In review")    STATUS_ID="df73e18b" ;;
-  "Done")         STATUS_ID="98236657" ;;
-  *) echo "Unknown status: $TARGET_STATUS"; echo "Valid: Backlog, Ready, In progress, In review, Done"; exit 1 ;;
+  "Backlog")      STATUS_ID="4b7d97c0" ;;
+  "Specd")        STATUS_ID="822c0cbd" ;;
+  "Ready")        STATUS_ID="5c36728b" ;;
+  "In progress")  STATUS_ID="f2aaf1bc" ;;
+  "In review")    STATUS_ID="fb6c39f9" ;;
+  "Done")         STATUS_ID="94939777" ;;
+  "Abandoned")    STATUS_ID="ccb1b5f3" ;;
+  *) echo "Unknown status: $TARGET_STATUS"; echo "Valid: Backlog, Specd, Ready, In progress, In review, Done, Abandoned"; exit 1 ;;
 esac
 
 # Find the card by title

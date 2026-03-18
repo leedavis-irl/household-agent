@@ -45,11 +45,13 @@ const PROJECT_ID = 'PVT_kwHOAVcVpc4BSCAH';
 const STATUS_FIELD = 'PVTSSF_lAHOAVcVpc4BSCAHzg_ryew';
 const SPEC_FIELD = 'PVTF_lAHOAVcVpc4BSCAHzg_tkwc';
 const STATUS_IDS = {
-  Backlog: 'f75ad846',
-  Ready: '61e4505c',
-  'In progress': '47fc9ee4',
-  'In review': 'df73e18b',
-  Done: '98236657',
+  Backlog: '4b7d97c0',
+  Specd: '822c0cbd',
+  Ready: '5c36728b',
+  'In progress': 'f2aaf1bc',
+  'In review': 'fb6c39f9',
+  Done: '94939777',
+  Abandoned: 'ccb1b5f3',
 };
 const FEEDBACK_FIELD = 'PVTF_lAHOAVcVpc4BSCAHzg_xO-I';
 
@@ -165,6 +167,63 @@ function findSpecFile(card) {
   }
 
   return null;
+}
+
+// ── Spec quality validation ──
+
+const BOILERPLATE_PATTERNS = [
+  /Capability described in Goal is functional end-to-end/,
+  /\[2-4 sentences describing/,
+  /\[Specific technical guidance/,
+  /\[Any relevant background/,
+  /\[Specific test cases to run/,
+  /\[Specific, checkable criterion/,
+  /TBD.*review existing/i,
+  /\[type\]: \[short description\]/,
+];
+
+function validateSpec(specPath) {
+  const content = readFileSync(specPath, 'utf-8');
+  const issues = [];
+
+  // Check "What to build" has real content (not placeholder or < 20 words)
+  const whatMatch = content.match(/## What to build\n([\s\S]*?)(?=\n## )/);
+  const whatContent = whatMatch ? whatMatch[1].trim() : '';
+  const whatWords = whatContent.split(/\s+/).filter(Boolean).length;
+  if (whatWords < 15) {
+    issues.push(`"What to build" too short (${whatWords} words, need 15+)`);
+  }
+
+  // Check "Done when" has specific criteria (not boilerplate)
+  const doneMatch = content.match(/## Done when\n([\s\S]*?)(?=\n## |$)/);
+  const doneContent = doneMatch ? doneMatch[1].trim() : '';
+  const doneItems = (doneContent.match(/^- \[/gm) || []).length;
+  if (doneItems < 3) {
+    issues.push(`"Done when" has ${doneItems} items (need 3+)`);
+  }
+
+  // Check "Implementation notes" has real content
+  const implMatch = content.match(/## Implementation notes\n([\s\S]*?)(?=\n## )/);
+  const implContent = implMatch ? implMatch[1].trim() : '';
+  const implWords = implContent.split(/\s+/).filter(Boolean).length;
+  if (implWords < 20) {
+    issues.push(`"Implementation notes" too short (${implWords} words, need 20+)`);
+  }
+
+  // Check "Verification" has test cases
+  const verifyMatch = content.match(/## Verification\n([\s\S]*?)(?=\n## )/);
+  const verifyContent = verifyMatch ? verifyMatch[1].trim() : '';
+  if (!verifyContent || verifyContent.startsWith('[')) {
+    issues.push('"Verification" is missing or still a placeholder');
+  }
+
+  // Check for boilerplate patterns that indicate a stub
+  const boilerplateHits = BOILERPLATE_PATTERNS.filter(p => p.test(content));
+  if (boilerplateHits.length >= 2) {
+    issues.push(`Spec contains ${boilerplateHits.length} boilerplate patterns — likely a stub`);
+  }
+
+  return { valid: issues.length === 0, issues };
 }
 
 // ── Invoke Claude Code ──
@@ -344,6 +403,19 @@ async function processCard(card) {
       return;
     }
     log(`Spec: ${specPath}`);
+
+    // Validate spec quality before wasting CC cycles
+    const validation = validateSpec(specPath);
+    if (!validation.valid) {
+      log(`Spec failed quality check:`);
+      for (const issue of validation.issues) log(`  ⚠ ${issue}`);
+      log(`Moving card back to Backlog — spec needs work before Ready`);
+      updateCardStatus(id, 'Backlog');
+      setCardFeedback(id, `Spec quality check failed: ${validation.issues.join('; ')}`);
+      notifyLee(`⚠️ ${title} — spec failed quality check and was moved back to Backlog. Issues: ${validation.issues.join('; ')}`);
+      processing.delete(id);
+      return;
+    }
 
     // Move to In Progress and clear any prior feedback
     updateCardStatus(id, 'In progress');

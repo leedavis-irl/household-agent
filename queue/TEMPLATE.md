@@ -6,15 +6,26 @@
 
 ## What to build
 
-[2-4 sentences describing what this capability does, why it matters to the household, and what the user experience looks like. Write this for someone who will implement it without asking any questions.]
+[REQUIRED: 2-4 sentences minimum. Describe what this capability does, why it matters to the household, and what the user experience looks like. Write this for an AI engineer who will implement it without asking any questions. "Needs X tools" is NOT a valid description — explain what the tool does, who uses it, and what happens when they do.]
 
 ## Context
 
-[Any relevant background — existing files to read, APIs already integrated, patterns to follow from existing tools. Point CC to specific files where helpful, e.g. "follow the pattern in src/tools/email-search.js".]
+[REQUIRED: Point to specific existing files, tools, or patterns to follow. Examples:
+- "Follow the pattern in `src/tools/email-search.js`"
+- "Uses the Supabase client from `src/utils/supabase.js`"
+- "The existing `calendar_query` tool handles similar date logic"
+Do NOT just say "Read ARCHITECTURE.md" — that's assumed. Add what's specific to this card.]
 
 ## Implementation notes
 
-[Specific technical guidance — which files to create or modify, what the tool name should be, any edge cases to handle, error handling expectations. Be specific but not prescriptive about approach.]
+[REQUIRED: 20+ words of specific technical guidance. Must include at least ONE of:
+- File paths to create or modify (e.g., `src/tools/my-tool.js`)
+- Tool name and parameter schema
+- API endpoints or data sources
+- Database tables or schema
+- Integration patterns
+
+Generic boilerplate like "Follow existing tool patterns in src/tools/" is NOT sufficient.]
 
 ## Server requirements
 
@@ -22,14 +33,24 @@
 
 ## Verification
 
-[Specific test cases to run. Format: "Ask Iji: '[exact prompt]' → expected response". Include at least 2-3 test cases that confirm the feature works end to end.]
+[REQUIRED: At least 2 concrete test scenarios. Format:
+- "Ask Iji: '[exact prompt]' → [expected behavior]"
+- Or for non-conversational: "Run `npm test` → [expected result]"
+Do NOT leave as placeholder text.]
 
 ## Done when
 
-- [ ] [Specific, checkable criterion 1]
-- [ ] [Specific, checkable criterion 2]
-- [ ] [Tests pass]
-- [ ] [Committed and deployed to EC2]
+[REQUIRED: 3+ specific, checkable criteria. Each must be independently verifiable.
+BAD:  "Capability described in Goal is functional end-to-end"
+GOOD: "`src/tools/vendor-query.js` exists with `definition` and `execute` exports"
+GOOD: "Permission `education` gates all 4 tools in `src/utils/permissions.js`"
+GOOD: "`npm test` passes with no new failures"
+
+Always include:
+- [ ] [At least one criterion about what files/code exist]
+- [ ] [At least one criterion about behavior or integration]
+- [ ] Tests pass (`npm test`)
+- [ ] Committed with message from this spec]
 
 ## GitHub Project
 
@@ -40,6 +61,6 @@ After completing, run:
 
 ## Commit message
 
-`[type]: [short description]`
+`[type]: [short description matching the work done]`
 
-Types: feat, fix, docs, chore, ops
+Types: feat, fix, docs, chore, ops, test
