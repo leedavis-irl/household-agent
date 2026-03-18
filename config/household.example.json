@@ -25,7 +25,8 @@
         "sms_send",
         "tasks",
         "tasks_others",
-        "education"
+        "education",
+        "web_search"
       ],
       "briefing": {
         "enabled": true,
@@ -53,7 +54,8 @@
         "reminders_others",
         "tasks",
         "tasks_others",
-        "education"
+        "education",
+        "web_search"
       ]
     },
     "carol": {
@@ -79,7 +81,8 @@
         "sms_send",
         "tasks",
         "tasks_others",
-        "education"
+        "education",
+        "web_search"
       ],
       "briefing": {
         "enabled": true,
@@ -107,7 +110,8 @@
         "reminders_others",
         "tasks",
         "tasks_others",
-        "education"
+        "education",
+        "web_search"
       ]
     },
     "eve": {
@@ -130,7 +134,8 @@
         "reminders_others",
         "tasks",
         "tasks_others",
-        "education"
+        "education",
+        "web_search"
       ]
     },
     "child_1": {
@@ -232,6 +237,7 @@
     "sms_send": "Send SMS text messages to external contacts via Twilio",
     "tasks": "Create, query, and update your own tasks",
     "tasks_others": "Assign tasks to others, query and update others' tasks",
-    "education": "Access children's education profiles, documents, goals, and support team from Education Advisor"
+    "education": "Access children's education profiles, documents, goals, and support team from Education Advisor",
+    "web_search": "Search the web for current information, news, prices, hours, and anything outside Iji's training data"
   }
 }

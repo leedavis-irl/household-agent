@@ -17,7 +17,7 @@ Organized into **7 Spheres** (domain capabilities serving the household) and the
 | Children | 0 | 0 | 0 | 4 |
 | Engine › Communication | 6 | 0 | 2 | 8 |
 | Engine › Memory | 2 | 0 | 0 | 7 |
-| Engine › Infrastructure | 12 | 0 | 2 | 5 |
+| Engine › Infrastructure | 13 | 0 | 1 | 5 |
 
 Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
@@ -180,7 +180,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Daily automated health checks | `scripts/health-check.js` | ✅ Verified | Lee only alerts | High | Cron installed on EC2 (daily 7:05 AM UTC). STATUS.md written, DMs Lee on failure. Runbook: `docs/ops/health-check.md`. Operationalized in commit `9f8aab6`. |
 | Conversation eval logging (prompt optimization phase 1) | `conversation_evals`, `src/utils/eval-logger.js` | ✅ Verified | Not rolled out | Medium | Logs completed brain loops with tools/tokens/cost/latency (commit `a7751fc`) |
 | Security hardening wave | not built | ❌ Not built | Not rolled out | Medium | Scope audits, key rotation, access review, abuse controls |
-| Web search capability | `web_search` | ⚠️ Untested | Adults with `web_search` permission | Medium | Brave Search API. Requires `BRAVE_SEARCH_API_KEY` env var. |
+| Web search capability | `web_search` | ✅ Verified | Adults with `web_search` permission | Medium | Brave Search API. Requires `BRAVE_SEARCH_API_KEY` env var. |
 | Tool authoring (self-extension) | not built | ❌ Not built | Not rolled out | Low | Meta-cognitive capability |
 | Confidence calibration | not built | ❌ Not built | Not rolled out | Medium | Staleness-aware confidence outputs |
 | Escalation intelligence | not built | ❌ Not built | Not rolled out | Medium | Autonomy boundary learning |
