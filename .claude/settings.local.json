@@ -27,7 +27,12 @@
       "Bash(./scripts/gh-update-card.sh \"Education tools — test & verify\" \"Ready\" 2>&1)",
       "Bash(./scripts/gh-update-card.sh \"School/activity schedule assistant\" \"Backlog\" 2>&1)",
       "Bash(./scripts/gh-update-card.sh \"Routine, medical & homework tracking\" \"Backlog\" 2>&1)",
-      "Bash(./scripts/gh-update-card.sh \"Education Advisor\" \"Done\" 2>&1)"
+      "Bash(./scripts/gh-update-card.sh \"Education Advisor\" \"Done\" 2>&1)",
+      "WebFetch(domain:bratbusters.com)",
+      "Bash(./scripts/gh-update-card.sh \"Parenting Methods for Iji to reference\" \"Ready\" 2>&1)",
+      "Bash(gh api:*)",
+      "Bash(./scripts/gh-update-card.sh \"Read Google Docs content\" \"Backlog\")",
+      "Bash(./scripts/gh-update-card.sh \"Search shared Drive docs\" \"Backlog\")"
     ]
   }
 }

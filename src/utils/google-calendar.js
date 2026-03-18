@@ -196,19 +196,20 @@ export function localDateTimeToISO(dateStr, timeStr) {
   const t = parseTimeString(timeStr);
   if (!t) return null;
 
-  // Iteratively solve for the UTC instant that corresponds to local wall clock time in timezone.
-  let guessMs = Date.UTC(year, month - 1, day, t.hour, t.minute, 0, 0);
-  for (let i = 0; i < 6; i++) {
+  // Find the UTC instant that corresponds to local wall clock time in the timezone.
+  // Start with a naive guess (treat local time as UTC), then adjust using the offset
+  // at that instant. Two iterations handle DST edge cases.
+  const desiredLocalMs = Date.UTC(year, month - 1, day, t.hour, t.minute, 0, 0);
+  let guessMs = desiredLocalMs;
+  for (let i = 0; i < 2; i++) {
     const z = getZonedParts(new Date(guessMs), tz);
-    const desiredMs = Date.UTC(year, month - 1, day, t.hour, t.minute, 0, 0);
-    const actualMs = Date.UTC(z.year, z.month - 1, z.day, z.hour, z.minute, 0, 0);
-    const diff = desiredMs - actualMs;
-    guessMs += diff;
-    if (diff === 0) break;
+    const actualLocalMs = Date.UTC(z.year, z.month - 1, z.day, z.hour, z.minute, 0, 0);
+    guessMs += desiredLocalMs - actualLocalMs;
   }
 
-  const offset = getOffsetMinutesAtInstant(guessMs, tz);
-  const offsetStr = formatOffset(offset);
+  // Compute offset: difference between the local wall clock and the UTC instant
+  const offsetMinutes = Math.round((desiredLocalMs - guessMs) / 60000);
+  const offsetStr = formatOffset(offsetMinutes);
   const localYmd = datePartsToYmd(year, month, day);
   const hh = String(t.hour).padStart(2, '0');
   const mm = String(t.minute).padStart(2, '0');
