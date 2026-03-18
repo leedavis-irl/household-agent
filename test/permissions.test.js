@@ -47,6 +47,16 @@ describe('checkPermission', () => {
     expect(result.allowed).toBe(false);
   });
 
+  it('allows email_draft with email_send permission', () => {
+    const result = checkPermission(['email_send'], 'email_draft');
+    expect(result.allowed).toBe(true);
+  });
+
+  it('denies email_draft without email_send permission', () => {
+    const result = checkPermission(['email_own', 'email_all'], 'email_draft');
+    expect(result.allowed).toBe(false);
+  });
+
   it('allows email_search with email_own', () => {
     const result = checkPermission(['email_own'], 'email_search');
     expect(result.allowed).toBe(true);
