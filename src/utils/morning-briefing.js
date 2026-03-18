@@ -133,7 +133,8 @@ Keep it concise — this is a Signal message, not an email. Lead with the most i
 
     try {
       const response = await think(envelope);
-      const delivered = sendMessage(member.identifiers.signal, response);
+      const footer = `\n\n—\nReply "turn off my briefing" to stop these, or "change my briefing to 7am" to adjust the time.`;
+      const delivered = sendMessage(member.identifiers.signal, response + footer);
       if (!delivered) {
         log.error('Morning briefing send failed: Signal unavailable', { person_id: personId });
       } else {
