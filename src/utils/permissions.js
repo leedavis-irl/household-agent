@@ -47,6 +47,7 @@ const TOOL_PERMISSIONS = {
   web_search: ['web_search'],
   docs_search: ['docs_read', 'docs_all'],
   docs_read: ['docs_read', 'docs_all'],
+  slack_search: ['slack_search'],
 };
 
 export function checkPermission(personPermissions, toolName) {

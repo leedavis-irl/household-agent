@@ -113,6 +113,16 @@ describe('checkPermission', () => {
     expect(checkPermission(noDocsPerms, 'docs_search').reason).toMatch(/Permission denied/);
   });
 
+  it('allows slack_search with slack_search permission', () => {
+    expect(checkPermission(['slack_search'], 'slack_search').allowed).toBe(true);
+  });
+
+  it('denies slack_search without slack_search permission', () => {
+    const result = checkPermission(['ha_common', 'knowledge_read', 'web_search'], 'slack_search');
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/Permission denied/);
+  });
+
   it('child permissions grant limited access', () => {
     const childPerms = ['ha_common', 'knowledge_read', 'reminders', 'tasks'];
 
@@ -133,5 +143,6 @@ describe('checkPermission', () => {
     expect(checkPermission(childPerms, 'education_profile').allowed).toBe(false);
     expect(checkPermission(childPerms, 'docs_search').allowed).toBe(false);
     expect(checkPermission(childPerms, 'docs_read').allowed).toBe(false);
+    expect(checkPermission(childPerms, 'slack_search').allowed).toBe(false);
   });
 });

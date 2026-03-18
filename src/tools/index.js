@@ -39,6 +39,7 @@ import * as educationTeam from './education-team.js';
 import * as webSearch from './web-search.js';
 import * as docsSearch from './docs-search.js';
 import * as docsRead from './docs-read.js';
+import * as slackSearch from './slack-search.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -84,6 +85,7 @@ const tools = {
   web_search: webSearch,
   docs_search: docsSearch,
   docs_read: docsRead,
+  slack_search: slackSearch,
 };
 
 export function getToolDefinitions() {

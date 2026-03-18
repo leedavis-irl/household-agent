@@ -25,6 +25,7 @@ const capabilityFiles = {
   education: 'education.md',
   'web-search': 'web-search.md',
   docs: 'docs.md',
+  slack: 'slack.md',
 };
 
 const CAPABILITY_TRIGGERS = {
@@ -41,6 +42,7 @@ const CAPABILITY_TRIGGERS = {
   education: /\b(school|grade|teacher|tutor|IEP|504|accommodation|assessment|DIBELS|STAR|CAASPP|report card|education|learning|neuropsych|dyslexia|ADHD|homework|reading level|math level|curriculum)\b/i,
   'web-search': /\b(search|google|look up|look it up|find out|what is|who is|latest|news|current|hours|open|price|cost of|how much|website|online|recent|today's|is .* open)\b/i,
   docs: /\b(google doc|google sheet|drive|gdoc|spreadsheet|document|docs\.google|drive\.google|shared doc|shared sheet|shared document)\b/i,
+  slack: /\b(slack|channel|#[a-z]|posted in|said in slack|slack message|slack thread|search slack)\b/i,
 };
 
 function loadCapability(fileName) {

@@ -64,6 +64,7 @@ describe('tool registry integrity', () => {
       'web_search',
       'education_profile', 'education_documents', 'education_goals', 'education_team',
       'docs_search', 'docs_read',
+      'slack_search',
     ];
     for (const name of expected) {
       expect(names.has(name), `missing tool: ${name}`).toBe(true);
@@ -89,6 +90,7 @@ describe('tool modules have execute functions', () => {
     'web-search',
     'education-profile', 'education-documents', 'education-goals', 'education-team',
     'docs-search', 'docs-read',
+    'slack-search',
   ];
 
   for (const file of toolFiles) {
