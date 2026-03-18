@@ -51,6 +51,7 @@ const STATUS_IDS = {
   'In review': 'df73e18b',
   Done: '98236657',
 };
+const FEEDBACK_FIELD = 'PVTF_lAHOAVcVpc4BSCAHzg_xO-I';
 
 // Track which cards we're currently processing or have failed
 const processing = new Set();
@@ -80,6 +81,21 @@ function updateCardStatus(itemId, status) {
     }
   }`;
   ghGraphql(query, { project: PROJECT_ID, item: itemId, field: STATUS_FIELD, value: statusId });
+}
+
+function setCardFeedback(itemId, feedback) {
+  const ts = new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles', dateStyle: 'short', timeStyle: 'short' });
+  const text = `[${ts}] ${feedback}`.slice(0, 1000);
+  const query = `mutation($project: ID!, $item: ID!, $field: ID!, $value: String!) {
+    updateProjectV2ItemFieldValue(input: {projectId: $project, itemId: $item, fieldId: $field, value: {text: $value}}) {
+      projectV2Item { id }
+    }
+  }`;
+  try {
+    ghGraphql(query, { project: PROJECT_ID, item: itemId, field: FEEDBACK_FIELD, value: text });
+  } catch (err) {
+    log(`Failed to set feedback on card: ${err.message}`);
+  }
 }
 
 // ── Fetch "Ready" cards ──
@@ -323,13 +339,15 @@ async function processCard(card) {
     const specPath = findSpecFile(card);
     if (!specPath) {
       log(`No spec file found for: ${title}`);
+      setCardFeedback(id, `No spec file found. Add a queue/ spec file and set the Spec field, or name the file to match the card title.`);
       processing.delete(id);
       return;
     }
     log(`Spec: ${specPath}`);
 
-    // Move to In Progress
+    // Move to In Progress and clear any prior feedback
     updateCardStatus(id, 'In progress');
+    setCardFeedback(id, '');
     log(`Card → In progress`);
 
     let attempt = 0;
@@ -351,6 +369,8 @@ async function processCard(card) {
         if (attempt >= MAX_REVIEW_ATTEMPTS) {
           log(`Max attempts reached — moving back to Ready and escalating to Lee`);
           updateCardStatus(id, 'Ready');
+          const ccFailReason = `Claude Code failed after ${attempt} attempts. Error: ${err.message.slice(0, 500)}`;
+          setCardFeedback(id, ccFailReason);
           failed.set(id, { title, feedback: err.message, timestamp: new Date().toISOString() });
           notifyLee(`⚠️ ${title} — Claude Code failed after ${attempt} attempts. Card moved back to Ready.`);
           break;
@@ -408,6 +428,7 @@ async function processCard(card) {
         if (attempt >= MAX_REVIEW_ATTEMPTS) {
           log(`Max attempts reached — moving back to Ready and escalating to Lee`);
           updateCardStatus(id, 'Ready');
+          setCardFeedback(id, `Review failed after ${attempt} attempts. ${review.feedback}`);
           failed.set(id, { title, feedback: review.feedback, timestamp: new Date().toISOString() });
           notifyLee(`⚠️ ${title} — review failed after ${attempt} attempts. Card moved back to Ready. Feedback: ${review.feedback.slice(0, 200)}`);
         } else {
