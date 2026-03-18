@@ -82,6 +82,20 @@ describe('checkPermission', () => {
     expect(result.reason).toMatch(/web_search/);
   });
 
+  it('allows education tools with education permission', () => {
+    for (const tool of ['education_profile', 'education_documents', 'education_goals', 'education_team']) {
+      const result = checkPermission(['education'], tool);
+      expect(result.allowed).toBe(true);
+    }
+  });
+
+  it('denies education tools without education permission', () => {
+    for (const tool of ['education_profile', 'education_documents', 'education_goals', 'education_team']) {
+      const result = checkPermission(['ha_common', 'knowledge_read'], tool);
+      expect(result.allowed).toBe(false);
+    }
+  });
+
   it('child permissions grant limited access', () => {
     const childPerms = ['ha_common', 'knowledge_read', 'reminders', 'tasks'];
 
@@ -99,5 +113,6 @@ describe('checkPermission', () => {
     expect(checkPermission(childPerms, 'finance_transactions').allowed).toBe(false);
     expect(checkPermission(childPerms, 'sms_send').allowed).toBe(false);
     expect(checkPermission(childPerms, 'web_search').allowed).toBe(false);
+    expect(checkPermission(childPerms, 'education_profile').allowed).toBe(false);
   });
 });

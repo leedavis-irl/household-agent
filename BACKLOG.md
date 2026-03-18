@@ -126,10 +126,12 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
 | Capability | Tools | Status | Rollout | Priority | Notes |
 |-----------|-------|--------|---------|----------|-------|
-| AM/PM routine tracking | not built | ❌ Not built | Not rolled out | High | Depends on HA/ESPHome routine hardware flow |
-| School/activity schedule assistant | not built | ❌ Not built | Not rolled out | High | Calendar + reminders + coordination |
-| Medical/permission-slip tracking | not built | ❌ Not built | Not rolled out | Medium | Structured records + reminders needed |
-| Homework tracking support | not built | ❌ Not built | Not rolled out | Medium | Child-focused workflow not yet implemented |
+| Education Advisor integration | `education_profile`, `education_documents`, `education_goals`, `education_team` | 🔬 Untested | Adults (`education`) | High | 4 Supabase-backed tools. Commit c04c6f0. Queue #76 covers test & verify. |
+| Education document ingestion | not built | ❌ Not built | Not rolled out | Medium | Queue #27. Depends on Signal image handling + Gemini Vision pipeline |
+| School/activity schedule assistant | not built | ❌ Not built | Not rolled out | High | Queue #77. Calendar + reminders + coordination |
+| AM/PM routine tracking | not built | ❌ Not built | Not rolled out | High | Queue #78. Depends on HA/ESPHome routine hardware flow |
+| Medical/permission-slip tracking | not built | ❌ Not built | Not rolled out | Medium | Queue #78. Structured records + reminders needed |
+| Homework tracking support | not built | ❌ Not built | Not rolled out | Medium | Queue #78. Child-focused workflow not yet implemented |
 
 ---
 
