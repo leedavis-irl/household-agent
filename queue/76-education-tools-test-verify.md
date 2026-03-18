@@ -6,47 +6,64 @@
 
 ## What to build
 
-Add the four education tools (`education_profile`, `education_documents`, `education_goals`, `education_team`) to the existing test suites. They were implemented in commit c04c6f0 but never added to the tool registry or permissions test files, so CI doesn't know they exist.
+Two things:
 
-## Context
+1. **Add the four education tools to existing test suites** (tool-registry, permissions) so CI knows they exist.
+2. **Write unit tests for each tool's execute function** that verify the tools handle both success and error cases correctly, using mocked Supabase responses.
 
-Tools are in `src/tools/education-profile.js`, `education-documents.js`, `education-goals.js`, `education-team.js`. Supabase client is `src/utils/supabase.js`. Permission mapping is in `src/utils/permissions.js` — already has `education` permission wired up. Tests are in `test/tool-registry.test.js` and `test/permissions.test.js`.
+Tools: `education_profile`, `education_documents`, `education_goals`, `education_team`.
+Source: `src/tools/education-profile.js`, `education-documents.js`, `education-goals.js`, `education-team.js`.
+Supabase client: `src/utils/supabase.js`.
+Permission mapping: `src/utils/permissions.js` (already wired).
+Existing tests: `test/tool-registry.test.js`, `test/permissions.test.js`.
 
 ## Implementation notes
 
+### Part 1: Registry and permissions tests
+
 In `test/tool-registry.test.js`:
-- Add `'education_profile', 'education_documents', 'education_goals', 'education_team'` to the `expected` array (line ~64)
-- Add `'education-profile', 'education-documents', 'education-goals', 'education-team'` to the `toolFiles` array (line ~87)
+- Add `'education_profile', 'education_documents', 'education_goals', 'education_team'` to the `expected` array
+- Add `'education-profile', 'education-documents', 'education-goals', 'education-team'` to the `toolFiles` array
 
 In `test/permissions.test.js`:
 - Add a test: `education` permission allows all 4 education tools
 - Add a test: users without `education` permission are denied
-- Add education tools to the child permissions "cannot do" section
 
-## Server requirements
+### Part 2: Tool unit tests
 
-None — test-only change.
+Create `test/education.test.js` with mocked Supabase responses. Use `vi.mock('../src/utils/supabase.js')` to mock the `query` and `isConfigured` functions.
 
-## Verification
+**education_profile tests:**
+- Mock `isConfigured` → `true`, mock `query('children', ...)` → returns `[{ name: 'TestChild', grade_level: '5th', profile_context: { clinical: { diagnoses: ['ADHD'] }, support: { accommodations: ['Extended time'] } }, learner_profile: { summary: 'Active learner', strengths: ['Math'], challenges: ['Writing'] } }]`
+- Call `execute({ child_name: 'TestChild' })` — expect result with `name`, `grade_level`, `diagnoses`, `strengths`, `challenges`, no `error`
+- Mock `isConfigured` → `false` — expect `{ error: ... }` about configuration
+- Mock `query` → returns `[]` — expect error about no child found
 
-- `npm test` passes with all education tools in the expected list
-- Permission tests confirm `education` grants access to all 4 tools
-- Permission tests confirm non-education users are denied
+**education_documents tests:**
+- Mock `query('children', ...)` → `[{ id: 1, name: 'TestChild' }]`, mock `query('documents', ...)` → `[{ name: 'Report Card', category: 'performance_profile', doc_type: 'report_card', extracted_date: '2026-01-15', tags: [], subjects: [], content: 'Sample content' }]`
+- Call `execute({ child_name: 'TestChild' })` — expect `total: 1`, `documents` array with `name`, `category`
+- Call `execute({ search: 'IEP' })` — verify search param is passed to query
+- Call `execute({})` with no params — should query all documents
+
+**education_goals tests:**
+- Mock child lookup → `[{ id: 1, name: 'TestChild' }]`, mock `query('goals', ...)` → `[{ type: 'North Star', description: 'Love of learning', status: 'active', execution_status: null, progress: null, target_date: null, assigned_to: [], parent_id: null }]`
+- Call `execute({ child_name: 'TestChild' })` — expect `north_star`, `objectives`, `tactics` arrays
+- Verify unknown child returns error
+
+**education_team tests:**
+- Mock `query('team_members', ...)` → `[{ name: 'Jane Smith', role: 'Teacher', organization: 'School', email: 'jane@school.edu', phone: null, status: 'active' }]`
+- Call `execute({})` — expect `total: 1`, `team_members` array
+- Call with `child_name` filter — verify it resolves child, fetches goals, and filters members
 
 ## Done when
 
-- [ ] All 4 education tools in `tool-registry.test.js` expected list and toolFiles list
+- [ ] All 4 education tools listed in `test/tool-registry.test.js`
 - [ ] Permission tests cover education tools (allow + deny)
-- [ ] `npm test` passes
+- [ ] `test/education.test.js` exists with mocked unit tests for all 4 tools
+- [ ] Each tool has at minimum: happy path test, not-configured test, not-found test
+- [ ] `npm test` passes with all new tests green
 - [ ] Committed
-
-## GitHub Project
-
-After completing, run:
-```
-./scripts/gh-update-card.sh "Education tools — test & verify" "In Review"
-```
 
 ## Commit message
 
-`test: add education tools to tool-registry and permissions test suites`
+`test: add education tools to test suites with mocked unit tests`
