@@ -27,6 +27,15 @@ function getZonedParts(date, timeZone) {
     if (p.type === 'hour') out.hour = Number(p.value);
     if (p.type === 'minute') out.minute = Number(p.value);
   }
+  // Intl with hour12:false and en-CA locale returns hour 24 for midnight on some
+  // Node versions — normalize to 0 and advance the day.
+  if (out.hour === 24) {
+    out.hour = 0;
+    const next = new Date(Date.UTC(out.year, out.month - 1, out.day + 1));
+    out.year = next.getUTCFullYear();
+    out.month = next.getUTCMonth() + 1;
+    out.day = next.getUTCDate();
+  }
   return out;
 }
 
