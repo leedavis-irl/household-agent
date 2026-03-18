@@ -33,7 +33,7 @@ const CAPABILITY_TRIGGERS = {
   email: /\b(email|inbox|gmail|message from|mail)\b/i,
   sms: /\b(text|sms|txt)\b/i,
   messaging: /\b(tell |send |message |text |relay |let .* know)\b/i,
-  reminders: /\b(remind|reminder|reminders|don't forget|don't let me forget|nudge|follow up|snooze)\b/i,
+  reminders: /\b(remind|reminder|reminders|don't forget|don't let me forget|nudge|follow up|snooze|briefing|morning briefing)\b/i,
   tasks: /\b(task|tasks|to.?do|to.?dos|assign|assigned|overdue|delegate|action item)\b/i,
 };
 

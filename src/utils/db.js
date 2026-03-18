@@ -189,6 +189,20 @@ const MIGRATIONS = [
       ensureColumn(db, 'conversation_evals', 'layer_tokens', 'TEXT');
     },
   },
+  {
+    version: 3,
+    description: 'Add briefing_preferences table for per-user briefing opt-in/out',
+    up(db) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS briefing_preferences (
+          person_id TEXT PRIMARY KEY,
+          enabled INTEGER NOT NULL DEFAULT 1,
+          delivery_hour INTEGER NOT NULL DEFAULT 9,
+          updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+      `);
+    },
+  },
 ];
 
 function migrate(db) {

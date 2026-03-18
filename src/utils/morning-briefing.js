@@ -60,12 +60,18 @@ async function runMorningBriefingCycle() {
   const { hour, dateKey, longDate } = pacificNowParts();
 
   const household = getHousehold();
+  const db = getDb();
   for (const [personId, member] of Object.entries(household.members || {})) {
-    const briefing = member?.briefing;
-    if (!briefing?.enabled) continue;
-    const deliveryHour = Number(briefing.delivery_hour);
+    // DB preferences override household.json defaults
+    const dbPref = db.prepare(
+      'SELECT enabled, delivery_hour FROM briefing_preferences WHERE person_id = ?'
+    ).get(personId);
+    const configBriefing = member?.briefing;
+    const enabled = dbPref ? !!dbPref.enabled : !!configBriefing?.enabled;
+    const deliveryHour = dbPref ? Number(dbPref.delivery_hour) : Number(configBriefing?.delivery_hour);
+    if (!enabled) continue;
     if (!Number.isInteger(deliveryHour) || deliveryHour < 0 || deliveryHour > 23) {
-      log.warn('Morning briefing skipped: invalid delivery_hour', { person_id: personId, delivery_hour: briefing.delivery_hour });
+      log.warn('Morning briefing skipped: invalid delivery_hour', { person_id: personId, delivery_hour: deliveryHour });
       continue;
     }
     if (hour < deliveryHour) continue;
