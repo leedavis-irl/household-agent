@@ -1,12 +1,20 @@
 import { spawn } from 'child_process';
 import { createConnection } from 'net';
-import { existsSync, appendFileSync } from 'fs';
+import { existsSync, appendFileSync, readFileSync } from 'fs';
+import { join } from 'path';
 import { resolve } from './identity.js';
 import { sendReply } from '../router/index.js';
 import { think } from '../brain/index.js';
 import { execute as storeKnowledge } from '../tools/knowledge-store.js';
 import { registerGroup } from '../utils/signal-groups.js';
 import log from '../utils/logger.js';
+
+// signal-cli stores downloaded attachments here
+const SIGNAL_ATTACHMENTS_DIR = process.env.SIGNAL_ATTACHMENTS_DIR
+  || join(process.env.HOME || '/home/ubuntu', '.local/share/signal-cli/attachments');
+
+const IMAGE_CONTENT_TYPES = new Set(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB — Claude vision limit per image
 
 const SIGNAL_CLI = process.env.SIGNAL_CLI_PATH || '/opt/homebrew/bin/signal-cli';
 const SIGNAL_ACCOUNT = process.env.SIGNAL_ACCOUNT;
@@ -17,6 +25,52 @@ const CONNECT_RETRY_MS = 2000;
 const MAX_CONNECT_RETRIES = 10;
 
 const IJI_TRIGGER = /\biji\b/i;
+
+/**
+ * Extract image attachments from a Signal dataMessage.
+ * Returns an array of { media_type, base64 } objects ready for Claude vision.
+ */
+function extractImages(dataMessage) {
+  const attachments = dataMessage.attachments;
+  if (!Array.isArray(attachments) || attachments.length === 0) return [];
+
+  const images = [];
+  for (const att of attachments) {
+    if (!IMAGE_CONTENT_TYPES.has(att.contentType)) {
+      log.debug('Skipping non-image attachment', { contentType: att.contentType });
+      continue;
+    }
+
+    // signal-cli stores attachments by ID in the attachments directory
+    const attId = att.id || att.remoteId;
+    if (!attId) {
+      log.warn('Attachment missing ID', { attachment: JSON.stringify(att).slice(0, 200) });
+      continue;
+    }
+
+    const filePath = join(SIGNAL_ATTACHMENTS_DIR, attId);
+    if (!existsSync(filePath)) {
+      log.warn('Attachment file not found', { id: attId, path: filePath });
+      continue;
+    }
+
+    try {
+      const buf = readFileSync(filePath);
+      if (buf.length > MAX_IMAGE_BYTES) {
+        log.warn('Attachment too large for vision API', { id: attId, bytes: buf.length });
+        continue;
+      }
+      images.push({
+        media_type: att.contentType,
+        base64: buf.toString('base64'),
+      });
+      log.info('Extracted image attachment', { id: attId, contentType: att.contentType, bytes: buf.length });
+    } catch (err) {
+      log.error('Failed to read attachment', { id: attId, error: err.message });
+    }
+  }
+  return images;
+}
 
 let signalProcess = null;
 let tcpClient = null;
@@ -124,9 +178,15 @@ function handleJsonRpc(line) {
   if (!envelope) return;
 
   const dataMessage = envelope.dataMessage;
-  if (!dataMessage || !dataMessage.message) return;
+  if (!dataMessage) return;
 
-  log.debug('Raw dataMessage keys', { keys: Object.keys(dataMessage), raw: JSON.stringify(dataMessage).slice(0, 500) });
+  // Extract images before checking for text — an image-only message is valid
+  const images = extractImages(dataMessage);
+
+  // Require either text or images
+  if (!dataMessage.message && images.length === 0) return;
+
+  log.debug('Raw dataMessage keys', { keys: Object.keys(dataMessage), hasAttachments: !!dataMessage.attachments, imageCount: images.length, raw: JSON.stringify(dataMessage).slice(0, 500) });
 
   const senderNumber = envelope.sourceNumber || null;
   const senderUuid = envelope.sourceUuid || envelope.source;
@@ -136,8 +196,8 @@ function handleJsonRpc(line) {
   // Skip messages from ourselves
   if (senderNumber === SIGNAL_ACCOUNT) return;
 
-  const messageText = dataMessage.message.trim();
-  if (!messageText) return;
+  const messageText = (dataMessage.message || '').trim();
+  if (!messageText && images.length === 0) return;
 
   // Detect group messages — signal-cli uses different field names depending on version
   const groupInfo = dataMessage.groupInfo || dataMessage.group || dataMessage.groupV2;
@@ -177,9 +237,9 @@ function handleJsonRpc(line) {
   const replyNumber = person.identifiers?.signal || senderNumber || senderUuid;
 
   if (isGroup) {
-    handleGroupMessage(person, messageText, groupId, dataMessage.mentions);
+    handleGroupMessage(person, messageText, groupId, dataMessage.mentions, images);
   } else {
-    handleDirectMessage(person, messageText, replyNumber);
+    handleDirectMessage(person, messageText, replyNumber, images);
   }
 }
 
@@ -193,7 +253,7 @@ function isMentioned(mentions) {
   return mentions.some(m => m.uuid === IJI_UUID);
 }
 
-function handleGroupMessage(person, messageText, groupId, mentions) {
+function handleGroupMessage(person, messageText, groupId, mentions, images = []) {
   // Debug: log the raw mentions data so we can see signal-cli's format
   log.info('Group message mentions check', { from: person.display_name, mentions: JSON.stringify(mentions), ijiUuid: IJI_UUID, textHasIji: IJI_TRIGGER.test(messageText) });
 
@@ -212,7 +272,8 @@ function handleGroupMessage(person, messageText, groupId, mentions) {
     person: person.display_name,
     role: person.role,
     permissions: person.permissions,
-    message: messageText,
+    message: messageText || '(image attached)',
+    images: images.length > 0 ? images : undefined,
     source_channel: 'signal',
     reply_address: groupId,
     group_id: groupId,
@@ -220,7 +281,7 @@ function handleGroupMessage(person, messageText, groupId, mentions) {
     timestamp: new Date().toISOString(),
   };
 
-  log.info('Group message to brain', { from: person.display_name, groupId: groupId?.slice(0, 12) + '...' });
+  log.info('Group message to brain', { from: person.display_name, groupId: groupId?.slice(0, 12) + '...', imageCount: images.length });
 
   think(msgEnvelope, (ack) => {
     if (ack != null && ack.trim() !== '') sendReply(msgEnvelope, ack);
@@ -259,7 +320,7 @@ async function absorbGroupMessage(person, messageText) {
 
 // --- Direct message handling ---
 
-function handleDirectMessage(person, messageText, replyAddress) {
+function handleDirectMessage(person, messageText, replyAddress, images = []) {
   const conversationId = `${person.id}-signal-${new Date().toISOString().slice(0, 10)}`;
 
   const msgEnvelope = {
@@ -267,7 +328,8 @@ function handleDirectMessage(person, messageText, replyAddress) {
     person: person.display_name,
     role: person.role,
     permissions: person.permissions,
-    message: messageText,
+    message: messageText || '(image attached)',
+    images: images.length > 0 ? images : undefined,
     source_channel: 'signal',
     reply_address: replyAddress,
     group_id: null,

@@ -30,7 +30,23 @@ export async function think(envelope, onAcknowledge) {
 
   // Build messages: prior conversation history + new user message
   const history = conversation.get(envelope.conversation_id);
-  const userMessage = { role: 'user', content: envelope.message };
+
+  // Build user message content — plain text or multimodal (images + text)
+  let userContent;
+  if (envelope.images && envelope.images.length > 0) {
+    userContent = [
+      ...envelope.images.map((img) => ({
+        type: 'image',
+        source: { type: 'base64', media_type: img.media_type, data: img.base64 },
+      })),
+      { type: 'text', text: envelope.message },
+    ];
+    log.info('Building multimodal message', { imageCount: envelope.images.length, textLength: envelope.message.length });
+  } else {
+    userContent = envelope.message;
+  }
+
+  const userMessage = { role: 'user', content: userContent };
   const messages = [...history, userMessage];
 
   let isFirstIteration = true;
