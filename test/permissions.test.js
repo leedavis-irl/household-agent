@@ -96,6 +96,23 @@ describe('checkPermission', () => {
     }
   });
 
+  it('allows docs tools with docs_read permission', () => {
+    expect(checkPermission(['docs_read'], 'docs_search').allowed).toBe(true);
+    expect(checkPermission(['docs_read'], 'docs_read').allowed).toBe(true);
+  });
+
+  it('allows docs tools with docs_all permission', () => {
+    expect(checkPermission(['docs_all'], 'docs_search').allowed).toBe(true);
+    expect(checkPermission(['docs_all'], 'docs_read').allowed).toBe(true);
+  });
+
+  it('denies docs tools without docs permission', () => {
+    const noDocsPerms = ['ha_common', 'knowledge_read', 'web_search', 'email_own'];
+    expect(checkPermission(noDocsPerms, 'docs_search').allowed).toBe(false);
+    expect(checkPermission(noDocsPerms, 'docs_read').allowed).toBe(false);
+    expect(checkPermission(noDocsPerms, 'docs_search').reason).toMatch(/Permission denied/);
+  });
+
   it('child permissions grant limited access', () => {
     const childPerms = ['ha_common', 'knowledge_read', 'reminders', 'tasks'];
 
@@ -114,5 +131,7 @@ describe('checkPermission', () => {
     expect(checkPermission(childPerms, 'sms_send').allowed).toBe(false);
     expect(checkPermission(childPerms, 'web_search').allowed).toBe(false);
     expect(checkPermission(childPerms, 'education_profile').allowed).toBe(false);
+    expect(checkPermission(childPerms, 'docs_search').allowed).toBe(false);
+    expect(checkPermission(childPerms, 'docs_read').allowed).toBe(false);
   });
 });
