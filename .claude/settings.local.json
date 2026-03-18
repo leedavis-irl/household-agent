@@ -15,7 +15,19 @@
       "Bash(tail:*)",
       "Bash(wc:*)",
       "Bash(mkdir:*)",
-      "Bash(journalctl:*)"
+      "Bash(journalctl:*)",
+      "Bash(crontab -l)",
+      "Bash(launchctl list:*)",
+      "Bash(gh project:*)",
+      "Bash(claude --version)",
+      "Bash(claude --print \"test\")",
+      "Bash(launchctl unload:*)",
+      "Bash(./scripts/gh-update-card.sh \"Web search capability\" \"Ready\" 2>&1)",
+      "Bash(launchctl load:*)",
+      "Bash(./scripts/gh-update-card.sh \"Education tools — test & verify\" \"Ready\" 2>&1)",
+      "Bash(./scripts/gh-update-card.sh \"School/activity schedule assistant\" \"Backlog\" 2>&1)",
+      "Bash(./scripts/gh-update-card.sh \"Routine, medical & homework tracking\" \"Backlog\" 2>&1)",
+      "Bash(./scripts/gh-update-card.sh \"Education Advisor\" \"Done\" 2>&1)"
     ]
   }
 }
