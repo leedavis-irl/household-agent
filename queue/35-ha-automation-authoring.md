@@ -1,43 +1,41 @@
-# Queue Spec: HA automation authoring
+# HA automation authoring
 
 **Sphere:** Property & Home
-**Project:** Iji
-
-## Goal
-
-Draft/deploy automations with approval workflow
+**Backlog item:** HA automation authoring
+**Depends on:** ha_control, ha_scene tools
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Draft and deploy Home Assistant automations with an approval workflow. Same as 'Automation authoring for HA' — this is a duplicate card.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+See 'Automation authoring for HA' card — same capability. This card should be merged or one should be closed as duplicate.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Duplicate of queue/19-automation-authoring-for-ha.md. Merge into that spec and close this card.
+
+## Server requirements
+
+- [ ] None — see queue/19
+
+## Verification
+
+- See queue/19-automation-authoring-for-ha.md
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Merged with queue/19-automation-authoring-for-ha.md
+- [ ] This card closed as duplicate
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "HA automation authoring" "In Review"
+```
 
 ## Commit message
 
-`feat: ha automation authoring`
+`chore: merge duplicate HA automation authoring cards`

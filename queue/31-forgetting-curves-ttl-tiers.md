@@ -1,43 +1,47 @@
-# Queue Spec: Forgetting curves / TTL tiers
+# Forgetting curves / TTL tiers
 
-**Sphere:** Iji Engine
-**Project:** Iji
-
-## Goal
-
-Long-term memory hygiene
+**Sphere:** Engine
+**Backlog item:** Forgetting curves / TTL tiers
+**Depends on:** knowledge table
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Add time-to-live tiers to household knowledge so ephemeral facts expire automatically. A dinner reservation next week should auto-expire after the date. A child's school assignment should expire at end of semester. Permanent facts (house rules, allergies) never expire.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Knowledge table already has an `expires_at` column but it's rarely used. The knowledge_store tool doesn't prompt for expiry. The scheduler pattern (src/scheduler/reminders.js) shows how to run periodic cleanup.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Add TTL tier logic to `src/tools/knowledge-store.js`: when storing knowledge, Claude should classify the TTL tier (ephemeral: 1 week, short: 1 month, medium: 6 months, permanent: no expiry) and set expires_at accordingly. Create a cleanup job in a new scheduler that runs daily and deletes expired knowledge entries. Update the prompt to instruct Claude to set appropriate TTL tiers.
+
+## Server requirements
+
+- [ ] No new env vars needed
+
+## Verification
+
+- Tell Iji: "We have dinner at Chez Panisse on Friday" → Stored with ~1 week TTL
+- Tell Iji: "Ryker is allergic to peanuts" → Stored with permanent TTL
+- Verify expired entries are cleaned up on the next daily run
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Knowledge store sets TTL tiers based on content type
+- [ ] Daily cleanup job removes expired entries
+- [ ] Permanent facts never expire
+- [ ] Prompt instructs Claude on TTL classification
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Forgetting curves / TTL tiers" "In Review"
+```
 
 ## Commit message
 
-`feat: forgetting curves ttl tiers`
+`feat: add TTL tiers and auto-expiry for household knowledge`

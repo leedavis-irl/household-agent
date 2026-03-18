@@ -1,43 +1,46 @@
-# Queue Spec: Generate operational documents
+# Generate operational documents
 
-**Sphere:** Iji Engine
-**Project:** Iji
-
-## Goal
-
-Packing lists, summaries, prep docs, reports
+**Sphere:** Engine
+**Backlog item:** Generate operational documents
+**Depends on:** knowledge_search, calendar_query tools
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Let Iji generate structured documents on demand — packing lists for trips, prep checklists for events, summary reports, or household briefing docs. Output as formatted text or a Google Doc.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Google Docs integration exists for the weekly family doc sync (scripts/sync-docs-to-gdoc.js). Knowledge and calendar tools provide the data. The work is a tool that Claude uses to assemble context into a formatted document.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `src/tools/generate-document.js` that takes a document_type (packing_list, event_prep, summary_report, custom) and context parameters, then returns a well-formatted markdown document. For v1, return as message text. Google Docs export can be added in v2.
+
+## Server requirements
+
+- [ ] No new env vars needed for v1 (text output)
+
+## Verification
+
+- Ask Iji: "Generate a packing list for our Tahoe trip this weekend" → Returns structured packing list using knowledge about family members
+- Ask Iji: "Write a summary of this week's calendar for the household" → Returns formatted weekly summary
+- Ask Iji: "Create a prep checklist for Ryker's birthday party" → Returns event prep checklist
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `generate_document` tool returns formatted documents
+- [ ] Multiple document types supported
+- [ ] Uses knowledge and calendar context
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Generate operational documents" "In Review"
+```
 
 ## Commit message
 
-`feat: generate operational documents`
+`feat: add operational document generation tool`

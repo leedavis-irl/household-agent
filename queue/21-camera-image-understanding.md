@@ -1,43 +1,48 @@
-# Queue Spec: Camera/image understanding
+# Camera/image understanding
 
 **Sphere:** Property & Home
-**Project:** Iji
-
-## Goal
-
-Doorbell/fridge/room context via vision inputs
+**Backlog item:** Camera/image understanding
+**Depends on:** Vision-capable API (Claude or Gemini)
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Let Iji process images from Signal (doorbell camera, fridge contents, room photos) and provide context-aware responses. Uses Claude's vision capabilities to interpret images sent in conversation.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Signal attachments include images. The signal broker (src/broker/signal.js) currently only processes text messages. Claude's API supports vision (image content blocks). The key work is extracting image attachments from Signal messages and passing them to the brain as image content.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Modify `src/broker/signal.js` to detect image attachments in incoming messages (dataMessage.attachments[]), download the attachment file from signal-cli's storage directory, convert to base64, and include as an image content block in the envelope. Modify `src/brain/index.js` to pass image content blocks through to the Claude API call. No new tool needed — this is a broker/brain enhancement.
+
+## Server requirements
+
+- [ ] Signal-cli must store attachments (default behavior)
+- [ ] Sufficient disk space for temporary image storage
+
+## Verification
+
+- Send Iji a photo of a room via Signal → Iji describes what it sees
+- Send a photo of a document → Iji reads/summarizes the text
+- Send a photo with a text question → Iji answers using both image and text context
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Signal broker extracts image attachments
+- [ ] Images passed to Claude API as content blocks
+- [ ] Iji responds with image-aware context
+- [ ] Non-image messages continue to work unchanged
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Camera/image understanding" "In Review"
+```
 
 ## Commit message
 
-`feat: camera image understanding`
+`feat: add image understanding for Signal photo attachments`

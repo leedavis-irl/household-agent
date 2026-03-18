@@ -1,43 +1,48 @@
-# Queue Spec: Apple Find My item/device locate
+# Apple Find My item/device locate
 
 **Sphere:** Procurement & Errands
-**Project:** Iji
-
-## Goal
-
-Via FindMySync Mac app to HA device_tracker
+**Backlog item:** Apple Find My item/device locate
+**Depends on:** Home Assistant with FindMySync integration
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Let adults ask Iji where their Apple devices and AirTag-tracked items are. Uses the FindMySync Mac app which syncs Find My data to Home Assistant as device_tracker entities, then Iji queries HA for location.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+FindMySync (https://github.com/MartinPham/FindMySync) runs on a household Mac and syncs Apple Find My data to HA as device_tracker.* entities. Iji already has ha_query for reading HA state. The main work is a thin tool that queries device_tracker entities and presents location in a human-friendly way.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `src/tools/findmy-locate.js` that queries HA for `device_tracker.*` entities, filters by name/keyword, and returns location (latitude/longitude + geocoded address if available, plus last_updated timestamp). Tool name: `findmy_locate`. Add to ha permissions group.
+
+## Server requirements
+
+- [ ] FindMySync must be running on a household Mac (Lee's fingers required)
+- [ ] FindMySync must be configured with HA long-lived token
+- [ ] No new Iji env vars needed
+
+## Verification
+
+- Ask Iji: "Where is my phone?" → Returns location of Lee's phone from HA
+- Ask Iji: "Where are the AirTags?" → Lists all tracked items with locations
+- Ask if FindMySync isn't set up → Returns helpful error about missing setup
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `findmy_locate` tool queries HA device_tracker entities
+- [ ] Returns human-friendly location with timestamps
+- [ ] Permission-gated to adults
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Apple Find My item/device locate" "In Review"
+```
 
 ## Commit message
 
-`feat: apple find my item device locate`
+`feat: add Find My device/item location via HA device_tracker`

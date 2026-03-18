@@ -1,43 +1,47 @@
-# Queue Spec: Anomaly detection over sensors
+# Anomaly detection over sensors
 
 **Sphere:** Property & Home
-**Project:** Iji
-
-## Goal
-
-Interpreted anomaly alerts (door/water/temp)
+**Backlog item:** Anomaly detection over sensors
+**Depends on:** ha_query, ha_history tools
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Give Iji the ability to detect and alert on anomalous sensor readings — unexpected door openings, water leak detections, temperature spikes, or motion at unusual hours. Runs as a periodic check that queries HA sensor history and flags outliers.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+ha_query and ha_history tools already exist. HA exposes binary_sensor.* (doors, motion, water) and sensor.* (temperature, humidity) entities. The morning briefing scheduler (src/utils/morning-briefing.js) shows the pattern for periodic checks.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `src/utils/anomaly-detector.js` that runs every 15 minutes, queries recent sensor history via HA API, and flags anomalies (door open > 30 min, water leak detected, temperature outside normal range). On detection, send a Signal DM to Lee. Store alert state in memory to avoid repeat notifications. Also create `src/tools/anomaly-query.js` so adults can ask 'anything unusual at home?'
+
+## Server requirements
+
+- [ ] No new env vars needed
+
+## Verification
+
+- Ask Iji: "Anything unusual at home?" → Returns recent anomaly check results
+- Ask Iji: "Is the front door open?" → Checks door sensor state
+- Simulate: if a door sensor has been open > 30 min, verify alert would trigger
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Anomaly detector runs on a periodic schedule
+- [ ] Alerts sent via Signal DM on detection
+- [ ] `anomaly_query` tool lets adults check on demand
+- [ ] Dedup prevents repeat alerts for same event
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Anomaly detection over sensors" "In Review"
+```
 
 ## Commit message
 
-`feat: anomaly detection over sensors`
+`feat: add sensor anomaly detection with periodic checks and alerts`

@@ -1,43 +1,46 @@
-# Queue Spec: Asset registry
+# Asset registry
 
-**Sphere:** Iji Engine
-**Project:** Iji
-
-## Goal
-
-Evaluate Homebox per Growth Protocol
+**Sphere:** Engine
+**Backlog item:** Asset registry
+**Depends on:** none
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Give Iji a household asset registry — every major appliance, piece of furniture, and valuable item tracked with brand, model, purchase date, warranty expiration, location, and notes. Evaluate Homebox as the backend per Growth Protocol.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+ARCHITECTURE.md lists 'Household Inventory & Stores' as Department 6. Growth Protocol mentions evaluating Homebox (https://github.com/hay-kot/homebox). The simplest v1: a SQLite table in Iji's own database, queryable via a tool. Homebox integration can come later.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Add `assets` table via DB migration (name, brand, model, purchase_date, warranty_expires, location, notes, category). Create `src/tools/asset-query.js` (search/list assets) and `src/tools/asset-store.js` (add/update assets). Register both with appropriate permissions.
+
+## Server requirements
+
+- [ ] DB migration runs automatically on restart
+
+## Verification
+
+- Ask Iji: "Add the new dishwasher — Bosch 800 series, bought today, 2-year warranty" → Creates asset record
+- Ask Iji: "What appliances are in the kitchen?" → Lists kitchen assets
+- Ask Iji: "When does the dishwasher warranty expire?" → Returns warranty date
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `assets` table created via migration
+- [ ] `asset_query` and `asset_store` tools working
+- [ ] Search by name, location, and category
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Asset registry" "In Review"
+```
 
 ## Commit message
 
-`feat: asset registry`
+`feat: add household asset registry with query and store tools`

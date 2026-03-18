@@ -1,37 +1,45 @@
-# Queue Spec: HA entity naming cleanup
+# HA entity naming cleanup
 
 **Sphere:** Property & Home
-**Project:** Iji
-
-## Goal
-
-Multiple entity_id / friendly_name mismatches in HA and Hue
+**Backlog item:** HA entity naming cleanup
+**Depends on:** Home Assistant admin access
 
 ## What to build
 
-Investigate and fix the issue described above. Read the relevant source files before making changes.
+Fix entity_id and friendly_name mismatches in Home Assistant and Hue. Key offenders: light.logan_bedside_lamp → 'Living Room Floor Lamp 1', basement entities still named 'train station', Hallie's office mislabeled, generic Hue bulbs in Logan's closet, null-named WiZ bulbs in foyer.
 
-### Steps
+## Context
 
-1. Identify the root cause by reading the relevant code and logs
-2. Implement the fix with minimal blast radius
-3. Verify the fix doesn't break existing functionality
-4. Run `npm test` to confirm all tests pass
+BACKLOG.md section 15 lists specific offenders. Fixes are in HA entity registry and/or Hue app directly — not in Iji code. This is an ops task, not a code task. Iji's area registry is the source of truth, but confusing names affect humans browsing HA.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+This is a manual HA admin task, not code. Document the fix plan in `docs/ops/ha-entity-cleanup.md` with: (1) list of entities to rename, (2) which to fix in HA vs Hue app, (3) verification steps. Iji code changes: none needed.
+
+## Server requirements
+
+- [ ] HA entity registry edits (manual via HA UI)
+- [ ] Hue app name changes (manual via Hue app)
+
+## Verification
+
+- Check HA entity list → All friendly_names match their actual room/function
+- Ask Iji: "What lights are in the living room?" → Returns correctly named entities
+- No more generic or mismatched names in HA UI
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Ops runbook created at docs/ops/ha-entity-cleanup.md
+- [ ] All listed entity mismatches resolved
+- [ ] HA UI shows correct names
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "HA entity naming cleanup" "In Review"
+```
 
 ## Commit message
 
-`feat: ha entity naming cleanup`
+`docs: add HA entity naming cleanup runbook`

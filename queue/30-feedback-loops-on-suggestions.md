@@ -1,43 +1,46 @@
-# Queue Spec: Feedback loops on suggestions
+# Feedback loops on suggestions
 
-**Sphere:** Iji Engine
-**Project:** Iji
-
-## Goal
-
-Improve recommendations over time
+**Sphere:** Engine
+**Backlog item:** Feedback loops on suggestions
+**Depends on:** knowledge_store, conversation_evals
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+When Iji makes suggestions (restaurants, activities, products), track whether the household liked or disliked the outcome. Over time, improve recommendations based on accumulated feedback.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Knowledge store can persist feedback. The key is a structured feedback mechanism: after Iji suggests something, it can later ask 'how did that work out?' or the user can volunteer feedback. Store as tagged knowledge entries.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `src/tools/feedback-log.js` with `record` action (log feedback on a past suggestion: topic, rating 1-5, notes) and `query` action (retrieve feedback by topic). Tag entries for searchability. Update the core prompt to instruct Claude to reference past feedback when making similar suggestions.
+
+## Server requirements
+
+- [ ] No new env vars or migrations needed (uses knowledge table with tags)
+
+## Verification
+
+- Ask Iji: "That restaurant you suggested was terrible, 1 star" → Logs feedback
+- Ask Iji for restaurant suggestions again → Avoids the poorly-rated one
+- Ask Iji: "What feedback have you gotten on restaurant suggestions?" → Lists feedback
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `feedback_log` tool with record and query actions
+- [ ] Core prompt instructs Claude to reference feedback
+- [ ] Feedback persisted and searchable
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Feedback loops on suggestions" "In Review"
+```
 
 ## Commit message
 
-`feat: feedback loops on suggestions`
+`feat: add feedback tracking for Iji suggestions`

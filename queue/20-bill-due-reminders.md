@@ -1,43 +1,47 @@
-# Queue Spec: Bill due reminders
+# Bill due reminders
 
 **Sphere:** Finances
-**Project:** Iji
-
-## Goal
-
-Proactive bill reminder feature
+**Backlog item:** Bill due reminders
+**Depends on:** finance_transactions, reminder_set tools
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Proactively remind household members about upcoming bills based on transaction history patterns. Iji detects recurring charges from Monarch data and creates reminders before due dates.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Finance tools already query Monarch Money for transactions (src/tools/finance-transactions.js). Reminder infrastructure exists (src/tools/reminder-set.js, src/scheduler/reminders.js). The key work is a recurring job that analyzes transaction patterns and creates bill reminders.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `src/utils/bill-detector.js` that runs weekly, queries recent transactions for recurring patterns (same merchant, similar amount, monthly cadence), and creates reminders for upcoming bills. Also create `src/tools/bill-reminders.js` that lets Lee manually add/remove bill tracking. Store tracked bills in a new `bills` SQLite table.
+
+## Server requirements
+
+- [ ] DB migration for `bills` table runs automatically
+
+## Verification
+
+- Ask Iji: "What bills are coming up?" → Lists detected recurring bills and next due dates
+- Ask Iji: "Track the PG&E bill, usually around $200 on the 15th" → Adds to tracked bills
+- Verify reminder is created ahead of detected bill due date
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Bill detection from Monarch transaction patterns
+- [ ] `bill_reminders` tool for manual bill tracking
+- [ ] Automatic reminder creation for upcoming bills
+- [ ] `bills` table via migration
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Bill due reminders" "In Review"
+```
 
 ## Commit message
 
-`feat: bill due reminders`
+`feat: add bill due reminders from transaction pattern detection`

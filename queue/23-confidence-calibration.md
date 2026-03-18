@@ -1,43 +1,46 @@
-# Queue Spec: Confidence calibration
+# Confidence calibration
 
-**Sphere:** Iji Engine
-**Project:** Iji
-
-## Goal
-
-Staleness-aware confidence outputs
+**Sphere:** Engine
+**Backlog item:** Confidence calibration
+**Depends on:** conversation_evals table, eval-logger.js
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Add staleness-aware confidence signals to Iji's responses. When answering from knowledge that may be outdated (old calendar events, knowledge base entries with no recent updates, stale sensor data), Iji should explicitly flag the confidence level and data freshness.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+The knowledge table has `reported_at` timestamps. Calendar events have dates. HA entities have `last_changed`. The eval logger (src/utils/eval-logger.js) already tracks conversation quality. The key change is in the system prompt — instruct Claude to assess and communicate data freshness.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Update `config/prompts/core.md` to add a 'Confidence & Freshness' guideline section instructing Claude to: (1) note when knowledge base entries are > 7 days old, (2) flag calendar data that might be stale, (3) indicate when HA sensor data hasn't updated recently. No new tool needed — this is a prompt engineering change with optional metadata enrichment in tool responses.
+
+## Server requirements
+
+- [ ] No new env vars needed
+
+## Verification
+
+- Ask about old knowledge → Iji flags it as potentially outdated
+- Ask about a calendar event from last month → Iji notes the data age
+- Ask about current home state → Iji uses fresh data confidently
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Core prompt updated with confidence/freshness guidelines
+- [ ] Tool responses include data age metadata where applicable
+- [ ] Iji demonstrates appropriate confidence calibration in conversation
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Confidence calibration" "In Review"
+```
 
 ## Commit message
 
-`feat: confidence calibration`
+`feat: add confidence calibration and data freshness signals to prompt`

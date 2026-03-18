@@ -1,43 +1,46 @@
-# Queue Spec: Contractor/vendor contacts
+# Contractor/vendor contacts
 
 **Sphere:** Property & Home
-**Project:** Iji
-
-## Goal
-
-Address book + context by trade
+**Backlog item:** Contractor/vendor contacts
+**Depends on:** knowledge_store, knowledge_search tools
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Build a contractor and vendor contact directory — plumber, electrician, HVAC, landscaper, handyman, etc. — with name, trade, phone, email, rating, and notes from past jobs. Queryable by trade or name.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+The knowledge system (src/tools/knowledge-store.js, knowledge-search.js) handles free-form facts. A structured vendor directory needs its own table for reliable querying. Follow the pattern of the team_members table in Education Advisor.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Add `vendors` table via DB migration (name, trade, phone, email, rating, notes, last_used, status). Create `src/tools/vendor-query.js` (search by trade/name) and `src/tools/vendor-store.js` (add/update vendors). Register with permissions for all adults.
+
+## Server requirements
+
+- [ ] DB migration runs automatically
+
+## Verification
+
+- Ask Iji: "Who's our plumber?" → Returns plumber contact info
+- Ask Iji: "Add Mike's Electric — (510) 555-1234, great work on the panel upgrade" → Creates vendor record
+- Ask Iji: "Who did we use for the last roof repair?" → Searches by trade and notes
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `vendors` table created via migration
+- [ ] `vendor_query` and `vendor_store` tools working
+- [ ] Search by trade, name, and notes
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Contractor/vendor contacts" "In Review"
+```
 
 ## Commit message
 
-`feat: contractor vendor contacts`
+`feat: add contractor/vendor contact directory`

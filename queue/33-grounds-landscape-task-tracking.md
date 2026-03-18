@@ -1,43 +1,46 @@
-# Queue Spec: Grounds/landscape task tracking
+# Grounds/landscape task tracking
 
 **Sphere:** Property & Home
-**Project:** Iji
-
-## Goal
-
-Linked to maintenance operations
+**Backlog item:** Grounds/landscape task tracking
+**Depends on:** knowledge_store, reminder_set tools
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Track landscaping and grounds maintenance tasks — mowing schedule, tree trimming, irrigation, seasonal planting. Linked to maintenance operations with reminders for recurring tasks.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Maintenance/property is Department 8. Knowledge and reminder tools provide the foundation. This is a lightweight task list specific to grounds work, with seasonal recurrence patterns.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Use the existing task system (src/tools/task-create.js, task-query.js) with a 'grounds' category/tag convention rather than building a separate system. Add landscaping context to knowledge base. Create recurring reminders for seasonal tasks. Update the capability prompt to mention grounds tracking.
+
+## Server requirements
+
+- [ ] No new env vars needed
+
+## Verification
+
+- Ask Iji: "Schedule lawn mowing every two weeks" → Creates recurring reminder
+- Ask Iji: "What grounds work is coming up?" → Lists upcoming landscaping tasks
+- Ask Iji: "Log that we trimmed the oak tree today" → Stores in knowledge base
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Grounds tasks tracked via existing task/reminder/knowledge systems
+- [ ] Seasonal recurrence patterns supported
+- [ ] Capability prompt updated
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Grounds/landscape task tracking" "In Review"
+```
 
 ## Commit message
 
-`feat: grounds landscape task tracking`
+`feat: add grounds and landscape task tracking`

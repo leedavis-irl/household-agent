@@ -1,43 +1,47 @@
-# Queue Spec: Education document ingestion via Signal/email
+# Education document ingestion via Signal/email
 
 **Sphere:** Children
-**Project:** Iji
-
-## Goal
-
-Accept photos (Signal attachments) or forwarded emails containing education documents (report cards, assessments, etc.) and push them through Education Advisor's smart ingestion pipeline into the Supabase document vault with AI-powered metadata extraction.
+**Backlog item:** Education document ingestion via Signal/email
+**Depends on:** Education Advisor Supabase integration, Signal image handling
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Accept photos of education documents (report cards, assessments) via Signal or forwarded emails and push them through Education Advisor's smart ingestion pipeline into the Supabase document vault with AI-powered metadata extraction.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Education tools already query Supabase (src/tools/education-*.js, src/utils/supabase.js). Education Advisor's ingestion pipeline uses Gemini Vision API for smart extraction (see ~/education-advisor/src/actions/documents.ts). Signal attachments need to be handled first (see Camera/image understanding card). The Supabase documents table stores content, embedding, tags, subjects, category.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `src/tools/education-upload.js` that: (1) accepts a child_name and document description, (2) takes the most recent Signal image attachment from the conversation, (3) uploads to Supabase Storage, (4) inserts a row into the documents table with metadata, (5) optionally triggers the smart ingestion pipeline (Gemini Vision extraction). For email forwarding: parse forwarded email body/attachments when the message contains education document context.
+
+## Server requirements
+
+- [ ] Supabase Storage bucket must exist for document uploads
+- [ ] Google Gemini API key for smart ingestion (optional for v1)
+
+## Verification
+
+- Send Iji a photo of a report card + "Upload this as Ryker's Q2 report card" → Document appears in Supabase
+- Forward an email with assessment results → Iji extracts and uploads
+- Ask Iji: "What documents did I just upload?" → Shows recent uploads
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `education_upload` tool accepts Signal images and uploads to Supabase
+- [ ] Document metadata (child, category, date) populated
+- [ ] Works for both Signal photos and forwarded email content
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Education document ingestion via Signal/email" "In Review"
+```
 
 ## Commit message
 
-`feat: education document ingestion via signal email`
+`feat: add education document ingestion via Signal attachments`

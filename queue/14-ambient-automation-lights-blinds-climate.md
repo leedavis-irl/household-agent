@@ -1,43 +1,47 @@
-# Queue Spec: Ambient automation (lights/blinds/climate)
+# Ambient automation (lights/blinds/climate)
 
 **Sphere:** Property & Home
-**Project:** Iji
-
-## Goal
-
-Revisit as Iji-native capability with event batching, cost ceiling, action memory, opt-in scope
+**Backlog item:** Ambient automation (lights/blinds/climate)
+**Depends on:** ha_control, ha_query, ha_scene tools
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Enable Iji to proactively suggest and execute ambient automation — adjusting lights, blinds, and climate based on time of day, who's home, and context. Unlike the failed claude-home-agent (AppDaemon), this must use event batching, cost ceilings, action memory, and opt-in scope to avoid feedback loops and runaway API costs.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Previous attempt at ~/Projects/Home/claude-home-agent/ was disabled due to stateless oscillation and runaway costs. HA tools already exist (ha_query, ha_control, ha_scene). The key innovation is a lightweight state machine that prevents repeated actions and respects a per-hour cost ceiling. Read src/tools/ha-control.js for the existing pattern.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `src/tools/ambient-automation.js` with a `suggest_automation` action (proposes changes, waits for approval) and an `apply_automation` action (executes approved changes). Maintain an in-memory action log to prevent oscillation (e.g., don't toggle the same light twice in 10 minutes). Add a cost counter that caps API calls per hour. Start with lights-only scope; blinds and climate can be added later.
+
+## Server requirements
+
+- [ ] No new env vars needed (uses existing HA_URL and HA_TOKEN)
+
+## Verification
+
+- Ask Iji: "It's movie night, dim the living room" → Suggests specific light changes, applies on confirmation
+- Send two identical requests within 5 minutes → Second request is suppressed with explanation
+- Ask Iji: "What automations have you run today?" → Returns action log
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Ambient automation tool with suggest/apply actions
+- [ ] Oscillation prevention (action dedup within time window)
+- [ ] Cost ceiling per hour
+- [ ] Lights scope working; blinds/climate scoped out for v1
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Ambient automation (lights/blinds/climate)" "In Review"
+```
 
 ## Commit message
 
-`feat: ambient automation lights blinds climate`
+`feat: add ambient automation with oscillation prevention`

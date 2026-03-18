@@ -1,43 +1,42 @@
-# Queue Spec: HA notification dispatch
+# HA notification dispatch
 
 **Sphere:** Property & Home
-**Project:** Iji
-
-## Goal
-
-Planned HA notify tools
+**Backlog item:** HA notification dispatch
+**Depends on:** ha_notify tool (already built)
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+The ha_notify tool was already built and deployed in this session. This card should be moved to Done.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+ha_notify was implemented in src/tools/ha-notify.js, registered in index.js, and deployed to EC2. See commit 'feat: add ha_history, ha_scene, and ha_notify tools'.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+No work needed — already complete. Update card status to Done.
+
+## Server requirements
+
+- [ ] Already deployed
+
+## Verification
+
+- ha_notify tool exists in src/tools/ha-notify.js
+- Registered in src/tools/index.js
+- Permission-gated in src/utils/permissions.js
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [x] Already complete — move card to Done
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "HA notification dispatch" "In Review"
+```
 
 ## Commit message
 
-`feat: ha notification dispatch`
+`n/a — already shipped`

@@ -1,43 +1,46 @@
-# Queue Spec: Escalation intelligence
+# Escalation intelligence
 
-**Sphere:** Iji Engine
-**Project:** Iji
-
-## Goal
-
-Autonomy boundary learning
+**Sphere:** Engine
+**Backlog item:** Escalation intelligence
+**Depends on:** conversation_evals table
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Teach Iji to recognize when it's out of its depth and should escalate to Lee rather than guessing. Learn from past conversations where Iji gave bad answers or where Lee corrected it. Build an evolving boundary of what Iji should and shouldn't attempt autonomously.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+conversation_evals table stores past interactions with quality_score and failure_category columns. The goal is a feedback loop: when Iji is corrected, it logs the topic/pattern as an escalation trigger. Future similar requests get flagged early.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Add an `escalation_patterns` table via DB migration (pattern, category, reason, created_at). Create `src/tools/escalation-log.js` that lets Lee add escalation rules ('don't try to give tax advice, suggest calling Peter at Goldman Sachs'). Modify the core prompt to instruct Claude to check escalation patterns before attempting complex tasks.
+
+## Server requirements
+
+- [ ] DB migration runs automatically
+
+## Verification
+
+- Lee tells Iji: "Don't try to answer legal questions, tell people to ask me" → Logged as escalation rule
+- Someone asks a legal question → Iji defers to Lee instead of guessing
+- Ask Iji: "What topics do you escalate?" → Lists escalation rules
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `escalation_patterns` table created
+- [ ] `escalation_log` tool for adding/viewing rules
+- [ ] Core prompt checks patterns before complex answers
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Escalation intelligence" "In Review"
+```
 
 ## Commit message
 
-`feat: escalation intelligence`
+`feat: add escalation intelligence with learnable boundaries`

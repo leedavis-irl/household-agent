@@ -1,43 +1,47 @@
-# Queue Spec: Email draft
+# Email draft
 
-**Sphere:** Iji Engine
-**Project:** Iji
-
-## Goal
-
-Lets Iji compose and save email drafts to Gmail on behalf of household members without sending automatically.
+**Sphere:** Engine
+**Backlog item:** Email draft
+**Depends on:** email_send tool, Gmail OAuth with gmail.modify scope
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Let Iji compose and save email drafts to Gmail on behalf of household members without sending automatically. Users review the draft in Gmail before sending. Safer than direct send for important correspondence.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+email_send tool exists (src/tools/email-send.js) and uses Gmail API with per-user OAuth. Draft creation uses `users.drafts.create` endpoint. The OAuth token may need `gmail.modify` scope (check if email_send already requested it). Follow the exact pattern of email-send.js.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `src/tools/email-draft.js` following email-send.js pattern. Tool name: `email_draft`. Parameters: to, subject, body. Uses `gmail.users.drafts.create` API. Same permission model as email_send (own account only). Return the draft ID and a link to the draft in Gmail.
+
+## Server requirements
+
+- [ ] Gmail OAuth token may need re-auth if `gmail.modify` scope is missing
+- [ ] No new env vars needed
+
+## Verification
+
+- Ask Iji: "Draft an email to ryker's teacher about his IEP meeting" → Creates Gmail draft
+- Check Gmail drafts folder → Draft appears with correct content
+- Ask Iji: "Draft a reply to the PG&E bill notice" → Creates draft in context
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `email_draft` tool creates Gmail drafts via API
+- [ ] Returns draft ID and Gmail link
+- [ ] Permission-gated same as email_send
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Email draft" "In Review"
+```
 
 ## Commit message
 
-`feat: email draft`
+`feat: add email draft tool for Gmail`

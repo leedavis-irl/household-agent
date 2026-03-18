@@ -1,36 +1,53 @@
-# Queue Spec: Slack adapter: app DMs and events not working
+# Slack adapter: app DMs and events not working
 
-**Sphere:** Iji Engine
-**Project:** Iji
-
-## Goal
-
-Socket Mode connects but Slack blocks DMs ('messages to this app turned off'). App Home messages tab enabled, reinstall attempted. Likely needs event subscription config or OAuth scope fix.
+**Sphere:** Engine
+**Backlog item:** Slack adapter: app DMs and events not working
+**Depends on:** TBD — review existing tools and integrations before starting
 
 ## What to build
 
-Investigate and fix the issue described above. Read the relevant source files before making changes.
+Socket Mode connects but Slack blocks DMs ('messages to this app turned off'). App Home messages tab enabled, reinstall attempted. Likely needs event subscription config or OAuth scope fix.
 
-### Steps
+## Context
 
-1. Identify the root cause by reading the relevant code and logs
-2. Implement the fix with minimal blast radius
-3. Verify the fix doesn't break existing functionality
-4. Run `npm test` to confirm all tests pass
+Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context. Check existing tools in `src/tools/` for patterns to follow. Check `BACKLOG.md` for additional notes on this capability.
 
-## Server Requirements
+## Implementation notes
+
+Follow existing tool patterns in `src/tools/`. Each tool needs:
+1. A tool file with `definition` and `execute` exports
+2. Registration in `src/tools/index.js`
+3. Permission mapping in `src/utils/permissions.js`
+4. Capability prompt entry if user-facing
+5. Trigger keywords in `src/brain/prompt.js` if applicable
+
+## Server requirements
 
 - [ ] Any new env vars added to EC2 `.env`
 - [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+- [ ] Config changes in `config/household.json` if needed
+- [ ] DB migration if new tables are needed
+
+## Verification
+
+- Test via CLI: `node src/index.js` and exercise the new capability
+- Test via Signal: send Iji a message that triggers the new capability
+- Verify permission enforcement: test with a user who lacks the permission
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Capability described in Goal is functional end-to-end
+- [ ] `npm test` passes with no new failures
+- [ ] Code follows existing patterns
+- [ ] No hardcoded secrets or paths
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Slack adapter: app DMs and events not working" "In Review"
+```
 
 ## Commit message
 

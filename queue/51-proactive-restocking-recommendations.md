@@ -1,42 +1,53 @@
-# Queue Spec: Proactive restocking recommendations
+# Proactive restocking recommendations
 
 **Sphere:** Procurement & Errands
-**Project:** Iji
-
-## Goal
-
-Inventory + spend pattern intelligence
+**Backlog item:** Proactive restocking recommendations
+**Depends on:** TBD — review existing tools and integrations before starting
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Inventory + spend pattern intelligence
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context. Check existing tools in `src/tools/` for patterns to follow. Check `BACKLOG.md` for additional notes on this capability.
 
-## Server Requirements
+## Implementation notes
+
+Follow existing tool patterns in `src/tools/`. Each tool needs:
+1. A tool file with `definition` and `execute` exports
+2. Registration in `src/tools/index.js`
+3. Permission mapping in `src/utils/permissions.js`
+4. Capability prompt entry if user-facing
+5. Trigger keywords in `src/brain/prompt.js` if applicable
+
+## Server requirements
 
 - [ ] Any new env vars added to EC2 `.env`
 - [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+- [ ] Config changes in `config/household.json` if needed
+- [ ] DB migration if new tables are needed
+
+## Verification
+
+- Test via CLI: `node src/index.js` and exercise the new capability
+- Test via Signal: send Iji a message that triggers the new capability
+- Verify permission enforcement: test with a user who lacks the permission
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Capability described in Goal is functional end-to-end
+- [ ] `npm test` passes with no new failures
+- [ ] Code follows existing patterns
+- [ ] No hardcoded secrets or paths
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Proactive restocking recommendations" "In Review"
+```
 
 ## Commit message
 

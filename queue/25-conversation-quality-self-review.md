@@ -1,43 +1,47 @@
-# Queue Spec: Conversation quality self-review
+# Conversation quality self-review
 
-**Sphere:** Iji Engine
-**Project:** Iji
-
-## Goal
-
-Follow-up quality checks
+**Sphere:** Engine
+**Backlog item:** Conversation quality self-review
+**Depends on:** conversation_evals table, eval-logger.js
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+After each conversation turn, Iji runs a lightweight self-review to detect potential quality issues — hallucinated facts, tool errors that were glossed over, or overly verbose responses. Logs quality flags for later analysis.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+conversation_evals table already stores conversation data with quality_score, quality_notes, and failure_category columns (currently NULL). The eval logger (src/utils/eval-logger.js) writes to this table. The work is adding a post-response quality check.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `src/utils/quality-reviewer.js` that takes a completed conversation eval entry and runs a quick heuristic check: (1) did any tool return an error that the response didn't acknowledge? (2) is the response > 500 chars for a simple question? (3) did the response reference data not present in tool results? Log findings to quality_notes column. Run asynchronously after each brain loop completion (don't block the response).
+
+## Server requirements
+
+- [ ] No new env vars needed
+
+## Verification
+
+- Send a message that triggers a tool error → Verify quality flag is logged
+- Send a simple greeting → Verify no false quality flags
+- Query conversation_evals table → Verify quality_notes are populated
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Quality reviewer runs after each conversation turn
+- [ ] Flags tool errors, verbosity, and potential hallucinations
+- [ ] Results stored in conversation_evals quality columns
+- [ ] Runs asynchronously (doesn't slow down responses)
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Conversation quality self-review" "In Review"
+```
 
 ## Commit message
 
-`feat: conversation quality self review`
+`feat: add post-conversation quality self-review`

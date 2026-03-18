@@ -1,43 +1,46 @@
-# Queue Spec: Guest list and visitor profiles
+# Guest list and visitor profiles
 
 **Sphere:** People & Relationships
-**Project:** Iji
-
-## Goal
-
-Frequent visitor + context memory
+**Backlog item:** Guest list and visitor profiles
+**Depends on:** knowledge_store, knowledge_search tools
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Maintain a directory of frequent visitors and guests — names, relationship to household, dietary preferences, room preferences, kids' friends' parent contacts. Queryable by Iji when planning events or preparing for guests.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Knowledge store handles free-form facts but a structured guest directory is more useful for reliable queries. Follow the vendor contacts pattern (structured table + query/store tools).
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Add `guests` table via DB migration (name, relationship, dietary_preferences, room_preference, kids_connection, phone, email, notes, last_visit). Create `src/tools/guest-query.js` and `src/tools/guest-store.js`. Register with permissions for all adults.
+
+## Server requirements
+
+- [ ] DB migration runs automatically
+
+## Verification
+
+- Ask Iji: "Add Sarah Chen as a frequent guest — she's Ryker's friend's mom, vegetarian, prefers the blue room" → Creates guest record
+- Ask Iji: "Sarah is coming this weekend, any dietary notes?" → Returns vegetarian preference
+- Ask Iji: "Who has visited recently?" → Lists guests by last_visit
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `guests` table created via migration
+- [ ] `guest_query` and `guest_store` tools working
+- [ ] Search by name, relationship, dietary needs
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Guest list and visitor profiles" "In Review"
+```
 
 ## Commit message
 
-`feat: guest list and visitor profiles`
+`feat: add guest and visitor profile directory`

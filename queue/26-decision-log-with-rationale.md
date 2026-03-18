@@ -1,43 +1,46 @@
-# Queue Spec: Decision log with rationale
+# Decision log with rationale
 
-**Sphere:** Iji Engine
-**Project:** Iji
-
-## Goal
-
-Durable household decision context
+**Sphere:** Engine
+**Backlog item:** Decision log with rationale
+**Depends on:** knowledge_store tool
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Provide a structured decision log for the household — major decisions with date, participants, rationale, and outcome. Distinct from the free-form knowledge base: this is for decisions like 'chose public school over private for Ryker because...' or 'switched from PG&E to community solar because...'
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Knowledge store handles free-form facts. Decision logs need structure: what was decided, when, who was involved, why, and what alternatives were rejected. Follow the ADR (Architecture Decision Record) pattern from docs/decisions/.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Add `decisions` table via DB migration (title, description, rationale, alternatives_considered, participants, decided_at, category, status). Create `src/tools/decision-log.js` with `record` action (log a new decision) and `search` action (find past decisions by keyword/category). Categories: education, finance, home, health, logistics.
+
+## Server requirements
+
+- [ ] DB migration runs automatically
+
+## Verification
+
+- Ask Iji: "Log a decision: we chose to keep Ryker at John Muir because of the 504 support" → Creates decision record
+- Ask Iji: "What education decisions have we made?" → Lists education-category decisions
+- Ask Iji: "Why did we choose public school?" → Finds and returns the rationale
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `decisions` table created via migration
+- [ ] `decision_log` tool with record and search actions
+- [ ] Category-based filtering
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Decision log with rationale" "In Review"
+```
 
 ## Commit message
 
-`feat: decision log with rationale`
+`feat: add structured household decision log`

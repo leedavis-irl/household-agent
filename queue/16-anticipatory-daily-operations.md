@@ -1,43 +1,48 @@
-# Queue Spec: Anticipatory daily operations
+# Anticipatory daily operations
 
 **Sphere:** Scheduling & Logistics
-**Project:** Iji
-
-## Goal
-
-Event-driven proactive nudges (weather/calendar/email context)
+**Backlog item:** Anticipatory daily operations
+**Depends on:** calendar_query, weather_query, knowledge_search, reminder_list tools
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Let Iji proactively send context-aware nudges throughout the day — not just the morning briefing, but timely alerts like 'Rain starting at 3pm, Ryker needs a jacket for pickup' or 'Kelly's meeting moved to 2pm, you might want to adjust the carpool.' Event-driven rather than scheduled.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+Morning briefing (src/utils/morning-briefing.js) already runs a daily check. This extends the pattern to multiple daily touchpoints triggered by context changes. Calendar, weather, and knowledge tools already exist.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `src/utils/daily-ops.js` with a check cycle that runs every 30 minutes during waking hours (7am-10pm Pacific). Each cycle: check for weather changes, upcoming calendar events within 2 hours, overdue tasks, and relevant knowledge updates. Only send a nudge if there's something actionable and new (dedup against a sent-today log). Route via Signal DM to the relevant person.
+
+## Server requirements
+
+- [ ] No new env vars needed
+
+## Verification
+
+- Verify the scheduler runs during waking hours and stays silent overnight
+- If a calendar event is in 2 hours, verify a reminder would be sent
+- If weather changes significantly, verify a nudge would be sent
+- Ask Iji: "What should I know about today?" → Triggers an on-demand daily ops check
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] Daily ops checker runs every 30 minutes during 7am-10pm Pacific
+- [ ] Context-aware nudges sent for weather, calendar, tasks
+- [ ] Dedup prevents repeat nudges for same event
+- [ ] On-demand query via conversation
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Anticipatory daily operations" "In Review"
+```
 
 ## Commit message
 
-`feat: anticipatory daily operations`
+`feat: add anticipatory daily operations with proactive nudges`

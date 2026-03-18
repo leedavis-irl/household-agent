@@ -1,43 +1,47 @@
-# Queue Spec: Chef communication automation
+# Chef communication automation
 
 **Sphere:** Meals & Kitchen
-**Project:** Iji
-
-## Goal
-
-SMS channel (Twilio) is prerequisite
+**Backlog item:** Chef communication automation
+**Depends on:** sms_send tool (Twilio verification must complete first)
 
 ## What to build
 
-Build the capability described above, following existing patterns in the codebase.
+Automate communication with Lisa (private chef) — weekly menu confirmations, grocery list sharing, schedule changes, and special dietary requests. Iji sends SMS to Lisa on behalf of the household.
 
-### Steps
+## Context
 
-1. Read `ARCHITECTURE.md` and `DEV-PROTOCOL.md` for project context
-2. Read sibling files in `src/tools/` to follow existing patterns
-3. Implement the new tool(s) in `src/tools/`
-4. Register in `src/tools/index.js`
-5. Add permission mapping in `src/utils/permissions.js`
-6. Add capability prompt in `config/prompts/capabilities/` if needed
-7. Add trigger keywords in `src/brain/prompt.js` if needed
-8. Update `config/household.json` with any new permissions for relevant members
-9. Update `.env.example` if new env vars are needed
-10. Run `npm test` to confirm all tests pass
+SMS send tool exists (src/tools/sms-send.js) but Twilio verification is pending. Lisa's contact info should be in config/contacts.json. The meals capability (config/prompts/capabilities/) doesn't exist yet — this is part of the Meals & Kitchen department.
 
-## Server Requirements
+## Implementation notes
 
-- [ ] Any new env vars added to EC2 `.env`
-- [ ] Any new env vars documented in `.env.example`
-- [ ] Dependencies installed (handled by CI `npm ci` if in package.json)
-- [ ] Config changes in `config/household.json` (deployed via git)
+Create `config/prompts/capabilities/meals.md` capability prompt. Create `src/tools/chef-message.js` that wraps sms_send with chef-specific context (Lisa's number from contacts.json, meal planning context). Add a weekly menu workflow that Iji can initiate on schedule.
+
+## Server requirements
+
+- [ ] Twilio toll-free number verification must complete first
+- [ ] Lisa's phone number added to `config/contacts.json`
+
+## Verification
+
+- Ask Iji: "Send Lisa next week's menu preferences" → Composes and sends SMS to Lisa
+- Ask Iji: "Tell Lisa that Firen is allergic to shellfish" → Sends dietary update via SMS
+- Ask Iji: "What did we tell Lisa this week?" → Shows recent chef communications
 
 ## Done when
 
-- The capability described in the Goal is functional end-to-end
-- `npm test` passes with no new failures
-- Code follows existing patterns (tool definition + execute function)
-- No hardcoded secrets or paths
+- [ ] `chef_message` tool sends SMS to Lisa
+- [ ] Meals capability prompt created
+- [ ] Contact stored in contacts.json
+- [ ] Tests pass
+- [ ] Committed and deployed to EC2
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Chef communication automation" "In Review"
+```
 
 ## Commit message
 
-`feat: chef communication automation`
+`feat: add chef communication automation via SMS`
