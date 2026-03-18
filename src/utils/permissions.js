@@ -30,6 +30,7 @@ const TOOL_PERMISSIONS = {
   email_search: ['email_own', 'email_all'],
   email_read: ['email_own', 'email_all'],
   email_send: ['email_send'],
+  email_draft: ['email_send'],
   sms_send: ['sms_send'],
   reminder_set: ['reminders', 'reminders_others'],
   reminder_list: ['reminders', 'reminders_others'],

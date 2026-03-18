@@ -19,6 +19,7 @@ import * as costQuery from './cost-query.js';
 import * as emailSearch from './email-search.js';
 import * as emailRead from './email-read.js';
 import * as emailSend from './email-send.js';
+import * as emailDraft from './email-draft.js';
 import * as smsSend from './sms-send.js';
 import * as reminderSet from './reminder-set.js';
 import * as reminderList from './reminder-list.js';
@@ -61,6 +62,7 @@ const tools = {
   email_search: emailSearch,
   email_read: emailRead,
   email_send: emailSend,
+  email_draft: emailDraft,
   sms_send: smsSend,
   reminder_set: reminderSet,
   reminder_list: reminderList,
