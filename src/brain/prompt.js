@@ -26,6 +26,7 @@ const capabilityFiles = {
   'web-search': 'web-search.md',
   docs: 'docs.md',
   slack: 'slack.md',
+  parenting: 'parenting.md',
 };
 
 const CAPABILITY_TRIGGERS = {
@@ -44,6 +45,8 @@ const CAPABILITY_TRIGGERS = {
   docs: /\b(google doc|google sheet|drive|gdoc|spreadsheet|document|docs\.google|drive\.google|shared doc|shared sheet|shared document)\b/i,
   slack: /\b(slack|channel|#[a-z]|posted in|said in slack|slack message|slack thread|search slack)\b/i,
 };
+
+const ALWAYS_ON_CAPABILITIES = ['parenting'];
 
 function loadCapability(fileName) {
   const raw = readFileSync(join(capabilityDir, fileName), 'utf-8');
@@ -74,7 +77,12 @@ function getCapabilitiesForMessage(userMessage) {
     .filter(([, trigger]) => trigger.test(text))
     .map(([name]) => name);
 
-  return matches.length > 0 ? matches : Object.keys(capabilityFiles);
+  const base = matches.length > 0 ? matches : Object.keys(capabilityFiles);
+  // Always include always-on capabilities
+  for (const cap of ALWAYS_ON_CAPABILITIES) {
+    if (!base.includes(cap)) base.push(cap);
+  }
+  return base;
 }
 
 function formatPacific(isoTs) {
