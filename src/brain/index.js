@@ -17,7 +17,7 @@ export async function think(envelope, onAcknowledge) {
   let totalCostUsd = 0;
   const toolsCalled = [];
 
-  const systemPrompt = buildSystemPrompt({
+  const { prompt: systemPrompt, layers, capabilitiesLoaded } = buildSystemPrompt({
     person: {
       display_name: envelope.person,
       role: envelope.role,
@@ -72,12 +72,22 @@ export async function think(envelope, onAcknowledge) {
         { role: 'assistant', content: response.content },
       ]);
 
+      // Estimate per-layer token counts using char ratios against actual first-call input tokens
+      const totalLayerChars = layers.reduce((sum, l) => sum + l.chars, 0) || 1;
+      const layerTokens = layers.map((l) => ({
+        name: l.name,
+        chars: l.chars,
+        estimated_tokens: Math.round((l.chars / totalLayerChars) * promptTokensTotal),
+      }));
+
       recordConversationEval({
         conversation_id: envelope.conversation_id ?? 'unknown',
         person_id: envelope.person_id ?? envelope.person ?? 'unknown',
         user_message: envelope.message ?? '',
         assistant_response: finalText,
         tools_called: toolsCalled,
+        capabilities_loaded: capabilitiesLoaded,
+        layer_tokens: layerTokens,
         prompt_tokens: promptTokensTotal,
         completion_tokens: completionTokensTotal,
         total_cost_usd: Math.round(totalCostUsd * 1e6) / 1e6,

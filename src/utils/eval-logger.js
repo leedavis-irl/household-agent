@@ -10,6 +10,7 @@ import log from './logger.js';
  * @param {string} entry.assistant_response
  * @param {string[]} [entry.tools_called]
  * @param {string[]|null} [entry.capabilities_loaded]
+ * @param {object[]|null} [entry.layer_tokens] - per-layer token breakdown
  * @param {number} [entry.prompt_tokens]
  * @param {number} [entry.completion_tokens]
  * @param {number} [entry.total_cost_usd]
@@ -23,8 +24,8 @@ export function recordConversationEval(entry) {
     const db = getDb();
     db.prepare(
       `INSERT INTO conversation_evals
-        (conversation_id, person_id, user_message, assistant_response, tools_called, capabilities_loaded, prompt_tokens, completion_tokens, total_cost_usd, response_time_ms)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        (conversation_id, person_id, user_message, assistant_response, tools_called, capabilities_loaded, layer_tokens, prompt_tokens, completion_tokens, total_cost_usd, response_time_ms)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       conversationId,
       personId,
@@ -32,6 +33,7 @@ export function recordConversationEval(entry) {
       entry.assistant_response ?? '',
       JSON.stringify(entry.tools_called ?? []),
       entry.capabilities_loaded ? JSON.stringify(entry.capabilities_loaded) : null,
+      entry.layer_tokens ? JSON.stringify(entry.layer_tokens) : null,
       entry.prompt_tokens ?? null,
       entry.completion_tokens ?? null,
       entry.total_cost_usd ?? null,

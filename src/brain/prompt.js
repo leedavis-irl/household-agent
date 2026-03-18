@@ -138,14 +138,29 @@ export function buildSystemPrompt({ person, user_message, person_id }) {
   });
 
   const groupBehavior = person.isGroup ? GROUP_BEHAVIOR : DM_BEHAVIOR;
+  const permissionsDesc = getPermissionDescriptions(person.permissions);
   const firedReminderContext = getFiredReminderContext(person_id);
-  return coreTemplate
+
+  // Track per-layer character counts for Phase 3 token measurement
+  const contextText = [now, person.display_name, person.role, permissionsDesc, groupBehavior]
+    .join(' ');
+  const layers = [
+    { name: 'core', chars: coreTemplate.length },
+    { name: 'capabilities', chars: capabilities.length },
+    { name: 'capability_guidelines', chars: capabilityGuidelines.length },
+    { name: 'context', chars: contextText.length },
+    { name: 'reminders', chars: firedReminderContext.length },
+  ];
+
+  const prompt = coreTemplate
     .replace('{{current_datetime}}', now)
     .replace('{{capabilities}}', capabilities)
     .replace('{{capability_guidelines}}', capabilityGuidelines)
     .replace('{{person_name}}', person.display_name)
     .replace('{{person_role}}', person.role)
-    .replace('{{permissions_description}}', getPermissionDescriptions(person.permissions))
+    .replace('{{permissions_description}}', permissionsDesc)
     .replace('{{group_behavior}}', groupBehavior)
     + firedReminderContext;
+
+  return { prompt, layers, capabilitiesLoaded: loadedCapabilities };
 }

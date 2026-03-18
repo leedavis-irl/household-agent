@@ -182,8 +182,13 @@ const MIGRATIONS = [
       seedGroup.run('wABSnPZyvqntyh5NdUSwgNGcCBXCpeuEAYZUoAGchsM=', 'Avalon Logistics');
     },
   },
-  // Future migrations go here:
-  // { version: 2, description: '...', up(db) { ... } },
+  {
+    version: 2,
+    description: 'Add layer_tokens column to conversation_evals for Phase 3 token measurement',
+    up(db) {
+      ensureColumn(db, 'conversation_evals', 'layer_tokens', 'TEXT');
+    },
+  },
 ];
 
 function migrate(db) {
