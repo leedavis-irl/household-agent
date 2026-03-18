@@ -216,18 +216,19 @@ function invokeClaudeCode(specPath, title, feedback = null) {
 
 // ── Review the diff ──
 
-function reviewDiff(specPath) {
+function reviewDiff(specPath, baselineSha) {
   const spec = readFileSync(specPath, 'utf-8');
 
   // Extract "Done when" section
   const doneMatch = spec.match(/## Done when\n([\s\S]*?)(?=\n## |$)/);
   const doneCriteria = doneMatch ? doneMatch[1].trim() : 'No done-when criteria found';
 
-  // Get the latest commit diff
-  let diff, commitMsg;
+  // Diff from baseline (before CC started) to current HEAD — captures all commits CC made
+  let diff, commitLog, fileSummary;
   try {
-    diff = execSync('git diff HEAD~1 HEAD', { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 10000 });
-    commitMsg = execSync('git log -1 --format=%s', { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 5000 }).trim();
+    diff = execSync(`git diff ${baselineSha} HEAD`, { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 15000 });
+    commitLog = execSync(`git log --oneline ${baselineSha}..HEAD`, { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 5000 }).trim();
+    fileSummary = execSync(`git diff --stat ${baselineSha} HEAD`, { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 5000 }).trim();
   } catch {
     return { passed: false, feedback: 'No new commits found after Claude Code ran.' };
   }
@@ -237,6 +238,8 @@ function reviewDiff(specPath) {
   }
 
   // Use Anthropic API to evaluate
+  const MAX_DIFF_CHARS = 15000;
+  const truncated = diff.length > MAX_DIFF_CHARS;
   const reviewPrompt = JSON.stringify({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 1024,
@@ -247,15 +250,20 @@ function reviewDiff(specPath) {
 ## Done-when criteria:
 ${doneCriteria}
 
-## Commit message:
-${commitMsg}
+## Commits made:
+${commitLog}
 
-## Diff (truncated to 5000 chars):
-${diff.slice(0, 5000)}
+## Files changed (full list):
+${fileSummary}
+
+## Diff${truncated ? ` (truncated to ${MAX_DIFF_CHARS} chars — see file list above for full scope)` : ''}:
+${diff.slice(0, MAX_DIFF_CHARS)}
 
 Respond with EXACTLY one of:
 - PASS: [one sentence explaining why it passes]
-- FAIL: [specific feedback on what's missing or wrong]`,
+- FAIL: [specific feedback on what's missing or wrong]
+
+IMPORTANT: If the file list shows the right files were created/modified and the visible portion of the diff shows substantive implementation code, do not fail just because the diff is truncated. Judge by the evidence available.`,
     }],
   });
 
@@ -331,6 +339,9 @@ async function processCard(card) {
       attempt++;
       log(`\nAttempt ${attempt}/${MAX_REVIEW_ATTEMPTS}`);
 
+      // Snapshot HEAD before CC runs so we can diff the full body of work
+      const baselineSha = execSync('git rev-parse HEAD', { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 5000 }).trim();
+
       // Invoke Claude Code
       try {
         await invokeClaudeCode(specPath, title, lastFeedback);
@@ -352,8 +363,8 @@ async function processCard(card) {
       updateCardStatus(id, 'In review');
       log(`Card → In review`);
 
-      // Review the diff
-      const review = reviewDiff(specPath);
+      // Review the diff — from baseline to current HEAD (all commits CC made)
+      const review = reviewDiff(specPath, baselineSha);
       log(`Review: ${review.feedback}`);
 
       if (review.passed) {
