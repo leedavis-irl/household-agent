@@ -1,44 +1,18 @@
-# Queue Spec: Populate GitHub Project from Backlog
+# Populate GitHub Project from Backlog
 
-## Goal
+**Sphere:** Engine
+**Backlog item:** GitHub Project bulk import (one-time setup)
+**Depends on:** gh CLI authenticated with `project` scope, GitHub Project #2 exists
 
-Automate the creation of draft cards in GitHub Project #2 (user: `leedavis-irl`) from unbuilt capabilities in `BACKLOG.md`, so the project board reflects the full scope of work without manual card creation.
+## What to build
 
-## Prerequisites
+A one-time script that reads unbuilt capabilities from `BACKLOG.md` and creates draft cards in GitHub Project #2, so the project board reflects the full scope of work without manual card creation. This is a utility — run once, then the script is done.
 
-- `gh` CLI authenticated with sufficient scopes (`project`, `read:org`)
-- GitHub Project #2 exists under user `leedavis-irl` with custom fields: **Status**, **Project**, **Iji Sphere**, **Summary**
+## Context
 
-## Script Behavior
+GitHub Project #2 exists under user `leedavis-irl` with custom fields: **Status**, **Project**, **Spheres**, **Short Summary**. The backlog is in `BACKLOG.md` at the repo root, organized into numbered sections (spheres) with capabilities tables. Each row has a status column — we only care about rows marked `❌ Not built`.
 
-### Step 1: Verify `gh` auth status
-
-- Run `gh auth status` and abort with a clear error if not authenticated or missing required scopes.
-
-### Step 2: Discover project field IDs via GraphQL
-
-- Query the GitHub GraphQL API to find Project #2 for user `leedavis-irl`.
-- Extract the project's node ID and the field IDs for:
-  - **Status** (single-select) — need the option ID for `Backlog`
-  - **Project** (single-select) — need the option ID for `Iji`
-  - **Iji Sphere** (single-select) — options map to BACKLOG.md section names (e.g., "Scheduling & Coordination", "Communication", etc.)
-  - **Summary** (text field)
-- Print discovered field IDs for confirmation before proceeding.
-
-### Step 3: Parse BACKLOG.md
-
-- Read `BACKLOG.md` from the repo root.
-- For each of the 15 numbered sections (spheres), parse the capabilities table.
-- Extract every capability row where Status = `❌ Not built`.
-- For each, capture:
-  - **Capability name** (first column)
-  - **Sphere** (section heading, e.g., "Scheduling & Coordination")
-  - **Summary** — the `Notes` column content, truncated to one sentence if needed. If Notes is empty, use the capability name as the summary.
-
-### Step 4: Skip existing cards
-
-The following 9 cards were already created manually and must be skipped (match by capability name):
-
+Nine cards were already created manually and must be skipped by title match:
 1. Household conflict detection
 2. Morning briefing opt-in/out
 3. Morning briefing + Trello tasks
@@ -49,26 +23,45 @@ The following 9 cards were already created manually and must be skipped (match b
 8. Draft email for review
 9. Room tablets (Peninsula-style)
 
-### Step 5: Create draft cards
+## Implementation notes
 
-For each remaining unbuilt capability:
+Create `scripts/populate-project.sh` (or `.js`):
 
-1. Create a draft item in Project #2 using the `addProjectV2DraftIssue` mutation with the capability name as the title.
-2. Update the item's fields:
-   - **Status** → `Backlog`
-   - **Project** → `Iji`
-   - **Iji Sphere** → the sphere name from the section heading
-   - **Summary** → the one-sentence summary from step 3
-3. Log each created card (capability name + sphere) to stdout.
-4. On GraphQL errors, log the error and continue to the next card (don't abort the whole run).
+1. Run `gh auth status` — abort if not authenticated or missing scopes.
+2. Query GitHub GraphQL to discover Project #2's node ID and field IDs for Status, Project, Spheres, Short Summary. Print discovered IDs for confirmation.
+3. Parse `BACKLOG.md` — for each sphere section, extract capability rows where Status = `❌ Not built`. Capture capability name, sphere, and Notes column (truncated to one sentence as Summary).
+4. Skip cards matching the 9 pre-existing titles above.
+5. For each remaining capability, create a draft item via `addProjectV2DraftIssue` mutation with the capability name as title. Set fields: Status → Backlog, Project → Iji, Spheres → sphere name, Short Summary → the notes.
+6. Log each created card. On errors, log and continue.
+7. Print summary: total parsed, skipped, created, failed.
 
-## Output
+Use `gh api graphql` for all API calls. Idempotency not required — this is a one-time bulk import.
 
-- Print a summary at the end: total parsed, skipped, created, failed.
+## Server requirements
 
-## Implementation Notes
+None — runs locally from the Mac Mini. Requires `gh` CLI with `project` and `read:org` scopes.
 
-- Use `gh api graphql` for all GitHub API calls.
-- Script language: bash or Node.js (either is fine).
-- Idempotency: the script is designed for a one-time bulk import. If re-run, it will create duplicates — a duplicate check by title could be added but is not required for v1.
-- Rate limiting: GitHub GraphQL has a 5000-point budget per hour. Each draft card creation is ~2 mutations. With ~70 unbuilt capabilities minus 9 skipped ≈ ~61 cards ≈ ~122 mutations, well within limits.
+## Verification
+
+- Run the script and verify it creates draft cards in Project #2
+- Spot-check 3-5 cards in the GitHub Project UI — correct title, sphere, summary, status
+- Confirm the 9 pre-existing cards are not duplicated
+
+## Done when
+
+- [ ] Script exists at `scripts/populate-project.sh` (or `.js`)
+- [ ] Running it creates draft cards for all unbuilt capabilities in BACKLOG.md
+- [ ] Pre-existing cards are skipped (no duplicates)
+- [ ] Each card has Status=Backlog, Project=Iji, correct Sphere, and Summary populated
+- [ ] Committed
+
+## GitHub Project
+
+After completing, run:
+```
+./scripts/gh-update-card.sh "Populate GitHub Project from Backlog" "In Review"
+```
+
+## Commit message
+
+`feat: add script to populate GitHub Project from BACKLOG.md`
