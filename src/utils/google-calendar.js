@@ -196,20 +196,20 @@ export function localDateTimeToISO(dateStr, timeStr) {
   const t = parseTimeString(timeStr);
   if (!t) return null;
 
-  // Find the UTC instant that corresponds to local wall clock time in the timezone.
-  // Start with a naive guess (treat local time as UTC), then adjust using the offset
-  // at that instant. Two iterations handle DST edge cases.
-  const desiredLocalMs = Date.UTC(year, month - 1, day, t.hour, t.minute, 0, 0);
-  let guessMs = desiredLocalMs;
-  for (let i = 0; i < 2; i++) {
-    const z = getZonedParts(new Date(guessMs), tz);
-    const actualLocalMs = Date.UTC(z.year, z.month - 1, z.day, z.hour, z.minute, 0, 0);
-    guessMs += desiredLocalMs - actualLocalMs;
-  }
+  // Use Intl to format a nearby instant and extract the UTC offset directly from the
+  // formatted string, avoiding the hour-24 bug in getZonedParts at midnight boundaries.
+  const probeMs = Date.UTC(year, month - 1, day, 12, 0, 0, 0); // noon — safe from midnight edge cases
+  const probeStr = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false,
+    timeZoneName: 'longOffset',
+  }).format(new Date(probeMs));
+  // Extract offset like "GMT-07:00" or "GMT+05:30"
+  const offsetMatch = probeStr.match(/GMT([+-]\d{2}:\d{2})/);
+  const offsetStr = offsetMatch ? offsetMatch[1] : '-07:00'; // fallback to PDT
 
-  // Compute offset: difference between the local wall clock and the UTC instant
-  const offsetMinutes = Math.round((desiredLocalMs - guessMs) / 60000);
-  const offsetStr = formatOffset(offsetMinutes);
   const localYmd = datePartsToYmd(year, month, day);
   const hh = String(t.hour).padStart(2, '0');
   const mm = String(t.minute).padStart(2, '0');
