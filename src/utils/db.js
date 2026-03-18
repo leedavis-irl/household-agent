@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, mkdirSync } from 'fs';
 import log from './logger.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -21,6 +21,7 @@ function ensureColumn(db, tableName, columnName, definitionSql) {
 export function getDb() {
   if (db) return db;
 
+  mkdirSync(dirname(dbPath), { recursive: true });
   db = new Database(dbPath);
   db.pragma('journal_mode = WAL');
 

@@ -36,7 +36,7 @@ import { definition as readDef, execute as readExecute } from '../src/tools/docs
 import * as googleOAuth from '../src/utils/google-oauth.js';
 import { google } from 'googleapis';
 
-const mockEnvelope = { person_id: 'lee', person: 'lee', permissions: ['docs_read', 'docs_all'] };
+const mockEnvelope = { person_id: 'alice', person: 'alice', permissions: ['docs_read', 'docs_all'] };
 
 describe('docs_search tool definition', () => {
   it('has correct name', () => {
@@ -75,7 +75,7 @@ describe('docs_search execute', () => {
 
   it('returns error when person has no Google token', async () => {
     googleOAuth.hasToken.mockReturnValue(false);
-    const result = await searchExecute({ person: 'lee' }, mockEnvelope);
+    const result = await searchExecute({ person: 'alice' }, mockEnvelope);
     expect(result.error).toMatch(/don't have access/i);
     expect(result.error).toMatch(/gmail-auth/i);
   });
@@ -83,7 +83,7 @@ describe('docs_search execute', () => {
   it('returns error on expired auth (invalid_grant)', async () => {
     googleOAuth.hasToken.mockReturnValue(true);
     googleOAuth.getClient.mockRejectedValue(new Error('invalid_grant'));
-    const result = await searchExecute({ person: 'lee' }, mockEnvelope);
+    const result = await searchExecute({ person: 'alice' }, mockEnvelope);
     expect(result.error).toMatch(/expired/i);
     expect(result.error).toMatch(/gmail-auth/i);
   });
@@ -94,7 +94,7 @@ describe('docs_search execute', () => {
     const mockDrive = { files: { list: vi.fn().mockResolvedValue({ data: { files: [] } }) } };
     google.drive.mockReturnValue(mockDrive);
 
-    const result = await searchExecute({ person: 'lee', query: 'nonexistent-doc-xyz' }, mockEnvelope);
+    const result = await searchExecute({ person: 'alice', query: 'nonexistent-doc-xyz' }, mockEnvelope);
     expect(result.results).toEqual([]);
     expect(result.message).toMatch(/No files found/i);
   });
@@ -109,7 +109,7 @@ describe('docs_search execute', () => {
     const mockDrive = { files: { list: vi.fn().mockResolvedValue({ data: { files: mockFiles } }) } };
     google.drive.mockReturnValue(mockDrive);
 
-    const result = await searchExecute({ person: 'lee', query: "name contains 'Budget'" }, mockEnvelope);
+    const result = await searchExecute({ person: 'alice', query: "name contains 'Budget'" }, mockEnvelope);
     expect(Array.isArray(result.results)).toBe(true);
     expect(result.results).toHaveLength(2);
     expect(result.results[0].id).toBe('abc123');
@@ -125,7 +125,7 @@ describe('docs_search execute', () => {
     const mockDrive = { files: { list: mockList } };
     google.drive.mockReturnValue(mockDrive);
 
-    await searchExecute({ person: 'lee', max_results: 100 }, mockEnvelope);
+    await searchExecute({ person: 'alice', max_results: 100 }, mockEnvelope);
     expect(mockList).toHaveBeenCalledWith(expect.objectContaining({ pageSize: 25 }));
   });
 
@@ -136,10 +136,24 @@ describe('docs_search execute', () => {
     const mockDrive = { files: { list: mockList } };
     google.drive.mockReturnValue(mockDrive);
 
-    await searchExecute({ person: 'lee' }, mockEnvelope);
+    await searchExecute({ person: 'alice' }, mockEnvelope);
     const callArgs = mockList.mock.calls[0][0];
     expect(callArgs.q).toMatch(/google-apps\.document/);
     expect(callArgs.q).toMatch(/google-apps\.spreadsheet/);
+  });
+
+  it('includes shared drive params to search across all accessible drives', async () => {
+    googleOAuth.hasToken.mockReturnValue(true);
+    googleOAuth.getClient.mockResolvedValue({});
+    const mockList = vi.fn().mockResolvedValue({ data: { files: [] } });
+    const mockDrive = { files: { list: mockList } };
+    google.drive.mockReturnValue(mockDrive);
+
+    await searchExecute({ person: 'alice', query: "name contains 'shared'" }, mockEnvelope);
+    const callArgs = mockList.mock.calls[0][0];
+    expect(callArgs.supportsAllDrives).toBe(true);
+    expect(callArgs.includeItemsFromAllDrives).toBe(true);
+    expect(callArgs.corpora).toBe('allDrives');
   });
 
   it('returns error on 403 (access denied)', async () => {
@@ -150,7 +164,7 @@ describe('docs_search execute', () => {
     const mockDrive = { files: { list: vi.fn().mockRejectedValue(err) } };
     google.drive.mockReturnValue(mockDrive);
 
-    const result = await searchExecute({ person: 'lee' }, mockEnvelope);
+    const result = await searchExecute({ person: 'alice' }, mockEnvelope);
     expect(result.error).toMatch(/Drive access denied/i);
     expect(result.error).toMatch(/gmail-auth/i);
   });
@@ -163,7 +177,7 @@ describe('docs_search execute', () => {
     const mockDrive = { files: { list: vi.fn().mockRejectedValue(err) } };
     google.drive.mockReturnValue(mockDrive);
 
-    const result = await searchExecute({ person: 'lee' }, mockEnvelope);
+    const result = await searchExecute({ person: 'alice' }, mockEnvelope);
     expect(result.error).toMatch(/rate-limiting/i);
   });
 
@@ -171,7 +185,7 @@ describe('docs_search execute', () => {
     googleOAuth.hasToken.mockReturnValue(false);
     const result = await searchExecute({}, mockEnvelope);
     // Should attempt to look up 'lee' from the envelope
-    expect(googleOAuth.hasToken).toHaveBeenCalledWith('lee');
+    expect(googleOAuth.hasToken).toHaveBeenCalledWith('alice');
   });
 });
 
@@ -207,19 +221,19 @@ describe('docs_read execute', () => {
 
   it('returns error when file_id is missing', async () => {
     googleOAuth.hasToken.mockReturnValue(true);
-    const result = await readExecute({ person: 'lee' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice' }, mockEnvelope);
     expect(result.error).toMatch(/file_id is required/i);
   });
 
   it('returns error when file_id is not a valid ID or URL', async () => {
     googleOAuth.hasToken.mockReturnValue(true);
-    const result = await readExecute({ person: 'lee', file_id: 'short' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice', file_id: 'short' }, mockEnvelope);
     expect(result.error).toMatch(/file_id is required/i);
   });
 
   it('returns error when person has no Google token', async () => {
     googleOAuth.hasToken.mockReturnValue(false);
-    const result = await readExecute({ person: 'lee', file_id: 'abc1234567890123456789012' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice', file_id: 'abc1234567890123456789012' }, mockEnvelope);
     expect(result.error).toMatch(/don't have access/i);
     expect(result.error).toMatch(/gmail-auth/i);
   });
@@ -227,7 +241,7 @@ describe('docs_read execute', () => {
   it('returns error on expired auth', async () => {
     googleOAuth.hasToken.mockReturnValue(true);
     googleOAuth.getClient.mockRejectedValue(new Error('invalid_grant'));
-    const result = await readExecute({ person: 'lee', file_id: 'abc1234567890123456789012' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice', file_id: 'abc1234567890123456789012' }, mockEnvelope);
     expect(result.error).toMatch(/expired/i);
   });
 
@@ -239,7 +253,7 @@ describe('docs_read execute', () => {
     const mockDrive = { files: { get: vi.fn().mockRejectedValue(err) } };
     google.drive.mockReturnValue(mockDrive);
 
-    const result = await readExecute({ person: 'lee', file_id: 'abc1234567890123456789012' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice', file_id: 'abc1234567890123456789012' }, mockEnvelope);
     expect(result.error).toMatch(/not found/i);
   });
 
@@ -251,7 +265,7 @@ describe('docs_read execute', () => {
     const mockDrive = { files: { get: vi.fn().mockRejectedValue(err) } };
     google.drive.mockReturnValue(mockDrive);
 
-    const result = await readExecute({ person: 'lee', file_id: 'abc1234567890123456789012' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice', file_id: 'abc1234567890123456789012' }, mockEnvelope);
     expect(result.error).toMatch(/Access denied/i);
     expect(result.error).toMatch(/gmail-auth/i);
   });
@@ -268,7 +282,7 @@ describe('docs_read execute', () => {
     };
     google.drive.mockReturnValue(mockDrive);
 
-    const result = await readExecute({ person: 'lee', file_id: 'abc1234567890123456789012' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice', file_id: 'abc1234567890123456789012' }, mockEnvelope);
     expect(result.error).toMatch(/Unsupported file type/i);
     expect(result.error).toMatch(/image\/png/);
   });
@@ -318,7 +332,7 @@ describe('docs_read execute', () => {
     google.drive.mockReturnValue(mockDrive);
     google.docs.mockReturnValue(mockDocs);
 
-    const result = await readExecute({ person: 'lee', file_id: 'docid123456789012345678' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice', file_id: 'docid123456789012345678' }, mockEnvelope);
     expect(result.error).toBeUndefined();
     expect(result.name).toBe('My Document');
     expect(result.content).toContain('Hello, world!');
@@ -347,7 +361,7 @@ describe('docs_read execute', () => {
     };
     google.drive.mockReturnValue(mockDrive);
 
-    const result = await readExecute({ person: 'lee', file_id: 'sheetid12345678901234567' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice', file_id: 'sheetid12345678901234567' }, mockEnvelope);
     expect(result.error).toBeUndefined();
     expect(result.name).toBe('Budget');
     expect(result.content).toBe(csvData);
@@ -374,7 +388,7 @@ describe('docs_read execute', () => {
     };
     google.drive.mockReturnValue(mockDrive);
 
-    const result = await readExecute({ person: 'lee', file_id: 'sheetid12345678901234567' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice', file_id: 'sheetid12345678901234567' }, mockEnvelope);
     expect(result.truncated).toBe(true);
     expect(result.content).toMatch(/Content truncated/);
     expect(result.content.length).toBeLessThan(10000);
@@ -413,7 +427,7 @@ describe('docs_read execute', () => {
     google.docs.mockReturnValue(mockDocs);
 
     const result = await readExecute(
-      { person: 'lee', file_id: 'https://docs.google.com/document/d/extractedFileId1234567890/edit' },
+      { person: 'alice', file_id: 'https://docs.google.com/document/d/extractedFileId1234567890/edit' },
       mockEnvelope
     );
     expect(result.error).toBeUndefined();
@@ -474,7 +488,7 @@ describe('docs_read execute', () => {
     google.drive.mockReturnValue(mockDrive);
     google.docs.mockReturnValue(mockDocs);
 
-    const result = await readExecute({ person: 'lee', file_id: 'docid123456789012345678' }, mockEnvelope);
+    const result = await readExecute({ person: 'alice', file_id: 'docid123456789012345678' }, mockEnvelope);
     expect(result.error).toBeUndefined();
     expect(result.content).toContain('Cell A1');
     expect(result.content).toContain('Cell B1');

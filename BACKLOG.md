@@ -15,7 +15,7 @@ Organized into **7 Spheres** (domain capabilities serving the household) and the
 | Procurement & Errands | 0 | 0 | 0 | 6 |
 | Meals & Kitchen | 0 | 0 | 0 | 5 |
 | Children | 0 | 0 | 0 | 4 |
-| Engine › Communication | 6 | 0 | 2 | 8 |
+| Engine › Communication | 6 | 0 | 4 | 6 |
 | Engine › Memory | 2 | 0 | 0 | 7 |
 | Engine › Infrastructure | 13 | 0 | 1 | 5 |
 
@@ -153,8 +153,8 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Email as a channel (inbound/outbound) | not built | ❌ Not built | Not rolled out | Medium | Distinct from Gmail search/read tools |
 | Voice channel adapter | not built | ❌ Not built | Not rolled out | High | Wyoming/STT/TTS path documented in architecture. Prerequisite for room tablets (Peninsula-style). Needs: STT (Whisper local or HA pipeline), TTS (Piper), wake word or push-to-talk, bridge to Iji brain. Either Iji becomes an HA conversation agent or tablets run custom voice UI hitting Iji API directly. |
 | Draft email for review | `email_draft` (not built) | ❌ Not built | Not rolled out | Medium | Requires Gmail modify scope + per-user OAuth |
-| Search shared Drive docs | `docs_search` (not built) | ❌ Not built | Not rolled out | Low | Needs Drive API tool |
-| Read Google Docs content | `docs_read` (not built) | ❌ Not built | Not rolled out | Low | Needs Drive/Docs read tools |
+| Search shared Drive docs | `docs_search` | ⚠️ Untested | Adults with `docs_read` | Low | Drive API tool. Searches personal Drive, "Shared with me", and Shared Drives (`includeItemsFromAllDrives`). Uses per-user OAuth token. Auth via `scripts/gmail-auth.js`. |
+| Read Google Docs content | `docs_read` | ⚠️ Untested | Adults with `docs_read` | Low | Reads Google Docs (via Docs API) and Sheets (exported as CSV). Accepts file ID or Drive URL. Content truncated at 8000 chars. |
 | Weekly family-doc sync | `scripts/sync-docs-to-gdoc.js` | ⚠️ Untested | Not rolled out | Low | Script works (doc was created successfully). Cron job status on EC2 unknown. Paused — v2 needs rethinking around purpose (originally: promote Iji capabilities to household without Lee having to talk about it). |
 | Generate operational documents | not built | ❌ Not built | Not rolled out | Medium | Packing lists, summaries, prep docs, reports |
 

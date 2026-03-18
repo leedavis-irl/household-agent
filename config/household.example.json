@@ -26,7 +26,8 @@
         "tasks",
         "tasks_others",
         "education",
-        "web_search"
+        "web_search",
+        "docs_read"
       ],
       "briefing": {
         "enabled": true,
@@ -55,7 +56,8 @@
         "tasks",
         "tasks_others",
         "education",
-        "web_search"
+        "web_search",
+        "docs_read"
       ]
     },
     "carol": {
@@ -82,7 +84,8 @@
         "tasks",
         "tasks_others",
         "education",
-        "web_search"
+        "web_search",
+        "docs_read"
       ],
       "briefing": {
         "enabled": true,
@@ -111,7 +114,8 @@
         "tasks",
         "tasks_others",
         "education",
-        "web_search"
+        "web_search",
+        "docs_read"
       ]
     },
     "eve": {
@@ -135,7 +139,8 @@
         "tasks",
         "tasks_others",
         "education",
-        "web_search"
+        "web_search",
+        "docs_read"
       ]
     },
     "child_1": {
@@ -238,6 +243,8 @@
     "tasks": "Create, query, and update your own tasks",
     "tasks_others": "Assign tasks to others, query and update others' tasks",
     "education": "Access children's education profiles, documents, goals, and support team from Education Advisor",
-    "web_search": "Search the web for current information, news, prices, hours, and anything outside Iji's training data"
+    "web_search": "Search the web for current information, news, prices, hours, and anything outside Iji's training data",
+    "docs_read": "Search and read Google Drive documents and spreadsheets",
+    "docs_all": "Search and read any household member's Google Drive documents and spreadsheets"
   }
 }

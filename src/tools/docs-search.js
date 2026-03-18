@@ -78,12 +78,16 @@ export async function execute(input, envelope) {
       pageSize: maxResults,
       fields: 'files(id,name,mimeType,modifiedTime,webViewLink,owners)',
       orderBy: 'modifiedTime desc',
+      // Include files from Shared Drives (Google Workspace team drives) in addition to personal Drive
+      supportsAllDrives: true,
+      includeItemsFromAllDrives: true,
+      corpora: 'allDrives',
     };
 
     if (query) {
       params.q = query;
     } else {
-      // Default: only user-owned/accessible Docs and Sheets
+      // Default: Docs and Sheets accessible to the user (personal Drive + shared with them + Shared Drives)
       params.q = "mimeType = 'application/vnd.google-apps.document' or mimeType = 'application/vnd.google-apps.spreadsheet'";
     }
 

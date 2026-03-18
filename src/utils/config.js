@@ -5,14 +5,16 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const primaryPath = join(__dirname, '../../config/household.json');
 const examplePath = join(__dirname, '../../config/household.example.json');
-const configPath = existsSync(primaryPath) ? primaryPath : examplePath;
 
 let household = null;
 
 /**
  * Load and validate config. Call once at startup. Throws if invalid or missing.
+ * @param {string} [configPathOverride] - Optional path to load instead of the default.
  */
-export function loadConfig() {
+export function loadConfig(configPathOverride = null) {
+  const configPath = configPathOverride || (existsSync(primaryPath) ? primaryPath : examplePath);
+
   if (!existsSync(configPath)) {
     throw new Error(`Missing config: ${configPath}`);
   }
