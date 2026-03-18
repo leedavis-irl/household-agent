@@ -24,6 +24,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, '..');
 const QUEUE_DIR = join(REPO_ROOT, 'queue');
 
+// Load env from .watcher.env if it exists
+const envFile = join(REPO_ROOT, '.watcher.env');
+if (existsSync(envFile)) {
+  for (const line of readFileSync(envFile, 'utf-8').split('\n')) {
+    const match = line.match(/^([A-Z_]+)=(.+)$/);
+    if (match && !process.env[match[1]]) {
+      process.env[match[1]] = match[2].trim();
+    }
+  }
+}
+
 const POLL_INTERVAL_MS = 30 * 60 * 1000; // 30 minutes
 const WORK_HOURS_START = 9;  // 9am Pacific
 const WORK_HOURS_END = 18;   // 6pm Pacific
