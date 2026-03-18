@@ -13,7 +13,7 @@
  */
 import { createServer } from 'http';
 import { loadConfig, getHousehold } from '../src/utils/config.js';
-import { getAuthUrl, handleCallback, getClient, hasToken } from '../src/utils/google-oauth.js';
+import { getAuthUrl, handleCallback, getClient, hasToken, ALL_GOOGLE_SCOPES } from '../src/utils/google-oauth.js';
 
 const PORT = parseInt(process.env.GMAIL_AUTH_PORT || '3000', 10);
 const REDIRECT_URI = `http://localhost:${PORT}/callback`;
@@ -37,7 +37,7 @@ async function main() {
     console.log(`Tokens already exist for ${personId}. Re-authorizing will replace them.`);
   }
 
-  const url = await getAuthUrl(personId, undefined, { redirectUri: REDIRECT_URI });
+  const url = await getAuthUrl(personId, ALL_GOOGLE_SCOPES, { redirectUri: REDIRECT_URI });
 
   const codePromise = new Promise((resolve, reject) => {
     const server = createServer((req, res) => {
@@ -97,7 +97,7 @@ async function main() {
     process.exit(1);
   }
 
-  await handleCallback(personId, result.code, undefined, { redirectUri: REDIRECT_URI });
+  await handleCallback(personId, result.code, ALL_GOOGLE_SCOPES, { redirectUri: REDIRECT_URI });
   console.log('Tokens stored.\n3. Verifying with Gmail API...');
 
   const client = await getClient(personId);

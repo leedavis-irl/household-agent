@@ -15,6 +15,15 @@ const GMAIL_SCOPES = [
   'https://www.googleapis.com/auth/gmail.readonly',
   'https://www.googleapis.com/auth/gmail.send',
 ];
+
+export const DRIVE_SCOPES = [
+  'https://www.googleapis.com/auth/drive.readonly',
+  'https://www.googleapis.com/auth/documents.readonly',
+];
+
+// Combined scope set used for initial auth — grants both Gmail and Drive access.
+export const ALL_GOOGLE_SCOPES = [...GMAIL_SCOPES, ...DRIVE_SCOPES];
+
 const REDIRECT_URI_OOB = 'urn:ietf:wg:oauth:2.0:oob';
 
 let OAuth2Client = null;
