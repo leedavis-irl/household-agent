@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
+    "@slack/socket-mode": "^2.0.6",
+    "@slack/web-api": "^7.15.0",
     "better-sqlite3": "^12.6.2",
     "dotenv": "^16.4.7",
     "googleapis": "^171.4.0",
