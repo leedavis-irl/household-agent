@@ -43,13 +43,19 @@ export async function execute(input) {
     return { results: [], message: 'No matching knowledge found.' };
   }
 
+  const now = Date.now();
   return {
-    results: rows.map((r) => ({
-      id: r.id,
-      content: r.content,
-      reported_by: r.reported_by,
-      reported_at: r.reported_at,
-      tags: r.tags ? JSON.parse(r.tags) : [],
-    })),
+    results: rows.map((r) => {
+      const ageMs = r.reported_at ? now - new Date(r.reported_at).getTime() : null;
+      const data_age_days = ageMs !== null ? Math.floor(ageMs / (1000 * 60 * 60 * 24)) : null;
+      return {
+        id: r.id,
+        content: r.content,
+        reported_by: r.reported_by,
+        reported_at: r.reported_at,
+        data_age_days,
+        tags: r.tags ? JSON.parse(r.tags) : [],
+      };
+    }),
   };
 }

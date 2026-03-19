@@ -50,11 +50,16 @@ async function haFetch(path) {
 }
 
 function summarizeEntity(entity) {
+  const lastChanged = entity.last_changed;
+  const data_age_minutes = lastChanged
+    ? Math.floor((Date.now() - new Date(lastChanged).getTime()) / (1000 * 60))
+    : null;
   return {
     entity_id: entity.entity_id,
     state: entity.state,
     friendly_name: entity.attributes?.friendly_name || entity.entity_id,
-    last_changed: entity.last_changed,
+    last_changed: lastChanged,
+    data_age_minutes,
   };
 }
 
