@@ -54,5 +54,8 @@ startMorningBriefing();
 const { startAnomalyDetector } = await import('./utils/anomaly-detector.js');
 startAnomalyDetector();
 
+const { startKnowledgeExpiryScheduler } = await import('./scheduler/knowledge-expiry.js');
+startKnowledgeExpiryScheduler();
+
 const { startHealthServer } = await import('./health.js');
 startHealthServer();
