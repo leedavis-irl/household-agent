@@ -22,7 +22,7 @@ export function recordConversationEval(entry) {
 
   try {
     const db = getDb();
-    db.prepare(
+    const result = db.prepare(
       `INSERT INTO conversation_evals
         (conversation_id, person_id, user_message, assistant_response, tools_called, capabilities_loaded, layer_tokens, prompt_tokens, completion_tokens, total_cost_usd, response_time_ms)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
@@ -39,11 +39,13 @@ export function recordConversationEval(entry) {
       entry.total_cost_usd ?? null,
       entry.response_time_ms ?? null
     );
+    return result.lastInsertRowid;
   } catch (err) {
     log.warn('Failed to record conversation eval', {
       conversation_id: conversationId,
       person_id: personId,
       error: err.message,
     });
+    return null;
   }
 }

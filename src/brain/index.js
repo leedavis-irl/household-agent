@@ -6,6 +6,7 @@ import log from '../utils/logger.js';
 import { recordUsage } from '../utils/usage-log.js';
 import { estimateCost } from '../utils/claude-pricing.js';
 import { recordConversationEval } from '../utils/eval-logger.js';
+import { reviewQuality } from '../utils/quality-reviewer.js';
 
 const client = new Anthropic();
 const MODEL = process.env.CLAUDE_MODEL || 'claude-sonnet-4-20250514';
@@ -96,7 +97,7 @@ export async function think(envelope, onAcknowledge) {
         estimated_tokens: Math.round((l.chars / totalLayerChars) * promptTokensTotal),
       }));
 
-      recordConversationEval({
+      const evalEntry = {
         conversation_id: envelope.conversation_id ?? 'unknown',
         person_id: envelope.person_id ?? envelope.person ?? 'unknown',
         user_message: envelope.message ?? '',
@@ -108,7 +109,14 @@ export async function think(envelope, onAcknowledge) {
         completion_tokens: completionTokensTotal,
         total_cost_usd: Math.round(totalCostUsd * 1e6) / 1e6,
         response_time_ms: Date.now() - loopStartedAt,
-      });
+      };
+      const evalRowId = recordConversationEval(evalEntry);
+
+      // Async quality review — runs after response is returned, doesn't block
+      if (evalRowId != null) {
+        const messagesSnapshot = [...messages];
+        setImmediate(() => reviewQuality(evalEntry, evalRowId, messagesSnapshot));
+      }
 
       return finalText;
     }
