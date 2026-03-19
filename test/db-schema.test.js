@@ -41,9 +41,32 @@ describe('schema version tracking', () => {
     const expected = [
       'knowledge', 'signal_groups', 'claude_usage', 'reminders',
       'conversation_evals', 'feature_requests', 'tasks', 'schema_versions',
+      'briefing_preferences', 'decisions',
     ];
     for (const t of expected) {
       expect(tables, `missing table: ${t}`).toContain(t);
     }
+  });
+
+  it('decisions table has correct columns', () => {
+    const db = getDb();
+    const cols = db.prepare('PRAGMA table_info(decisions)').all().map((c) => c.name);
+    expect(cols).toContain('id');
+    expect(cols).toContain('title');
+    expect(cols).toContain('rationale');
+    expect(cols).toContain('alternatives_considered');
+    expect(cols).toContain('participants');
+    expect(cols).toContain('decided_by');
+    expect(cols).toContain('decided_at');
+    expect(cols).toContain('category');
+    expect(cols).toContain('status');
+  });
+
+  it('migration v4 (decisions table) is recorded in schema_versions', () => {
+    const db = getDb();
+    const row = db.prepare('SELECT * FROM schema_versions WHERE version = 4').get();
+    expect(row).toBeDefined();
+    expect(row.description).toMatch(/decisions/i);
+    expect(row.applied_at).toBeTruthy();
   });
 });
