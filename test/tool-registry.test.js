@@ -71,6 +71,7 @@ describe('tool registry integrity', () => {
       'feedback_log',
       'decision_log',
       'findmy_locate',
+      'ha_automation_author',
     ];
     for (const name of expected) {
       expect(names.has(name), `missing tool: ${name}`).toBe(true);
@@ -103,6 +104,7 @@ describe('tool modules have execute functions', () => {
     'feedback-log',
     'decision-log',
     'findmy-locate',
+    'ha-automation-author',
   ];
 
   for (const file of toolFiles) {
