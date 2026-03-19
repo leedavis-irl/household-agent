@@ -204,6 +204,28 @@ const MIGRATIONS = [
       `);
     },
   },
+  {
+    version: 4,
+    description: 'Add decisions table for structured household decision log with rationale',
+    up(db) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS decisions (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          title TEXT NOT NULL,
+          description TEXT,
+          rationale TEXT NOT NULL,
+          alternatives_considered TEXT,
+          participants TEXT,
+          decided_by TEXT NOT NULL,
+          decided_at TEXT NOT NULL,
+          category TEXT NOT NULL,
+          status TEXT NOT NULL DEFAULT 'active'
+        )
+      `);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_decisions_category ON decisions(category)`);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_decisions_decided_at ON decisions(decided_at)`);
+    },
+  },
 ];
 
 function migrate(db) {
