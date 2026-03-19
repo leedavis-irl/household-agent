@@ -66,6 +66,7 @@ describe('tool registry integrity', () => {
       'docs_search', 'docs_read',
       'slack_search',
       'generate_document',
+      'ambient_automation',
     ];
     for (const name of expected) {
       expect(names.has(name), `missing tool: ${name}`).toBe(true);
@@ -93,6 +94,7 @@ describe('tool modules have execute functions', () => {
     'docs-search', 'docs-read',
     'slack-search',
     'generate-document',
+    'ambient-automation',
   ];
 
   for (const file of toolFiles) {
