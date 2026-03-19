@@ -51,5 +51,8 @@ startReminderScheduler();
 const { startMorningBriefing } = await import('./utils/morning-briefing.js');
 startMorningBriefing();
 
+const { startAnomalyDetector } = await import('./utils/anomaly-detector.js');
+startAnomalyDetector();
+
 const { startHealthServer } = await import('./health.js');
 startHealthServer();
