@@ -30,7 +30,7 @@ const IJI_TRIGGER = /\biji\b/i;
  * Extract image attachments from a Signal dataMessage.
  * Returns an array of { media_type, base64 } objects ready for Claude vision.
  */
-function extractImages(dataMessage) {
+export function extractImages(dataMessage) {
   const attachments = dataMessage.attachments;
   if (!Array.isArray(attachments) || attachments.length === 0) return [];
 
