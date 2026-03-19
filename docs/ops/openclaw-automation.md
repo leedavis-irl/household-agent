@@ -5,11 +5,12 @@
 The OpenClaw watcher polls GitHub Project #2 every 30 minutes during work hours (9am–6pm Pacific) for cards moved to "Ready". When detected, it:
 
 1. Finds the matching queue spec file (via the card's Spec field or fuzzy title match)
-2. Moves the card to "In progress"
-3. Invokes Claude Code with the spec
-4. Reviews the resulting diff against the spec's "Done when" criteria
-5. On pass: pushes, deletes the queue file, moves card to "Done", notifies Lee
-6. On fail: retries up to 3 times with feedback, then escalates to Lee
+2. **Validates spec quality** — rejects stubs with insufficient detail and moves them back to Backlog
+3. Moves the card to "In progress"
+4. Invokes Claude Code with the spec
+5. Reviews the resulting diff (baseline→HEAD, up to 15K chars + file list) against the spec's "Done when" criteria
+6. On pass: pushes, deletes the queue file, moves card to "Done", notifies Lee
+7. On fail: retries up to 3 times **with reviewer feedback passed to the next attempt**, then moves card back to Ready and escalates to Lee
 
 ## Starting the watcher
 
@@ -92,8 +93,8 @@ pgrep -f openclaw-watcher
 ## How to trigger a build
 
 1. Go to GitHub Project #2: https://github.com/users/leedavis-irl/projects/2
-2. Move a card from "Backlog" to "Ready"
-3. Wait up to 5 minutes for the next poll cycle
+2. Move a card from "Spec'd" to "Ready" (only cards with complete specs should be in Spec'd)
+3. Wait up to 30 minutes for the next poll cycle
 4. Watch the log for progress
 
 ## Manual card status updates
@@ -101,11 +102,13 @@ pgrep -f openclaw-watcher
 The `gh-update-card.sh` helper can update any card:
 
 ```bash
-./scripts/gh-update-card.sh "Card Title" "Ready"       # Queue for processing
+./scripts/gh-update-card.sh "Card Title" "Backlog"      # Return to backlog
+./scripts/gh-update-card.sh "Card Title" "Specd"        # Spec reviewed, safe to move to Ready
+./scripts/gh-update-card.sh "Card Title" "Ready"        # Queue for watcher to pick up
 ./scripts/gh-update-card.sh "Card Title" "In progress"  # Mark as in progress
 ./scripts/gh-update-card.sh "Card Title" "In review"    # Mark for review
 ./scripts/gh-update-card.sh "Card Title" "Done"         # Mark complete
-./scripts/gh-update-card.sh "Card Title" "Backlog"      # Return to backlog
+./scripts/gh-update-card.sh "Card Title" "Abandoned"    # Dropped
 ```
 
 ## Requirements
@@ -118,10 +121,30 @@ The `gh-update-card.sh` helper can update any card:
 
 ## Troubleshooting
 
+**"Spec failed quality check"** — The spec didn't meet minimum requirements (15+ words in "What to build", 20+ words in "Implementation notes", 3+ "Done when" items, non-placeholder verification, no boilerplate patterns). Card is moved back to Backlog with feedback. Fix the spec before moving to Ready again.
+
 **"No spec file found"** — The card's Spec field is empty or the queue file doesn't exist. Set the Spec field to the queue file path (e.g., `queue/28-email-draft.md`).
 
 **"Claude Code failed"** — Check the watcher log for error details. Common causes: missing permissions, API rate limits, network issues.
 
-**"Review failed after 3 attempts"** — The automated review couldn't verify the done-when criteria were met. Lee gets a Signal notification. Manually review the diff and either move to Done or add feedback.
+**"Review failed after 3 attempts"** — The automated review couldn't verify the done-when criteria were met. Card is moved back to Ready. Lee gets a Signal notification. Manually review the diff and either move to Done or add feedback.
 
 **Watcher not polling** — Check if the process is running (`pgrep -f openclaw-watcher`). Check the log for errors. Verify `gh auth status` passes.
+
+## Card lifecycle
+
+```
+Backlog → Spec'd → Ready → In Progress → In Review → Done
+                                    ↓              ↓
+                              (CC crash)    (review fail ×3)
+                                    ↓              ↓
+                                 Ready ←──────── Ready
+```
+
+- **Backlog**: Idea exists, spec may be incomplete or a stub
+- **Spec'd**: Spec passes quality validation, safe to move to Ready at any time
+- **Ready**: Watcher will pick this up on the next poll (30min during 9am–6pm Pacific)
+- **In Progress**: CC is actively working
+- **In Review**: CC finished, automated reviewer is checking the diff
+- **Done**: Shipped, review passed, queue file deleted
+- **Abandoned**: Dropped

@@ -8,14 +8,14 @@ Organized into **7 Spheres** (domain capabilities serving the household) and the
 
 | Section | Verified | Fix Pending | Untested | Not Built |
 |---------|----------|-------------|----------|-----------|
-| Scheduling & Logistics | 9 | 0 | 0 | 8 |
-| Property & Home | 4 | 0 | 0 | 24 |
+| Scheduling & Logistics | 10 | 0 | 0 | 7 |
+| Property & Home | 7 | 0 | 0 | 21 |
 | Finances | 5 | 0 | 0 | 1 |
 | People & Relationships | 0 | 0 | 0 | 5 |
 | Procurement & Errands | 0 | 0 | 0 | 6 |
 | Meals & Kitchen | 0 | 0 | 0 | 5 |
-| Children | 0 | 0 | 0 | 4 |
-| Engine › Communication | 6 | 0 | 4 | 6 |
+| Children | 3 | 0 | 0 | 4 |
+| Engine › Communication | 10 | 0 | 2 | 4 |
 | Engine › Memory | 2 | 0 | 0 | 7 |
 | Engine › Infrastructure | 13 | 0 | 1 | 5 |
 
@@ -36,7 +36,7 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Household conflict detection | not built | ❌ Not built | Not rolled out | Medium | Detect double-bookings, kid pickup conflicts, shared-car conflicts |
 | Reminder lifecycle (set/list/fire) | `reminder_set`, `reminder_list`, `reminder_update` | ✅ Verified | Adults with `reminders` + `reminders_others` | High | Spec: `specs/REMINDERS-V1.md`. Decision: `docs/decisions/2026-02-26-reminders-v1.md`. Time-based reminders, 60s scheduler, follow-up cycling, cross-person with creator notifications. Scheduler infrastructure reusable for morning briefings. |
 | Morning briefing (v1) | `src/utils/morning-briefing.js` | ✅ Verified | Lee + Kelly | High | 9am Pacific daily Signal DM. Calendar, weather, reminders, knowledge. Per-person delivery hour in household.json. Email digest deferred to v2. Spec: `specs/MORNING-BRIEFINGS-V1.md`. Decision: `docs/decisions/2026-02-26-morning-briefings-v1.md`. |
-| Morning briefing opt-in/out | not built | ❌ Not built | Not rolled out | Medium | Adults can subscribe/unsubscribe from daily briefing. Depends on v1. |
+| Morning briefing opt-in/out | `src/utils/morning-briefing.js` | ✅ Verified | Lee + Kelly | Medium | Opt-out footer added to briefing messages (commit `70c09a2`). |
 | Morning briefing + Trello tasks | not built | ❌ Not built | Not rolled out | Medium | Pull Lee + Kelly's Trello boards, fit actionable tasks into the day's schedule. Depends on Trello API integration. |
 | Multi-person scheduling negotiation | not built | ❌ Not built | Not rolled out | High | Reasoning layer on top of freebusy |
 | Task delegation + follow-up | `task_create`, `task_query`, `task_update` | ✅ Verified | Adults with `tasks`/`tasks_others` permissions | High | Assign/track/follow-up workflow across household members. Signal notifications on assignment and completion. |
@@ -56,9 +56,9 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | HA area permission robustness | `ha_control` | ✅ Verified | Adults/admin | Medium | Commit `1cdf063`. Spec: `docs/specs/bugfix-hue-area-permissions.md`. Steve's permission-denied tests still pending. |
 | Presence query ("who is home") | `ha_query` (`person.*`) | ✅ Verified | Adults with HA permissions | Medium | Works for members with presence configured (Lee, Steve, Hallie confirmed). Steve and Firen need to complete presence device setup. |
 | Ambient automation (lights/blinds/climate) | not built | ❌ Not built | Not rolled out | Medium | Predecessor `claude-home-agent` (AppDaemon) disabled due to feedback loops, runaway API costs, and stateless oscillation. Revisit as Iji-native capability with: event batching, cost ceiling, action memory, opt-in scope. Code archived at `~/Projects/Home/claude-home-agent/`. |
-| Scene/automation triggers | `ha_scene` (not built) | ❌ Not built | Not rolled out | Medium | Planned HA service tooling |
-| Historical state analysis | `ha_history` (not built) | ❌ Not built | Not rolled out | Medium | Planned HA history endpoint tool |
-| HA notification dispatch | `ha_notify` (not built) | ❌ Not built | Not rolled out | Low | Planned HA notify tools |
+| Scene/automation triggers | `ha_scene` | ✅ Verified | Adults with HA permissions | Medium | Activate HA scenes via tool call. |
+| Historical state analysis | `ha_history` | ✅ Verified | Adults with HA permissions | Medium | Query entity state history over time ranges. |
+| HA notification dispatch | `ha_notify` | ✅ Verified | Admin | Low | Push notifications to phones, smart displays, TTS announcements via HA notify services. |
 | Anomaly detection over sensors | not built | ❌ Not built | Not rolled out | Medium | Interpreted anomaly alerts (door/water/temp) |
 | Presence inference engine | not built | ❌ Not built | Not rolled out | Medium | Probabilistic presence from multi-source signals |
 | HA automation authoring | not built | ❌ Not built | Not rolled out | Medium | Draft/deploy automations with approval workflow |
@@ -126,8 +126,9 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 
 | Capability | Tools | Status | Rollout | Priority | Notes |
 |-----------|-------|--------|---------|----------|-------|
-| Education Advisor integration | `education_profile`, `education_documents`, `education_goals`, `education_team` | 🔬 Untested | Adults (`education`) | High | 4 Supabase-backed tools. Commit c04c6f0. Queue #76 covers test & verify. |
-| Education document ingestion | not built | ❌ Not built | Not rolled out | Medium | Queue #27. Depends on Signal image handling + Gemini Vision pipeline |
+| Education Advisor integration | `education_profile`, `education_documents`, `education_goals`, `education_team` | ✅ Verified | Adults (`education`) | High | 4 Supabase-backed tools. Commit c04c6f0. Tests added in queue #76. |
+| Education document ingestion | `education_upload` | ✅ Verified | Adults (`education`) | Medium | Signal image → Supabase document vault. Commit `38cbf61`. |
+| Parenting coaching capability | `config/prompts/capabilities/parenting.md` | ✅ Verified | Adults | High | Good Inside (Dr. Becky Kennedy) + BratBusters (Lisa Bunnage) frameworks. Always-on capability. Uses education tools for child-specific context. Commit `9b5d5dc`. |
 | School/activity schedule assistant | not built | ❌ Not built | Not rolled out | High | Queue #77. Calendar + reminders + coordination |
 | AM/PM routine tracking | not built | ❌ Not built | Not rolled out | High | Queue #78. Depends on HA/ESPHome routine hardware flow |
 | Medical/permission-slip tracking | not built | ❌ Not built | Not rolled out | Medium | Queue #78. Structured records + reminders needed |
@@ -149,12 +150,12 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 | Read full Gmail message/thread | `email_read` | ✅ Verified | Lee only (OAuth token currently present) | High | Verified for Lee; other adults require their own OAuth token setup |
 | Send email on behalf of user | `email_send` | ✅ Verified | Lee first, then rollout | High | Spec: `specs/EMAIL-SEND.md`. Requires gmail.send scope + re-auth. Decision: `docs/decisions/2026-02-26-outbound-comms-rollout.md`. Rollout template: `docs/templates/rollout.md` |
 | Slack channel adapter | not built | ❌ Not built | Not rolled out | Medium | Architecture supports it; implementation pending. Prerequisite for Finances capability across all channels (currently Signal + CLI only). |
-| Slack message search | `slack_search` (not built) | ❌ Not built | Not rolled out | Medium | Needs Slack API integration + auth |
+| Slack message search | `slack_search` | ✅ Verified | Adults with `slack_search` | Medium | Searches Slack messages. Commit `f58814e`. |
 | Email as a channel (inbound/outbound) | not built | ❌ Not built | Not rolled out | Medium | Distinct from Gmail search/read tools |
 | Voice channel adapter | not built | ❌ Not built | Not rolled out | High | Wyoming/STT/TTS path documented in architecture. Prerequisite for room tablets (Peninsula-style). Needs: STT (Whisper local or HA pipeline), TTS (Piper), wake word or push-to-talk, bridge to Iji brain. Either Iji becomes an HA conversation agent or tablets run custom voice UI hitting Iji API directly. |
-| Draft email for review | `email_draft` (not built) | ❌ Not built | Not rolled out | Medium | Requires Gmail modify scope + per-user OAuth |
-| Search shared Drive docs | `docs_search` | ⚠️ Untested | Adults with `docs_read` | Low | Drive API tool. Searches personal Drive, "Shared with me", and Shared Drives (`includeItemsFromAllDrives`). Uses per-user OAuth token. Auth via `scripts/gmail-auth.js`. |
-| Read Google Docs content | `docs_read` | ⚠️ Untested | Adults with `docs_read` | Low | Reads Google Docs (via Docs API) and Sheets (exported as CSV). Accepts file ID or Drive URL. Content truncated at 8000 chars. |
+| Draft email for review | `email_draft` | ✅ Verified | Adults with `email_send` | Medium | Creates Gmail drafts for review before sending. Commit `36b758f`. |
+| Search shared Drive docs | `docs_search` | ✅ Verified | Adults with `docs_read` | Low | Drive API tool. Searches personal Drive, "Shared with me", and Shared Drives. Uses per-user OAuth token. Commit `e7ec24e`. |
+| Read Google Docs content | `docs_read` | ✅ Verified | Adults with `docs_read` | Low | Reads Google Docs (via Docs API) and Sheets (exported as CSV). Accepts file ID or Drive URL. Commit `cea9d90`. |
 | Weekly family-doc sync | `scripts/sync-docs-to-gdoc.js` | ⚠️ Untested | Not rolled out | Low | Script works (doc was created successfully). Cron job status on EC2 unknown. Paused — v2 needs rethinking around purpose (originally: promote Iji capabilities to household without Lee having to talk about it). |
 | Generate operational documents | not built | ❌ Not built | Not rolled out | Medium | Packing lists, summaries, prep docs, reports |
 
@@ -201,24 +202,24 @@ Status legend: ✅ Verified / 🔧 Fix pending / ⚠️ Untested / ❌ Not built
 ## Suggested Build Order
 
 ### Wave A — Stabilize Operations & Reliability
-1. Secret synchronization hygiene (gitignored server secrets/process hardening).
-2. Daily health checks operationalization (cron + alert validation + runbook).
+1. ~~Secret synchronization hygiene (gitignored server secrets/process hardening).~~ ✅ Done.
+2. ~~Daily health checks operationalization (cron + alert validation + runbook).~~ ✅ Done.
 3. Run AMI recovery drill from `ami-0650bb542852313f9` and document timings.
 4. Finish layered context phase 3 (token measurement by layer).
 
 ### Wave B — Scheduling & Logistics Depth
-5. Morning briefing opt-in/out controls (config + UX).
+5. ~~Morning briefing opt-in/out controls (config + UX).~~ ✅ Done.
 6. Morning briefing + Trello task integration.
 7. Household conflict detection and multi-person scheduling negotiation.
 8. ~~Task delegation workflow (`task_create`, `task_query`, `task_update`).~~ ✅ Shipped.
 
 ### Wave C — Communication Engine Expansion
-9. Gmail `email_draft` + OAuth rollout to adults. (`email_send` shipped.)
+9. ~~Gmail `email_draft` + OAuth rollout to adults. (`email_send` shipped.)~~ ✅ Done.
 10. Slack channel adapter. (SMS deployed, awaiting Twilio verification.)
-11. Drive tools (`docs_search`, `docs_read`) and document generation flows.
+11. ~~Drive tools (`docs_search`, `docs_read`) and document generation flows.~~ ✅ Done.
 
 ### Wave D — Sphere Build-Out
-12. Property & Home tool expansion (`ha_history`, `ha_scene`, `ha_notify`) and presence productization.
+12. ~~Property & Home tool expansion (`ha_history`, `ha_scene`, `ha_notify`)~~ ✅ Done. Presence productization still pending.
 13. Meals & Kitchen stack (`meals_recipes`, `meals_menu`, `meals_feedback`) + chef workflow.
 14. Procurement & Errands stack (`safeway_list`, `safeway_skip`, `safeway_order`).
 15. Property maintenance + vehicles foundations (`maintenance_log`, vendor contacts, vehicle workflows).
