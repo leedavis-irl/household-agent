@@ -41,6 +41,7 @@ import * as docsSearch from './docs-search.js';
 import * as docsRead from './docs-read.js';
 import * as slackSearch from './slack-search.js';
 import * as educationUpload from './education-upload.js';
+import * as generateDocument from './generate-document.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -88,6 +89,7 @@ const tools = {
   docs_search: docsSearch,
   docs_read: docsRead,
   slack_search: slackSearch,
+  generate_document: generateDocument,
 };
 
 export function getToolDefinitions() {
