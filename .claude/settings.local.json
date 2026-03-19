@@ -35,7 +35,17 @@
       "Bash(./scripts/gh-update-card.sh \"Search shared Drive docs\" \"Backlog\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d,indent=2\\)\\)\")",
       "Bash(gh api graphql -f 'query=:*)",
-      "Bash(python3 -c \"import json,sys; [print\\(f''''{f[\"\"name\"\"]}: {f[\"\"id\"\"]} \\({f.get\\(\"\"type\"\",\"\"?\"\"\\)}\\)''''\\) for f in json.load\\(sys.stdin\\).get\\(''''fields'''',[]\\)]\")"
+      "Bash(python3 -c \"import json,sys; [print\\(f''''{f[\"\"name\"\"]}: {f[\"\"id\"\"]} \\({f.get\\(\"\"type\"\",\"\"?\"\"\\)}\\)''''\\) for f in json.load\\(sys.stdin\\).get\\(''''fields'''',[]\\)]\")",
+      "Bash(python3 -c \"import json,sys; [print\\(f''''{f[\"\"name\"\"]}: {f[\"\"type\"\"]}''''\\) for f in json.load\\(sys.stdin\\)[''''data''''][''''__type''''][''''inputFields'''']]\")",
+      "Bash(python3 -c \":*)",
+      "Bash(./scripts/gh-update-card.sh \"Morning briefing opt-in/out\" \"Done\")",
+      "Bash(./scripts/gh-update-card.sh \"Fix morning briefing: showing \"\"now events today\"\" when there are, in fact, events\" \"Done\")",
+      "Bash(xargs -I{} basename {} .js)",
+      "Bash(python3 -c \"import json,sys; print\\(len\\(json.load\\(sys.stdin\\).get\\(''''items'''',[]\\)\\)\\)\")",
+      "Bash(./scripts/gh-update-card.sh \"Routine, medical & homework tracking\" \"Specd\")",
+      "Bash(./scripts/gh-update-card.sh \"Email draft\" \"Done\")",
+      "Bash(./scripts/gh-update-card.sh \"Education tools — test & verify\" \"Done\")",
+      "Bash(./scripts/gh-update-card.sh \"Health Check Cron\" \"Done\" 2>&1)"
     ]
   }
 }
