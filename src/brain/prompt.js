@@ -27,6 +27,7 @@ const capabilityFiles = {
   docs: 'docs.md',
   slack: 'slack.md',
   parenting: 'parenting.md',
+  feedback: 'feedback.md',
 };
 
 const CAPABILITY_TRIGGERS = {
@@ -44,6 +45,7 @@ const CAPABILITY_TRIGGERS = {
   'web-search': /\b(search|google|look up|look it up|find out|what is|who is|latest|news|current|hours|open|price|cost of|how much|website|online|recent|today's|is .* open)\b/i,
   docs: /\b(google doc|google sheet|drive|gdoc|spreadsheet|document|docs\.google|drive\.google|shared doc|shared sheet|shared document)\b/i,
   slack: /\b(slack|channel|#[a-z]|posted in|said in slack|slack message|slack thread|search slack)\b/i,
+  feedback: /\b(suggest|suggestion|recommend|recommendation|restaurant|activity|activities|product|feedback|how was|how did|terrible|awful|great|loved|hated|avoid|star|rating|rate|didn't like|loved it|worst|best)\b/i,
 };
 
 const ALWAYS_ON_CAPABILITIES = ['parenting'];

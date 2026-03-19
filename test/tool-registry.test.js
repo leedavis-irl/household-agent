@@ -68,6 +68,7 @@ describe('tool registry integrity', () => {
       'generate_document',
       'ambient_automation',
       'anomaly_query',
+      'feedback_log',
     ];
     for (const name of expected) {
       expect(names.has(name), `missing tool: ${name}`).toBe(true);
@@ -97,6 +98,7 @@ describe('tool modules have execute functions', () => {
     'generate-document',
     'ambient-automation',
     'anomaly-query',
+    'feedback-log',
   ];
 
   for (const file of toolFiles) {
