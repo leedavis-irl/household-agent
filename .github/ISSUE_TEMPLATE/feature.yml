@@ -1,0 +1,90 @@
+name: Feature
+description: Propose a new feature
+labels: ["feature"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Feature Request"
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this solve? Why does it matter?
+      placeholder: "Users currently have to ... which causes ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: user-story
+    attributes:
+      label: User Story
+      description: Who benefits and how?
+      placeholder: "As [who], I want [what], so that [why]"
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Testable conditions that define "done". Be specific — agents use these to know when to stop.
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+    validations:
+      required: true
+
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Out of Scope
+      description: What this feature explicitly does NOT include. Prevents scope creep.
+      placeholder: "This does NOT include ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: testing-strategy
+    attributes:
+      label: Testing Strategy
+      description: How should this be verified?
+      placeholder: |
+        - [ ] Unit tests for ...
+        - [ ] Integration test for ...
+        - [ ] Manual verification of ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: security
+    attributes:
+      label: Security Considerations
+      description: Auth, PII, data access, API keys, etc. Write "N/A" if not applicable.
+    validations:
+      required: false
+
+  - type: textarea
+    id: deploy-notes
+    attributes:
+      label: Deploy / Migration Notes
+      description: DB changes, env vars, feature flags, breaking changes, etc. Write "N/A" if not applicable.
+    validations:
+      required: false
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: What blocks this? What could this break? Other issues that must be done first?
+    validations:
+      required: false
+
+  - type: textarea
+    id: observability
+    attributes:
+      label: Observability
+      description: Logs, metrics, or alerts to add. Write "N/A" if not applicable.
+    validations:
+      required: false
