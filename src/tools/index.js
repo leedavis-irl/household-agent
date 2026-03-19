@@ -46,6 +46,7 @@ import * as ambientAutomation from './ambient-automation.js';
 import * as anomalyQuery from './anomaly-query.js';
 import * as feedbackLog from './feedback-log.js';
 import * as decisionLog from './decision-log.js';
+import * as findmyLocate from './findmy-locate.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -98,6 +99,7 @@ const tools = {
   anomaly_query: anomalyQuery,
   feedback_log: feedbackLog,
   decision_log: decisionLog,
+  findmy_locate: findmyLocate,
 };
 
 export function getToolDefinitions() {

@@ -50,6 +50,7 @@ const TOOL_PERMISSIONS = {
   docs_read: ['docs_read', 'docs_all'],
   slack_search: ['slack_search'],
   ambient_automation: ['ha_all', 'ha_common'],
+  findmy_locate: ['ha_all', 'ha_office', 'ha_common'],
 };
 
 export function checkPermission(personPermissions, toolName) {

@@ -70,6 +70,7 @@ describe('tool registry integrity', () => {
       'anomaly_query',
       'feedback_log',
       'decision_log',
+      'findmy_locate',
     ];
     for (const name of expected) {
       expect(names.has(name), `missing tool: ${name}`).toBe(true);
@@ -101,6 +102,7 @@ describe('tool modules have execute functions', () => {
     'anomaly-query',
     'feedback-log',
     'decision-log',
+    'findmy-locate',
   ];
 
   for (const file of toolFiles) {

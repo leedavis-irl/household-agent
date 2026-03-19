@@ -133,6 +133,20 @@ describe('checkPermission', () => {
     expect(result.reason).toMatch(/Permission denied/);
   });
 
+  it('allows findmy_locate with ha_all', () => {
+    expect(checkPermission(['ha_all'], 'findmy_locate').allowed).toBe(true);
+  });
+
+  it('allows findmy_locate with ha_common', () => {
+    expect(checkPermission(['ha_common'], 'findmy_locate').allowed).toBe(true);
+  });
+
+  it('denies findmy_locate without ha permissions', () => {
+    const result = checkPermission(['financial', 'email_own'], 'findmy_locate');
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/Permission denied/);
+  });
+
   it('child permissions grant limited access', () => {
     const childPerms = ['ha_common', 'knowledge_read', 'reminders', 'tasks'];
 
