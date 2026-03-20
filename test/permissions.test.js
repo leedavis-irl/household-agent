@@ -147,8 +147,23 @@ describe('checkPermission', () => {
     expect(result.reason).toMatch(/Permission denied/);
   });
 
+  it('allows routine_query with routine_query permission', () => {
+    expect(checkPermission(['routine_query'], 'routine_query').allowed).toBe(true);
+  });
+
+  it('denies routine_query without routine_query permission', () => {
+    const result = checkPermission(['ha_common', 'knowledge_read'], 'routine_query');
+    expect(result.allowed).toBe(false);
+    expect(result.reason).toMatch(/Permission denied/);
+  });
+
+  it('child with routine_query permission can access routine_query', () => {
+    const childPerms = ['ha_common', 'knowledge_read', 'reminders', 'tasks', 'routine_query'];
+    expect(checkPermission(childPerms, 'routine_query').allowed).toBe(true);
+  });
+
   it('child permissions grant limited access', () => {
-    const childPerms = ['ha_common', 'knowledge_read', 'reminders', 'tasks'];
+    const childPerms = ['ha_common', 'knowledge_read', 'reminders', 'tasks', 'routine_query'];
 
     // Child can do
     expect(checkPermission(childPerms, 'ha_query').allowed).toBe(true);
@@ -156,6 +171,7 @@ describe('checkPermission', () => {
     expect(checkPermission(childPerms, 'reminder_set').allowed).toBe(true);
     expect(checkPermission(childPerms, 'task_create').allowed).toBe(true);
     expect(checkPermission(childPerms, 'weather_query').allowed).toBe(true);
+    expect(checkPermission(childPerms, 'routine_query').allowed).toBe(true);
 
     // Child cannot do
     expect(checkPermission(childPerms, 'knowledge_store').allowed).toBe(false);

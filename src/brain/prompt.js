@@ -28,6 +28,7 @@ const capabilityFiles = {
   slack: 'slack.md',
   parenting: 'parenting.md',
   feedback: 'feedback.md',
+  routines: 'routines.md',
 };
 
 const CAPABILITY_TRIGGERS = {
@@ -46,6 +47,7 @@ const CAPABILITY_TRIGGERS = {
   docs: /\b(google doc|google sheet|drive|gdoc|spreadsheet|document|docs\.google|drive\.google|shared doc|shared sheet|shared document)\b/i,
   slack: /\b(slack|channel|#[a-z]|posted in|said in slack|slack message|slack thread|search slack)\b/i,
   feedback: /\b(suggest|suggestion|recommend|recommendation|restaurant|activity|activities|product|feedback|how was|how did|terrible|awful|great|loved|hated|avoid|star|rating|rate|didn't like|loved it|worst|best)\b/i,
+  routines: /\b(routine|routines|chore|chores|teeth|laundry|plates|pills|morning routine|evening routine|bedtime routine|did .* brush|brush.*teeth)\b/i,
 };
 
 const ALWAYS_ON_CAPABILITIES = ['parenting'];

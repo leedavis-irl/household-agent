@@ -48,6 +48,7 @@ import * as feedbackLog from './feedback-log.js';
 import * as decisionLog from './decision-log.js';
 import * as findmyLocate from './findmy-locate.js';
 import * as haAutomationAuthor from './ha-automation-author.js';
+import * as routineQuery from './routine-query.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -102,6 +103,7 @@ const tools = {
   decision_log: decisionLog,
   findmy_locate: findmyLocate,
   ha_automation_author: haAutomationAuthor,
+  routine_query: routineQuery,
 };
 
 export function getToolDefinitions() {
