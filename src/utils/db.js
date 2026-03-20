@@ -257,6 +257,23 @@ const MIGRATIONS = [
       db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_category ON tasks(category)`);
     },
   },
+  {
+    version: 7,
+    description: 'Add escalation_patterns table for learnable escalation boundaries',
+    up(db) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS escalation_patterns (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          pattern TEXT NOT NULL,
+          category TEXT NOT NULL,
+          reason TEXT NOT NULL,
+          created_by TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+      `);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_escalation_patterns_category ON escalation_patterns(category)`);
+    },
+  },
 ];
 
 function migrate(db) {

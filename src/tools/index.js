@@ -52,6 +52,7 @@ import * as routineQuery from './routine-query.js';
 import * as dailyOpsCheck from './daily-ops-check.js';
 import * as vendorQuery from './vendor-query.js';
 import * as vendorStore from './vendor-store.js';
+import * as escalationLog from './escalation-log.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -110,6 +111,7 @@ const tools = {
   daily_ops_check: dailyOpsCheck,
   vendor_query: vendorQuery,
   vendor_store: vendorStore,
+  escalation_log: escalationLog,
 };
 
 export function getToolDefinitions() {

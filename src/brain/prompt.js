@@ -102,6 +102,26 @@ function formatPacific(isoTs) {
   }).format(new Date(isoTs));
 }
 
+function getEscalationContext() {
+  try {
+    const db = getDb();
+    const rows = db
+      .prepare(
+        'SELECT id, pattern, category, reason FROM escalation_patterns ORDER BY category, created_at'
+      )
+      .all();
+
+    if (!rows.length) return '';
+
+    const lines = rows.map((r) => `- **${r.category}** (ID ${r.id}): ${r.pattern} — ${r.reason}`);
+
+    return `\n\n## Escalation Rules\n\nBefore attempting the following topics, defer to Lee rather than guessing or making up an answer. When a message falls under one of these categories, briefly acknowledge you can't help with that topic and say what they should do instead (per the rule below).\n\n${lines.join('\n')}`;
+  } catch (err) {
+    log.warn('Failed to load escalation context', { error: err.message });
+    return '';
+  }
+}
+
 function getFiredReminderContext(personId) {
   if (!personId) return '';
   try {
@@ -162,6 +182,7 @@ export function buildSystemPrompt({ person, user_message, person_id }) {
   const groupBehavior = person.isGroup ? GROUP_BEHAVIOR : DM_BEHAVIOR;
   const permissionsDesc = getPermissionDescriptions(person.permissions);
   const firedReminderContext = getFiredReminderContext(person_id);
+  const escalationContext = getEscalationContext();
 
   // Track per-layer character counts for Phase 3 token measurement
   const contextText = [now, person.display_name, person.role, permissionsDesc, groupBehavior]
@@ -172,6 +193,7 @@ export function buildSystemPrompt({ person, user_message, person_id }) {
     { name: 'capability_guidelines', chars: capabilityGuidelines.length },
     { name: 'context', chars: contextText.length },
     { name: 'reminders', chars: firedReminderContext.length },
+    { name: 'escalation', chars: escalationContext.length },
   ];
 
   const prompt = coreTemplate
@@ -182,7 +204,8 @@ export function buildSystemPrompt({ person, user_message, person_id }) {
     .replace('{{person_role}}', person.role)
     .replace('{{permissions_description}}', permissionsDesc)
     .replace('{{group_behavior}}', groupBehavior)
-    + firedReminderContext;
+    + firedReminderContext
+    + escalationContext;
 
   return { prompt, layers, capabilitiesLoaded: loadedCapabilities };
 }

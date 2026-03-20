@@ -41,7 +41,7 @@ describe('schema version tracking', () => {
     const expected = [
       'knowledge', 'signal_groups', 'claude_usage', 'reminders',
       'conversation_evals', 'feature_requests', 'tasks', 'schema_versions',
-      'briefing_preferences', 'decisions', 'vendors',
+      'briefing_preferences', 'decisions', 'vendors', 'escalation_patterns',
     ];
     for (const t of expected) {
       expect(tables, `missing table: ${t}`).toContain(t);
@@ -90,6 +90,25 @@ describe('schema version tracking', () => {
     const db = getDb();
     const cols = db.prepare('PRAGMA table_info(tasks)').all().map((c) => c.name);
     expect(cols).toContain('category');
+  });
+
+  it('migration v7 (escalation_patterns table) is recorded in schema_versions', () => {
+    const db = getDb();
+    const row = db.prepare('SELECT * FROM schema_versions WHERE version = 7').get();
+    expect(row).toBeDefined();
+    expect(row.description).toMatch(/escalation/i);
+    expect(row.applied_at).toBeTruthy();
+  });
+
+  it('escalation_patterns table has correct columns', () => {
+    const db = getDb();
+    const cols = db.prepare('PRAGMA table_info(escalation_patterns)').all().map((c) => c.name);
+    expect(cols).toContain('id');
+    expect(cols).toContain('pattern');
+    expect(cols).toContain('category');
+    expect(cols).toContain('reason');
+    expect(cols).toContain('created_by');
+    expect(cols).toContain('created_at');
   });
 
   it('vendors table has correct columns', () => {
