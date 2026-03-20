@@ -49,6 +49,7 @@ import * as decisionLog from './decision-log.js';
 import * as findmyLocate from './findmy-locate.js';
 import * as haAutomationAuthor from './ha-automation-author.js';
 import * as routineQuery from './routine-query.js';
+import * as dailyOpsCheck from './daily-ops-check.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -104,6 +105,7 @@ const tools = {
   findmy_locate: findmyLocate,
   ha_automation_author: haAutomationAuthor,
   routine_query: routineQuery,
+  daily_ops_check: dailyOpsCheck,
 };
 
 export function getToolDefinitions() {

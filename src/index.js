@@ -57,5 +57,8 @@ startAnomalyDetector();
 const { startKnowledgeExpiryScheduler } = await import('./scheduler/knowledge-expiry.js');
 startKnowledgeExpiryScheduler();
 
+const { startDailyOps } = await import('./utils/daily-ops.js');
+startDailyOps();
+
 const { startHealthServer } = await import('./health.js');
 startHealthServer();
