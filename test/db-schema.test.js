@@ -42,6 +42,7 @@ describe('schema version tracking', () => {
       'knowledge', 'signal_groups', 'claude_usage', 'reminders',
       'conversation_evals', 'feature_requests', 'tasks', 'schema_versions',
       'briefing_preferences', 'decisions', 'vendors', 'escalation_patterns',
+      'child_routines', 'child_tracking',
     ];
     for (const t of expected) {
       expect(tables, `missing table: ${t}`).toContain(t);
@@ -109,6 +110,53 @@ describe('schema version tracking', () => {
     expect(cols).toContain('reason');
     expect(cols).toContain('created_by');
     expect(cols).toContain('created_at');
+  });
+
+  it('migration v8 (child_routines table) is recorded in schema_versions', () => {
+    const db = getDb();
+    const row = db.prepare('SELECT * FROM schema_versions WHERE version = 8').get();
+    expect(row).toBeDefined();
+    expect(row.description).toMatch(/child_routines/i);
+    expect(row.applied_at).toBeTruthy();
+  });
+
+  it('child_routines table has correct columns', () => {
+    const db = getDb();
+    const cols = db.prepare('PRAGMA table_info(child_routines)').all().map((c) => c.name);
+    expect(cols).toContain('id');
+    expect(cols).toContain('child_id');
+    expect(cols).toContain('item');
+    expect(cols).toContain('period');
+    expect(cols).toContain('date');
+    expect(cols).toContain('completed');
+    expect(cols).toContain('completed_at');
+    expect(cols).toContain('completed_by');
+    expect(cols).toContain('notes');
+    expect(cols).toContain('created_at');
+  });
+
+  it('migration v9 (child_tracking table) is recorded in schema_versions', () => {
+    const db = getDb();
+    const row = db.prepare('SELECT * FROM schema_versions WHERE version = 9').get();
+    expect(row).toBeDefined();
+    expect(row.description).toMatch(/child_tracking/i);
+    expect(row.applied_at).toBeTruthy();
+  });
+
+  it('child_tracking table has correct columns', () => {
+    const db = getDb();
+    const cols = db.prepare('PRAGMA table_info(child_tracking)').all().map((c) => c.name);
+    expect(cols).toContain('id');
+    expect(cols).toContain('child_id');
+    expect(cols).toContain('category');
+    expect(cols).toContain('title');
+    expect(cols).toContain('description');
+    expect(cols).toContain('due_at');
+    expect(cols).toContain('status');
+    expect(cols).toContain('reminder_id');
+    expect(cols).toContain('created_by');
+    expect(cols).toContain('created_at');
+    expect(cols).toContain('completed_at');
   });
 
   it('vendors table has correct columns', () => {

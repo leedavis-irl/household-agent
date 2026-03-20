@@ -274,6 +274,53 @@ const MIGRATIONS = [
       db.exec(`CREATE INDEX IF NOT EXISTS idx_escalation_patterns_category ON escalation_patterns(category)`);
     },
   },
+  {
+    version: 8,
+    description: 'Add child_routines table for AM/PM routine checklists with daily tracking',
+    up(db) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS child_routines (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          child_id TEXT NOT NULL,
+          item TEXT NOT NULL,
+          period TEXT NOT NULL DEFAULT 'morning',
+          date TEXT NOT NULL,
+          completed INTEGER NOT NULL DEFAULT 0,
+          completed_at TEXT,
+          completed_by TEXT,
+          notes TEXT,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          UNIQUE(child_id, item, period, date)
+        )
+      `);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_child_routines_child_date ON child_routines(child_id, date)`);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_child_routines_date ON child_routines(date)`);
+    },
+  },
+  {
+    version: 9,
+    description: 'Add child_tracking table for medical, permission slip, and homework entries',
+    up(db) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS child_tracking (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          child_id TEXT NOT NULL,
+          category TEXT NOT NULL,
+          title TEXT NOT NULL,
+          description TEXT,
+          due_at TEXT,
+          status TEXT NOT NULL DEFAULT 'pending',
+          reminder_id INTEGER,
+          created_by TEXT NOT NULL,
+          created_at TEXT NOT NULL DEFAULT (datetime('now')),
+          completed_at TEXT
+        )
+      `);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_child_tracking_child_status ON child_tracking(child_id, status)`);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_child_tracking_category ON child_tracking(category)`);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_child_tracking_due_at ON child_tracking(due_at)`);
+    },
+  },
 ];
 
 function migrate(db) {
