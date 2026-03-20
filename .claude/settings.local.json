@@ -45,7 +45,8 @@
       "Bash(./scripts/gh-update-card.sh \"Routine, medical & homework tracking\" \"Specd\")",
       "Bash(./scripts/gh-update-card.sh \"Email draft\" \"Done\")",
       "Bash(./scripts/gh-update-card.sh \"Education tools — test & verify\" \"Done\")",
-      "Bash(./scripts/gh-update-card.sh \"Health Check Cron\" \"Done\" 2>&1)"
+      "Bash(./scripts/gh-update-card.sh \"Health Check Cron\" \"Done\" 2>&1)",
+      "Bash(gh repo:*)"
     ]
   }
 }
