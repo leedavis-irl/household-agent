@@ -1,0 +1,84 @@
+name: Bug
+description: Report a bug or problem
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Bug Report"
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Brief description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Exact steps to trigger the bug.
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. Observe ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected Behavior
+      description: What should happen?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual Behavior
+      description: What actually happens? Include error messages, logs, screenshots if possible.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How bad is this?
+      options:
+        - Critical — system down or data loss
+        - High — major feature broken, no workaround
+        - Medium — feature broken, workaround exists
+        - Low — cosmetic or minor annoyance
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, browser, device, version, deploy target, etc.
+      placeholder: "e.g., EC2 Ubuntu 22.04, Python 3.11, Chrome 120"
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: How do we know the fix is correct?
+      placeholder: |
+        - [ ] Bug no longer reproduces following the steps above
+        - [ ] Regression test added
+    validations:
+      required: true
+
+  - type: textarea
+    id: root-cause
+    attributes:
+      label: Root Cause (if known)
+      description: Any initial analysis of why this is happening?
+    validations:
+      required: false
