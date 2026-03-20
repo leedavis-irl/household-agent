@@ -249,6 +249,14 @@ const MIGRATIONS = [
       db.exec(`CREATE INDEX IF NOT EXISTS idx_vendors_status ON vendors(status)`);
     },
   },
+  {
+    version: 6,
+    description: 'Add category column to tasks for grounds and other domain tagging',
+    up(db) {
+      ensureColumn(db, 'tasks', 'category', 'TEXT');
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_tasks_category ON tasks(category)`);
+    },
+  },
 ];
 
 function migrate(db) {

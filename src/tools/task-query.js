@@ -27,6 +27,10 @@ export const definition = {
         type: 'boolean',
         description: 'If true, only return tasks past their due date.',
       },
+      category: {
+        type: 'string',
+        description: "Filter by task category. Use 'grounds' to list landscaping and outdoor maintenance tasks.",
+      },
     },
   },
 };
@@ -98,8 +102,13 @@ export async function execute(input, envelope) {
       }
     }
 
+    if (input?.category) {
+      conditions.push('category = ?');
+      params.push(input.category.trim().toLowerCase());
+    }
+
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-    const sql = `SELECT id, title, description, creator_id, assignee_id, status, priority, due_at, created_at, completed_at
+    const sql = `SELECT id, title, description, creator_id, assignee_id, status, priority, due_at, created_at, completed_at, category
                  FROM tasks ${whereClause}
                  ORDER BY created_at DESC`;
 
@@ -119,6 +128,7 @@ export async function execute(input, envelope) {
       priority: r.priority,
       due_at_local: r.due_at ? formatPacific(r.due_at) : null,
       created_at_local: formatPacific(r.created_at),
+      category: r.category || null,
       is_overdue: r.due_at ? new Date(r.due_at) < now && ['open', 'in_progress'].includes(r.status) : false,
     }));
 

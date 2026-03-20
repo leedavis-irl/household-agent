@@ -78,6 +78,20 @@ describe('schema version tracking', () => {
     expect(row.applied_at).toBeTruthy();
   });
 
+  it('migration v6 (tasks.category column) is recorded in schema_versions', () => {
+    const db = getDb();
+    const row = db.prepare('SELECT * FROM schema_versions WHERE version = 6').get();
+    expect(row).toBeDefined();
+    expect(row.description).toMatch(/category/i);
+    expect(row.applied_at).toBeTruthy();
+  });
+
+  it('tasks table has category column after v6 migration', () => {
+    const db = getDb();
+    const cols = db.prepare('PRAGMA table_info(tasks)').all().map((c) => c.name);
+    expect(cols).toContain('category');
+  });
+
   it('vendors table has correct columns', () => {
     const db = getDb();
     const cols = db.prepare('PRAGMA table_info(vendors)').all().map((c) => c.name);

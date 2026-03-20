@@ -34,6 +34,11 @@ export const definition = {
         description:
           'Optional ISO datetime for when the task is due. Claude should resolve natural language relative to current Pacific time.',
       },
+      category: {
+        type: 'string',
+        description:
+          "Optional category for the task. Use 'grounds' for landscaping and outdoor maintenance tasks (mowing, irrigation, planting, tree trimming, etc.). Leave blank for general household tasks.",
+      },
     },
     required: ['title'],
   },
@@ -75,11 +80,13 @@ export async function execute(input, envelope) {
       dueAtIso = dueDate.toISOString();
     }
 
+    const category = (input?.category || '').trim().toLowerCase() || null;
+
     const db = getDb();
     const result = db.prepare(
-      `INSERT INTO tasks (title, description, creator_id, assignee_id, status, priority, due_at)
-       VALUES (?, ?, ?, ?, 'open', ?, ?)`
-    ).run(title, description, creatorId, assigneeId, priority, dueAtIso);
+      `INSERT INTO tasks (title, description, creator_id, assignee_id, status, priority, due_at, category)
+       VALUES (?, ?, ?, ?, 'open', ?, ?, ?)`
+    ).run(title, description, creatorId, assigneeId, priority, dueAtIso, category);
 
     const household = getHousehold();
     const assignee = household.members[assigneeId];
@@ -100,6 +107,7 @@ export async function execute(input, envelope) {
       assignee_id: assigneeId,
       priority,
       due_at_local: dueAtIso ? formatPacific(dueAtIso) : null,
+      category: category || null,
       status: 'open',
     };
   } catch (err) {

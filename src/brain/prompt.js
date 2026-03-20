@@ -29,6 +29,7 @@ const capabilityFiles = {
   parenting: 'parenting.md',
   feedback: 'feedback.md',
   routines: 'routines.md',
+  grounds: 'grounds.md',
 };
 
 const CAPABILITY_TRIGGERS = {
@@ -48,6 +49,7 @@ const CAPABILITY_TRIGGERS = {
   slack: /\b(slack|channel|#[a-z]|posted in|said in slack|slack message|slack thread|search slack)\b/i,
   feedback: /\b(suggest|suggestion|recommend|recommendation|restaurant|activity|activities|product|feedback|how was|how did|terrible|awful|great|loved|hated|avoid|star|rating|rate|didn't like|loved it|worst|best)\b/i,
   routines: /\b(routine|routines|chore|chores|teeth|laundry|plates|pills|morning routine|evening routine|bedtime routine|did .* brush|brush.*teeth)\b/i,
+  grounds: /\b(lawn|mow|mowing|grass|landscap|garden|tree|trim|trimm|prune|pruning|irrigation|sprinkler|plant|planting|weed|weeding|mulch|yard|outdoor|grounds|seasonal planting|fertiliz)\b/i,
 };
 
 const ALWAYS_ON_CAPABILITIES = ['parenting'];
