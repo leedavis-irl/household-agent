@@ -268,11 +268,50 @@ If after reviewing context nothing is truly urgent or actionable right now, resp
   return { hour, date: dateKey, results };
 }
 
+/**
+ * Returns ms until the next check should run:
+ * - During waking hours (7am–10pm Pacific): CHECK_INTERVAL_MS (30 min)
+ * - Outside waking hours: ms until next 7am Pacific
+ * Exported for testing.
+ */
+export function getNextRunDelayMs() {
+  const now = new Date();
+  const { hour } = pacificNowParts();
+  if (isWakingHours(hour)) {
+    return CHECK_INTERVAL_MS;
+  }
+  // Outside waking hours: compute ms until next WAKING_HOUR_START
+  const minuteParts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/Los_Angeles',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false,
+  }).formatToParts(now);
+  const currentHour = Number(minuteParts.find((p) => p.type === 'hour').value);
+  const currentMinute = Number(minuteParts.find((p) => p.type === 'minute').value);
+
+  let hoursUntil = WAKING_HOUR_START - currentHour;
+  if (hoursUntil <= 0) hoursUntil += 24;
+  const msUntil = (hoursUntil * 60 - currentMinute) * 60 * 1000;
+  return Math.max(msUntil, 60 * 1000); // minimum 1 minute
+}
+
+function scheduleNextRun() {
+  const delay = getNextRunDelayMs();
+  setTimeout(async () => {
+    await runDailyOpsCheck();
+    scheduleNextRun();
+  }, delay);
+}
+
 export function startDailyOps() {
   if (!DAILY_OPS_ENABLED) {
     log.info('Daily ops disabled (DAILY_OPS_ENABLED=false)');
     return;
   }
-  runDailyOpsCheck();
-  setInterval(runDailyOpsCheck, CHECK_INTERVAL_MS);
+  const { hour } = pacificNowParts();
+  if (isWakingHours(hour)) {
+    runDailyOpsCheck();
+  }
+  scheduleNextRun();
 }

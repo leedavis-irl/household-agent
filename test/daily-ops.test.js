@@ -3,6 +3,7 @@ import {
   isWakingHours,
   runDailyOpsCheck,
   getOverdueTasks,
+  getNextRunDelayMs,
   _resetState,
   getSentToday,
 } from '../src/utils/daily-ops.js';
@@ -121,14 +122,67 @@ describe('getOverdueTasks', () => {
 // --- runDailyOpsCheck ---
 
 describe('runDailyOpsCheck: waking hours guard', () => {
-  it('skips when called outside waking hours (via mocked pacificNow)', async () => {
-    // We can't easily mock the hour, so instead test via the exported isWakingHours
-    // and verify the function returns a skip result when hour is outside range.
-    // Test the logic directly: hours 0-6 and 22-23 should be skipped.
-    expect(isWakingHours(0)).toBe(false);
-    expect(isWakingHours(6)).toBe(false);
-    expect(isWakingHours(22)).toBe(false);
-    expect(isWakingHours(23)).toBe(false);
+  it('returns skipped:true and sends no messages at 3am Pacific', async () => {
+    const { think } = await import('../src/brain/index.js');
+    const { sendMessage } = await import('../src/broker/signal.js');
+
+    // March 2026 is PDT (UTC-7); 3am PDT = 10:00 UTC
+    vi.useFakeTimers({ now: new Date('2026-03-19T10:00:00Z') });
+
+    const result = await runDailyOpsCheck();
+
+    expect(result).toEqual({ skipped: true, reason: 'outside waking hours' });
+    expect(think).not.toHaveBeenCalled();
+    expect(sendMessage).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+
+  it('returns skipped:true and sends no messages at midnight Pacific', async () => {
+    const { think } = await import('../src/brain/index.js');
+    const { sendMessage } = await import('../src/broker/signal.js');
+
+    // Midnight PDT (UTC-7) = 07:00 UTC
+    vi.useFakeTimers({ now: new Date('2026-03-19T07:00:00Z') });
+
+    const result = await runDailyOpsCheck();
+
+    expect(result).toEqual({ skipped: true, reason: 'outside waking hours' });
+    expect(think).not.toHaveBeenCalled();
+    expect(sendMessage).not.toHaveBeenCalled();
+
+    vi.useRealTimers();
+  });
+});
+
+describe('getNextRunDelayMs: scheduler waking-hours awareness', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('returns CHECK_INTERVAL_MS (30 min) during waking hours', () => {
+    // 2pm PDT = 21:00 UTC
+    vi.useFakeTimers({ now: new Date('2026-03-19T21:00:00Z') });
+    const delay = getNextRunDelayMs();
+    expect(delay).toBe(30 * 60 * 1000);
+  });
+
+  it('returns more than 30 min when outside waking hours (schedules next morning)', () => {
+    // 3am PDT = 10:00 UTC
+    vi.useFakeTimers({ now: new Date('2026-03-19T10:00:00Z') });
+    const delay = getNextRunDelayMs();
+    // Should be ~4 hours (7am - 3am) worth of ms, definitely > 30 min
+    expect(delay).toBeGreaterThan(30 * 60 * 1000);
+    // And should be ≤ 24 hours (sanity upper bound)
+    expect(delay).toBeLessThanOrEqual(24 * 60 * 60 * 1000);
+  });
+
+  it('returns at least 1 minute even if scheduling is very close', () => {
+    // 10pm PDT sharp = just outside waking hours; 6:59am PDT = just before waking
+    // 6:59am PDT (UTC-7) = 13:59 UTC
+    vi.useFakeTimers({ now: new Date('2026-03-19T13:59:00Z') });
+    const delay = getNextRunDelayMs();
+    expect(delay).toBeGreaterThanOrEqual(60 * 1000);
   });
 });
 
