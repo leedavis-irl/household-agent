@@ -41,7 +41,7 @@ describe('schema version tracking', () => {
     const expected = [
       'knowledge', 'signal_groups', 'claude_usage', 'reminders',
       'conversation_evals', 'feature_requests', 'tasks', 'schema_versions',
-      'briefing_preferences', 'decisions',
+      'briefing_preferences', 'decisions', 'vendors',
     ];
     for (const t of expected) {
       expect(tables, `missing table: ${t}`).toContain(t);
@@ -68,5 +68,29 @@ describe('schema version tracking', () => {
     expect(row).toBeDefined();
     expect(row.description).toMatch(/decisions/i);
     expect(row.applied_at).toBeTruthy();
+  });
+
+  it('migration v5 (vendors table) is recorded in schema_versions', () => {
+    const db = getDb();
+    const row = db.prepare('SELECT * FROM schema_versions WHERE version = 5').get();
+    expect(row).toBeDefined();
+    expect(row.description).toMatch(/vendor/i);
+    expect(row.applied_at).toBeTruthy();
+  });
+
+  it('vendors table has correct columns', () => {
+    const db = getDb();
+    const cols = db.prepare('PRAGMA table_info(vendors)').all().map((c) => c.name);
+    expect(cols).toContain('id');
+    expect(cols).toContain('name');
+    expect(cols).toContain('trade');
+    expect(cols).toContain('phone');
+    expect(cols).toContain('email');
+    expect(cols).toContain('rating');
+    expect(cols).toContain('notes');
+    expect(cols).toContain('last_used');
+    expect(cols).toContain('status');
+    expect(cols).toContain('added_by');
+    expect(cols).toContain('added_at');
   });
 });
