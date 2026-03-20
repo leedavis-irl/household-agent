@@ -115,7 +115,11 @@ function getReadyCards() {
             pageInfo { hasNextPage endCursor }
             nodes {
               id
-              content { ... on DraftIssue { title } ... on Issue { title } ... on PullRequest { title } }
+              content {
+                ... on DraftIssue { title body }
+                ... on Issue { title body number labels(first: 10) { nodes { name } } }
+                ... on PullRequest { title body number }
+              }
               status: fieldValueByName(name: "Status") { ... on ProjectV2ItemFieldSingleSelectValue { name } }
               spec: fieldValueByName(name: "Spec") { ... on ProjectV2ItemFieldTextValue { text } }
             }
@@ -130,9 +134,18 @@ function getReadyCards() {
     for (const node of items.nodes) {
       const status = node.status?.name;
       if (status === 'Ready') {
+        const labels = node.content?.labels?.nodes?.map(l => l.name) || [];
+        let cardType = 'feature'; // default
+        if (labels.includes('bug')) cardType = 'bug';
+        else if (labels.includes('chore')) cardType = 'chore';
+
         cards.push({
           id: node.id,
           title: node.content?.title || '',
+          body: node.content?.body || '',
+          issueNumber: node.content?.number || null,
+          labels,
+          cardType,
           specPath: node.spec?.text || null,
         });
       }
@@ -228,18 +241,27 @@ function validateSpec(specPath) {
 
 // ── Invoke Claude Code ──
 
-function invokeClaudeCode(specPath, title, feedback = null) {
+function invokeClaudeCode(specContent, title, cardType, feedback = null) {
   return new Promise((resolve, reject) => {
-    const specContent = readFileSync(specPath, 'utf-8');
+    const typeLabel = cardType === 'bug' ? 'bug fix' : cardType === 'chore' ? 'chore' : 'feature';
     const parts = [
       `Read ARCHITECTURE.md and DEV-PROTOCOL.md for project context.`,
-      `Then read and execute the following queue spec: ${specPath}`,
       ``,
-      `The spec contents:`,
+      `You are implementing a ${typeLabel}: "${title}"`,
+      ``,
+      `The spec/description:`,
       specContent,
       ``,
-      `Build everything described in the spec. Follow existing patterns in the codebase.`,
-      `Run npm test when done. Commit your changes with the commit message from the spec.`,
+      `Build everything described above. Follow existing patterns in the codebase.`,
+      `You have full autonomy to complete this work. This includes:`,
+      `- Writing and modifying code files`,
+      `- Running shell commands (gh CLI, npm, scripts, etc.)`,
+      `- Configuring external systems via APIs (GitHub settings, branch protection, environments, etc.)`,
+      `- Running any setup or migration scripts you create`,
+      `- Installing dependencies if needed`,
+      ``,
+      `Do whatever is necessary to fully satisfy the acceptance criteria — not just commit code, but also run any commands needed to make the changes effective.`,
+      `Run npm test when done. Commit your changes with an appropriate commit message.`,
       `Do not pause for confirmations.`,
     ];
 
@@ -291,28 +313,36 @@ function invokeClaudeCode(specPath, title, feedback = null) {
 
 // ── Review the diff ──
 
-function reviewDiff(specPath, baselineSha) {
-  const spec = readFileSync(specPath, 'utf-8');
+function reviewDiff(specContent, cardType, baselineSha, agentOutput = '') {
+  // Extract acceptance criteria based on card type
+  let doneCriteria;
+  if (cardType === 'bug' || cardType === 'chore') {
+    const acMatch = specContent.match(/### Acceptance Criteria\n([\s\S]*?)(?=\n### |$)/);
+    doneCriteria = acMatch ? acMatch[1].trim() : 'No acceptance criteria found in issue body';
+  } else {
+    const doneMatch = specContent.match(/## Done when\n([\s\S]*?)(?=\n## |$)/);
+    doneCriteria = doneMatch ? doneMatch[1].trim() : 'No done-when criteria found';
+  }
 
-  // Extract "Done when" section
-  const doneMatch = spec.match(/## Done when\n([\s\S]*?)(?=\n## |$)/);
-  const doneCriteria = doneMatch ? doneMatch[1].trim() : 'No done-when criteria found';
-
-  // Diff from baseline (before CC started) to current HEAD — captures all commits CC made
-  let diff, commitLog, fileSummary;
+  // Gather all available evidence
+  let diff = '', commitLog = '', fileSummary = '';
   try {
     diff = execSync(`git diff ${baselineSha} HEAD`, { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 15000 });
     commitLog = execSync(`git log --oneline ${baselineSha}..HEAD`, { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 5000 }).trim();
     fileSummary = execSync(`git diff --stat ${baselineSha} HEAD`, { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 5000 }).trim();
   } catch {
-    return { passed: false, feedback: 'No new commits found after Claude Code ran.' };
+    // No git changes — that's fine, agent may have done non-git work
   }
 
-  if (!diff.trim()) {
-    return { passed: false, feedback: 'No changes were committed.' };
+  // Build the evidence summary
+  const hasCodeChanges = diff.trim().length > 0;
+  const hasAgentOutput = agentOutput && agentOutput.length > 50;
+
+  // If there is absolutely no evidence of any work, fail
+  if (!hasCodeChanges && !hasAgentOutput) {
+    return { passed: false, feedback: 'No evidence of work: no code changes and no agent output detected.' };
   }
 
-  // Use Anthropic API to evaluate
   const MAX_DIFF_CHARS = 15000;
   const truncated = diff.length > MAX_DIFF_CHARS;
   const reviewPrompt = JSON.stringify({
@@ -320,25 +350,35 @@ function reviewDiff(specPath, baselineSha) {
     max_tokens: 1024,
     messages: [{
       role: 'user',
-      content: `You are reviewing a code change. Evaluate whether the diff satisfies the done-when criteria.
+      content: `You are reviewing whether work done by an agent satisfies the acceptance criteria for a card. Your ONLY job is to determine whether the requirements were met. How the work was delivered (code commits, API calls, script execution, manual configuration) is irrelevant — only results matter.
 
-## Done-when criteria:
+## Acceptance criteria:
 ${doneCriteria}
 
-## Commits made:
-${commitLog}
+## Evidence of work:
 
-## Files changed (full list):
-${fileSummary}
+### Commits made:
+${commitLog || '(none)'}
 
-## Diff${truncated ? ` (truncated to ${MAX_DIFF_CHARS} chars — see file list above for full scope)` : ''}:
-${diff.slice(0, MAX_DIFF_CHARS)}
+### Files changed:
+${fileSummary || '(none)'}
+
+### Agent activity log (last 3000 chars):
+${(agentOutput || '(no output captured)').slice(-3000)}
+
+### Code diff${truncated ? ` (truncated to ${MAX_DIFF_CHARS} chars)` : ''}:
+${diff.slice(0, MAX_DIFF_CHARS) || '(no code changes)'}
+
+## Instructions:
+- PASS if the evidence shows the acceptance criteria have been satisfied
+- FAIL only if specific acceptance criteria are clearly NOT met
+- Do NOT fail because of how the work was done (no diff, API-side changes, script-based setup, etc.)
+- Do NOT fail because the diff is truncated — judge by available evidence
+- If criteria involve external configuration (GitHub settings, cloud services, etc.), the agent's activity log showing those commands ran successfully counts as evidence
 
 Respond with EXACTLY one of:
-- PASS: [one sentence explaining why it passes]
-- FAIL: [specific feedback on what's missing or wrong]
-
-IMPORTANT: If the file list shows the right files were created/modified and the visible portion of the diff shows substantive implementation code, do not fail just because the diff is truncated. Judge by the evidence available.`,
+- PASS: [one sentence explaining why]
+- FAIL: [which specific criteria are not met and why]`,
     }],
   });
 
@@ -378,6 +418,66 @@ function notifyLee(message) {
   }
 }
 
+// ── Branch helpers ──
+
+function slugify(title) {
+  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50);
+}
+
+function createBranch(title) {
+  const slug = slugify(title);
+  const branch = `agent/${slug}`;
+  // Ensure we're on latest main
+  execSync('git checkout main && git pull origin main', { cwd: REPO_ROOT, timeout: 30000 });
+  // Create and switch to branch (force-reset if it already exists from a prior attempt)
+  try {
+    execSync(`git checkout -B ${branch}`, { cwd: REPO_ROOT, timeout: 10000 });
+  } catch {
+    execSync(`git branch -D ${branch}`, { cwd: REPO_ROOT, timeout: 5000 });
+    execSync(`git checkout -b ${branch}`, { cwd: REPO_ROOT, timeout: 10000 });
+  }
+  log(`Created branch: ${branch}`);
+  return branch;
+}
+
+function pushBranchAndCreatePR(branch, title, specContent, cardType, issueNumber) {
+  execSync(`git push -u origin ${branch}`, { cwd: REPO_ROOT, timeout: 30000 });
+  log(`Pushed branch: ${branch}`);
+
+  // Check if PR already exists
+  const existingPR = execSync(
+    `gh pr list --repo leedavis-irl/household-agent --head ${branch} --json number --jq '.[0].number'`,
+    { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 15000 }
+  ).trim();
+
+  if (existingPR) {
+    log(`PR #${existingPR} already exists for ${branch}`);
+    return existingPR;
+  }
+
+  const typeLabel = cardType === 'bug' ? 'Bug fix' : cardType === 'chore' ? 'Chore' : 'Feature';
+  const closesLine = issueNumber ? `\n\nCloses #${issueNumber}` : '';
+  const prBody = `## ${typeLabel}: ${title}\n\nAutomated PR created by OpenClaw Watcher.${closesLine}\n\n---\n\n<details><summary>Spec/Description</summary>\n\n${specContent.slice(0, 5000)}\n\n</details>`;
+
+  const prUrl = execSync(
+    `gh pr create --repo leedavis-irl/household-agent --base main --head ${branch} --title "${title.replace(/"/g, '\\"')}" --body "${prBody.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"`,
+    { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 30000 }
+  ).trim();
+
+  const prNumber = prUrl.match(/\/(\d+)$/)?.[1] || prUrl;
+  log(`Created PR #${prNumber}`);
+  return prNumber;
+}
+
+function cleanupBranch(branch) {
+  try {
+    execSync('git checkout main', { cwd: REPO_ROOT, timeout: 10000 });
+  } catch {
+    // Already on main or detached — force it
+    execSync('git checkout -f main', { cwd: REPO_ROOT, timeout: 10000 });
+  }
+}
+
 // ── Main processing loop for a single card ──
 
 async function processCard(card) {
@@ -393,29 +493,51 @@ async function processCard(card) {
   log(`Processing: ${title}`);
   log(`${'='.repeat(60)}`);
 
-  try {
-    // Find the spec file
-    const specPath = findSpecFile(card);
-    if (!specPath) {
-      log(`No spec file found for: ${title}`);
-      setCardFeedback(id, `No spec file found. Add a queue/ spec file and set the Spec field, or name the file to match the card title.`);
-      processing.delete(id);
-      return;
-    }
-    log(`Spec: ${specPath}`);
+  let branch = null;
 
-    // Validate spec quality before wasting CC cycles
-    const validation = validateSpec(specPath);
-    if (!validation.valid) {
-      log(`Spec failed quality check:`);
-      for (const issue of validation.issues) log(`  ⚠ ${issue}`);
-      log(`Moving card back to Backlog — spec needs work before Ready`);
-      updateCardStatus(id, 'Backlog');
-      setCardFeedback(id, `Spec quality check failed: ${validation.issues.join('; ')}`);
-      notifyLee(`⚠️ ${title} — spec failed quality check and was moved back to Backlog. Issues: ${validation.issues.join('; ')}`);
-      processing.delete(id);
-      return;
+  try {
+    const { cardType, body } = card;
+    let specPath = null;
+    let specContent = null;
+
+    if (cardType === 'bug' || cardType === 'chore') {
+      // Bug/Chore: use the issue body as the spec
+      if (!body || body.trim().length < 20) {
+        log(`${cardType} card has insufficient description for: ${title}`);
+        setCardFeedback(id, `${cardType} card needs a detailed description to act as the spec. Fill in the issue body.`);
+        processing.delete(id);
+        return;
+      }
+      specContent = body;
+      log(`Using issue body as spec (${cardType})`);
+    } else {
+      // Feature: use the queue spec file
+      specPath = findSpecFile(card);
+      if (!specPath) {
+        log(`No spec file found for: ${title}`);
+        setCardFeedback(id, `No spec file found. Add a queue/ spec file and set the Spec field, or name the file to match the card title.`);
+        processing.delete(id);
+        return;
+      }
+      log(`Spec: ${specPath}`);
+      specContent = readFileSync(specPath, 'utf-8');
+
+      // Validate spec quality before wasting CC cycles (features only)
+      const validation = validateSpec(specPath);
+      if (!validation.valid) {
+        log(`Spec failed quality check:`);
+        for (const issue of validation.issues) log(`  ⚠ ${issue}`);
+        log(`Moving card back to Backlog — spec needs work before Ready`);
+        updateCardStatus(id, 'Backlog');
+        setCardFeedback(id, `Spec quality check failed: ${validation.issues.join('; ')}`);
+        notifyLee(`⚠️ ${title} — spec failed quality check and was moved back to Backlog. Issues: ${validation.issues.join('; ')}`);
+        processing.delete(id);
+        return;
+      }
     }
+
+    // Create a feature branch for this card
+    branch = createBranch(title);
 
     // Move to In Progress and clear any prior feedback
     updateCardStatus(id, 'In progress');
@@ -433,8 +555,9 @@ async function processCard(card) {
       const baselineSha = execSync('git rev-parse HEAD', { cwd: REPO_ROOT, encoding: 'utf-8', timeout: 5000 }).trim();
 
       // Invoke Claude Code
+      let ccOutput;
       try {
-        await invokeClaudeCode(specPath, title, lastFeedback);
+        ccOutput = await invokeClaudeCode(specContent, title, cardType, lastFeedback);
         log(`Claude Code completed`);
       } catch (err) {
         log(`Claude Code failed: ${err.message}`);
@@ -451,54 +574,47 @@ async function processCard(card) {
         continue;
       }
 
-      // Move to In Review
+      // Review the work against acceptance criteria
       updateCardStatus(id, 'In review');
       log(`Card → In review`);
 
-      // Review the diff — from baseline to current HEAD (all commits CC made)
-      const review = reviewDiff(specPath, baselineSha);
+      const review = reviewDiff(specContent, cardType, baselineSha, ccOutput?.stdout);
       log(`Review: ${review.feedback}`);
 
       if (review.passed) {
-        // Push changes
-        try {
-          execSync('git push origin main', { cwd: REPO_ROOT, timeout: 30000 });
-          log(`Pushed to origin/main`);
-        } catch (err) {
-          log(`Push failed: ${err.message}`);
-        }
+        // Push branch and create PR
+        const prNumber = pushBranchAndCreatePR(branch, title, specContent, cardType, card.issueNumber);
 
-        // Delete the queue file
-        try {
-          if (existsSync(specPath)) {
-            unlinkSync(specPath);
-            execSync(`git add -A && git commit -m "chore: remove completed queue spec ${title}"`, {
-              cwd: REPO_ROOT,
-              timeout: 10000,
-            });
-            execSync('git push origin main', { cwd: REPO_ROOT, timeout: 30000 });
+        // Delete the queue file on the branch (features only)
+        if (specPath) {
+          try {
+            if (existsSync(specPath)) {
+              unlinkSync(specPath);
+              execSync(`git add -A && git commit -m "chore: remove completed queue spec ${title}"`, {
+                cwd: REPO_ROOT,
+                timeout: 10000,
+              });
+              execSync(`git push origin ${branch}`, { cwd: REPO_ROOT, timeout: 30000 });
+            }
+          } catch {
+            // Non-fatal
           }
-        } catch {
-          // Non-fatal
         }
 
-        // Move to Done
-        updateCardStatus(id, 'Done');
-        log(`Card → Done ✓`);
-
-        const commitMsg = execSync('git log -1 --format=%s', {
-          cwd: REPO_ROOT,
-          encoding: 'utf-8',
-          timeout: 5000,
-        }).trim();
-
-        notifyLee(`✅ ${title} is done — ${commitMsg}`);
+        // Card stays In Review — waiting for human PR approval + merge
+        setCardFeedback(id, `PR #${prNumber} created and ready for review.`);
+        log(`Card stays In Review — PR #${prNumber} awaits approval`);
+        notifyLee(`📋 ${title} — PR #${prNumber} ready for review`);
         break;
       } else {
         // Failed review — retry if attempts remain
         lastFeedback = review.feedback;
         if (attempt >= MAX_REVIEW_ATTEMPTS) {
           log(`Max attempts reached — moving back to Ready and escalating to Lee`);
+          // Still push what we have so Lee can see the attempt
+          try {
+            execSync(`git push -u origin ${branch}`, { cwd: REPO_ROOT, timeout: 30000 });
+          } catch { /* non-fatal */ }
           updateCardStatus(id, 'Ready');
           setCardFeedback(id, `Review failed after ${attempt} attempts. ${review.feedback}`);
           failed.set(id, { title, feedback: review.feedback, timestamp: new Date().toISOString() });
@@ -513,6 +629,7 @@ async function processCard(card) {
     log(`Error processing ${title}: ${err.message}`);
     notifyLee(`❌ ${title} — error: ${err.message.slice(0, 200)}`);
   } finally {
+    if (branch) cleanupBranch(branch);
     processing.delete(id);
   }
 }
