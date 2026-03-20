@@ -1,0 +1,50 @@
+name: Chore
+description: Maintenance, refactoring, or housekeeping task
+labels: ["chore"]
+body:
+  - type: markdown
+    attributes:
+      value: "## Chore"
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What needs to be done and why?
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Why is this worth doing now? What's the cost of not doing it?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Testable conditions that define "done".
+      placeholder: |
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks / Side Effects
+      description: Could this break anything? Any backwards compatibility concerns?
+    validations:
+      required: false
+
+  - type: textarea
+    id: testing-strategy
+    attributes:
+      label: Testing Strategy
+      description: How should this be verified?
+    validations:
+      required: false
