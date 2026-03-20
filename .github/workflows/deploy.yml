@@ -16,6 +16,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -75,4 +76,3 @@ jobs:
         if: failure() && steps.rollback.outputs.sha != 'none' && steps.rollback.outputs.sha != ''
         run: |
           ssh -i ~/.ssh/deploy_key "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "set -e; cd ${{ env.DEPLOY_DIR }}; cp -f config/household.json /tmp/household.json.bak 2>/dev/null || true; git reset --hard ${{ steps.rollback.outputs.sha }}; cp -f /tmp/household.json.bak config/household.json 2>/dev/null || true; npm ci; sudo systemctl stop iji.service || true; sleep 15; sudo systemctl start iji.service"
-

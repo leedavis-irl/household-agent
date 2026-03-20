@@ -1,0 +1,14 @@
+# CODEOWNERS — Lee must approve changes to sensitive paths before merge.
+# See: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Brain logic — core reasoning, conversation state, prompts
+/src/brain/ @leedavis-irl
+
+# Household config — identity, permissions, household members
+/config/household.json @leedavis-irl
+
+# CI/CD workflows — changes here affect the deploy pipeline
+/.github/workflows/ @leedavis-irl
+
+# Specs — architecture decisions and feature specs
+/specs/ @leedavis-irl
