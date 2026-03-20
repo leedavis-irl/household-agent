@@ -52,6 +52,8 @@ const TOOL_PERMISSIONS = {
   ambient_automation: ['ha_all', 'ha_common'],
   findmy_locate: ['ha_all', 'ha_office', 'ha_common'],
   routine_query: ['routine_query'],
+  vendor_query: ['vendor_directory'],
+  vendor_store: ['vendor_directory'],
 };
 
 export function checkPermission(personPermissions, toolName) {

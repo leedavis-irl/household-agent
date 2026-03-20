@@ -50,6 +50,8 @@ import * as findmyLocate from './findmy-locate.js';
 import * as haAutomationAuthor from './ha-automation-author.js';
 import * as routineQuery from './routine-query.js';
 import * as dailyOpsCheck from './daily-ops-check.js';
+import * as vendorQuery from './vendor-query.js';
+import * as vendorStore from './vendor-store.js';
 import { checkPermission } from '../utils/permissions.js';
 import log from '../utils/logger.js';
 
@@ -106,6 +108,8 @@ const tools = {
   ha_automation_author: haAutomationAuthor,
   routine_query: routineQuery,
   daily_ops_check: dailyOpsCheck,
+  vendor_query: vendorQuery,
+  vendor_store: vendorStore,
 };
 
 export function getToolDefinitions() {

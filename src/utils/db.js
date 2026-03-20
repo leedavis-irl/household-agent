@@ -226,6 +226,29 @@ const MIGRATIONS = [
       db.exec(`CREATE INDEX IF NOT EXISTS idx_decisions_decided_at ON decisions(decided_at)`);
     },
   },
+  {
+    version: 5,
+    description: 'Add vendors table for contractor/vendor contact directory',
+    up(db) {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS vendors (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          trade TEXT NOT NULL,
+          phone TEXT,
+          email TEXT,
+          rating REAL,
+          notes TEXT,
+          last_used TEXT,
+          status TEXT NOT NULL DEFAULT 'active',
+          added_by TEXT,
+          added_at TEXT NOT NULL DEFAULT (datetime('now'))
+        )
+      `);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_vendors_trade ON vendors(trade)`);
+      db.exec(`CREATE INDEX IF NOT EXISTS idx_vendors_status ON vendors(status)`);
+    },
+  },
 ];
 
 function migrate(db) {
