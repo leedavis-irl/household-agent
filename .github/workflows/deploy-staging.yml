@@ -1,0 +1,56 @@
+# Deploy to staging on every PR push — no approval required.
+# Gives the team a live preview of the change before it hits production.
+# Staging deploys to the same EC2 instance but does NOT restart the production service.
+name: Deploy to Staging
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+env:
+  DEPLOY_HOST: "${{ secrets.DEPLOY_HOST }}"
+  DEPLOY_USER: "ubuntu"
+  DEPLOY_DIR: "/home/ubuntu/household-agent-staging"
+
+jobs:
+  deploy-staging:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
+      - name: Deploy to staging directory
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new \
+            "${{ env.DEPLOY_USER }}@${{ env.DEPLOY_HOST }}" "
+            set -e
+            # Create staging dir if it doesn't exist
+            if [ ! -d ${{ env.DEPLOY_DIR }} ]; then
+              git clone https://github.com/leedavis-irl/household-agent.git ${{ env.DEPLOY_DIR }}
+            fi
+            cd ${{ env.DEPLOY_DIR }}
+            git fetch origin
+            git checkout ${{ github.head_ref }}
+            git reset --hard origin/${{ github.head_ref }}
+            npm ci --omit=dev
+            echo 'Staging deploy complete: ${{ github.head_ref }} @ ${{ github.sha }}'
+          "
+
+      - name: Post staging URL to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `**Staging deploy complete** ✓\nBranch \`${{ github.head_ref }}\` deployed to staging at \`${{ env.DEPLOY_HOST }}\`.\n\nReview and approve in [production environment](https://github.com/leedavis-irl/household-agent/deployments) when ready to merge.`
+            })
