@@ -320,48 +320,50 @@ describe('runDailyOpsCheck: SKIP response not sent', () => {
   });
 });
 
-describe('runDailyOpsCheck: weather nudge', () => {
-  it('includes weather info when rain is starting soon', async () => {
+describe('runDailyOpsCheck: no weather alerts', () => {
+  it('does not call fetch (NWS API) during daily ops check', async () => {
+    const { getCalendarClient, getCalendarIds } = await import('../src/utils/google-calendar.js');
+
+    getCalendarClient.mockResolvedValue(null);
+    getCalendarIds.mockReturnValue({});
+
+    const fetchSpy = vi.fn();
+    global.fetch = fetchSpy;
+
+    await runDailyOpsCheck();
+
+    expect(fetchSpy).not.toHaveBeenCalled();
+
+    delete global.fetch;
+  });
+
+  it('does not include rain/weather info in nudge even when high precipitation', async () => {
     const { getCalendarClient, getCalendarIds } = await import('../src/utils/google-calendar.js');
     const { think } = await import('../src/brain/index.js');
 
     getCalendarClient.mockResolvedValue(null);
     getCalendarIds.mockReturnValue({});
 
-    // Mock NWS points + hourly forecast with rain
-    const pointsResponse = {
-      properties: {
-        forecastHourly: 'https://api.weather.gov/gridpoints/MTR/92,88/forecast/hourly',
-      },
-    };
-    const hourlyResponse = {
-      properties: {
-        periods: [
-          {
-            startTime: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-            shortForecast: 'Light Rain',
-            probabilityOfPrecipitation: { value: 70 },
-            temperature: 58,
-          },
-        ],
-      },
-    };
+    insertOverdueTask('alice', 'Water the plants');
 
-    let callCount = 0;
-    global.fetch = vi.fn().mockImplementation(() => {
-      callCount++;
-      const data = callCount === 1 ? pointsResponse : hourlyResponse;
-      return Promise.resolve({
-        ok: true,
-        json: async () => data,
-      });
+    // Make NWS respond with heavy rain — should never be consulted
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        properties: {
+          forecastHourly: 'https://api.weather.gov/gridpoints/MTR/92,88/forecast/hourly',
+          periods: [{ probabilityOfPrecipitation: { value: 90 }, shortForecast: 'Heavy Rain' }],
+        },
+      }),
     });
 
     await runDailyOpsCheck();
 
-    expect(think).toHaveBeenCalled();
-    const callArgs = think.mock.calls[0][0];
-    expect(callArgs.message).toMatch(/Rain/i);
+    if (think.mock.calls.length > 0) {
+      const callArgs = think.mock.calls[0][0];
+      expect(callArgs.message).not.toMatch(/rain/i);
+      expect(callArgs.message).not.toMatch(/weather/i);
+    }
 
     delete global.fetch;
   });
