@@ -60,5 +60,12 @@ startKnowledgeExpiryScheduler();
 const { startDailyOps } = await import('./utils/daily-ops.js');
 startDailyOps();
 
+// Monthly Monarch → Google Sheets asset sync (1st of month, 6am Pacific).
+// Also runs once ~30s after startup so the sheet is populated on first deploy.
+if (process.env.FINANCE_SPREADSHEET_ID?.trim()) {
+  const { startAssetSyncScheduler } = await import('./jobs/sync-assets.js');
+  startAssetSyncScheduler();
+}
+
 const { startHealthServer } = await import('./health.js');
 startHealthServer();

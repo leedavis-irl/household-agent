@@ -21,8 +21,12 @@ export const DRIVE_SCOPES = [
   'https://www.googleapis.com/auth/documents.readonly',
 ];
 
-// Combined scope set used for initial auth — grants both Gmail and Drive access.
-export const ALL_GOOGLE_SCOPES = [...GMAIL_SCOPES, ...DRIVE_SCOPES];
+export const SHEETS_SCOPES = [
+  'https://www.googleapis.com/auth/spreadsheets',
+];
+
+// Combined scope set used for initial auth — grants Gmail, Drive, and Sheets access.
+export const ALL_GOOGLE_SCOPES = [...GMAIL_SCOPES, ...DRIVE_SCOPES, ...SHEETS_SCOPES];
 
 const REDIRECT_URI_OOB = 'urn:ietf:wg:oauth:2.0:oob';
 
