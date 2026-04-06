@@ -104,7 +104,7 @@ export async function syncAssets() {
     }
 
     // 2. Sum by type.
-    const totalInvestable = sumByType(accounts, ['investment']);
+    const totalInvestable = sumByType(accounts, ['brokerage']);
     const totalIlliquid = sumByType(accounts, ['real_estate', 'other_asset']);
     const timestamp = pacificTimestamp();
 
