@@ -10,10 +10,6 @@ const DAILY_OPS_ENABLED = process.env.DAILY_OPS_ENABLED !== 'false';
 const WAKING_HOUR_START = 7;  // 7am Pacific
 const WAKING_HOUR_END = 22;   // 10pm Pacific
 
-const NWS_USER_AGENT = 'Iji Household Agent, contact@email.com';
-const DEFAULT_LAT = 37.8716;
-const DEFAULT_LNG = -122.2727;
-
 // In-memory dedup: sent nudge keys (personId:type:id:dateKey)
 const sentToday = new Set();
 
@@ -98,51 +94,6 @@ export function getOverdueTasks(personId) {
   }
 }
 
-async function checkRainStartingSoon() {
-  try {
-    const pointsUrl = `https://api.weather.gov/points/${DEFAULT_LAT},${DEFAULT_LNG}`;
-    const pointsRes = await fetch(pointsUrl, {
-      headers: { 'User-Agent': NWS_USER_AGENT },
-    });
-    if (!pointsRes.ok) return null;
-    const pointsData = await pointsRes.json();
-    const hourlyUrl = pointsData?.properties?.forecastHourly;
-    if (!hourlyUrl) return null;
-
-    const hourlyRes = await fetch(hourlyUrl, {
-      headers: { 'User-Agent': NWS_USER_AGENT },
-    });
-    if (!hourlyRes.ok) return null;
-    const hourlyData = await hourlyRes.json();
-    const periods = (hourlyData?.properties?.periods || []).slice(0, 4);
-
-    for (const period of periods) {
-      const precip = period?.probabilityOfPrecipitation?.value;
-      if (precip != null && precip >= 50) {
-        const startTime = period.startTime ? new Date(period.startTime) : null;
-        const timeStr = startTime
-          ? startTime.toLocaleTimeString('en-US', {
-              hour: 'numeric',
-              minute: '2-digit',
-              hour12: true,
-              timeZone: 'America/Los_Angeles',
-            })
-          : 'soon';
-        return {
-          probability: precip,
-          shortForecast: period.shortForecast || 'Rain',
-          time: timeStr,
-          startTime: period.startTime,
-        };
-      }
-    }
-    return null;
-  } catch (err) {
-    log.warn('Daily ops: weather check failed', { error: err.message });
-    return null;
-  }
-}
-
 async function collectActionableItems(personId, dateKey) {
   const items = [];
 
@@ -168,15 +119,6 @@ async function collectActionableItems(personId, dateKey) {
     const key = `${personId}:task:${task.id}:${dateKey}`;
     if (!sentToday.has(key)) {
       items.push({ type: 'task', key, title: task.title, due_at: task.due_at });
-    }
-  }
-
-  // Rain starting in the next 4 hours (dedup once per day per person)
-  const rainKey = `${personId}:weather-rain:${dateKey}`;
-  if (!sentToday.has(rainKey)) {
-    const rain = await checkRainStartingSoon();
-    if (rain) {
-      items.push({ type: 'weather', key: rainKey, ...rain });
     }
   }
 
@@ -215,7 +157,6 @@ export async function runDailyOpsCheck() {
       const itemDescriptions = items.map((i) => {
         if (i.type === 'calendar') return `- Upcoming event in next 2 hours: "${i.summary}" at ${i.start}${i.location ? ` (${i.location})` : ''}`;
         if (i.type === 'task') return `- Overdue task: "${i.title}"`;
-        if (i.type === 'weather') return `- Rain starting around ${i.time} (${i.probability}% chance, ${i.shortForecast})`;
         return `- ${i.type}: ${JSON.stringify(i)}`;
       }).join('\n');
 
@@ -229,7 +170,7 @@ export async function runDailyOpsCheck() {
 The following items may need their attention right now:
 ${itemDescriptions}
 
-Check any relevant details needed for context (e.g. if an outdoor event or kid pickup is involved, check weather; if a task is overdue, give a brief note). Send a concise Signal message — 1-3 sentences max. Focus only on what's immediately actionable. Write like a Chief of Staff giving a quick heads-up.
+Check any relevant details needed for context (e.g. if a task is overdue, check for any related context; if an event is coming up, note key details). Send a concise Signal message — 1-3 sentences max. Focus only on what's immediately actionable. Write like a Chief of Staff giving a quick heads-up.
 
 If after reviewing context nothing is truly urgent or actionable right now, respond with exactly: SKIP`,
         source_channel: 'signal',
